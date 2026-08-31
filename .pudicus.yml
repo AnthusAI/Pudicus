@@ -1,0 +1,7 @@
+version: 1
+checkers:
+  - name: gitleaks
+    type: command
+    command: gitleaks protect --staged --report-format json --report-path {report_file}
+    success_codes: [0]
+    finding_codes: [1]
