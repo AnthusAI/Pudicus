@@ -2,9 +2,11 @@
 
 Pudicus ("modest, chaste, keeping pure") is a standalone, pluggable inspection gate for Git commits. 
 
-It was built to solve a specific problem in the era of agentic coding: **How do we ensure that AI agents (or hurried humans) actually run the necessary security and compliance checks before shipping code?**
+It was built to **shift left** the problem of secrets and confidential information leaking into source code. While it is technically possible to rewrite git history later (e.g., using `git filter-repo`) to scrub leaked keys, it is vastly better to catch the information *before* it ever gets committed to the local repository in the first place.
 
-Pudicus bridges the gap between agent automation and deployment safety by acting like an **agricultural inspector's produce sticker**. It proves that the code was scanned at the source, and a deploy gate prevents the truck from unloading if the stickers are missing.
+In the era of agentic coding, a specific problem arises: **How do we ensure that autonomous AI agents (or hurried humans) actually run the necessary security checks before committing code?**
+
+Pudicus bridges the gap between agent automation and deployment safety by acting like an **agricultural inspector's produce sticker**. It intercepts and blocks secrets at the staging area, generating a cryptographically verifiable receipt proving the code was scanned. A downstream deploy gate then prevents the truck from unloading if the stickers are missing.
 
 ```mermaid
 flowchart LR
