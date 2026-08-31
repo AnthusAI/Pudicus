@@ -48,7 +48,7 @@ class CheckerResult:
         self.clean = clean
         self.findings = findings
 
-def run_command_checker(checker: Dict[str, Any]) -> CheckerResult:
+def run_command_checker(checker: Dict[str, Any], cwd: str = None) -> CheckerResult:
     name = checker.get('name', 'unknown')
     cmd = checker.get('command', '')
     success_codes = checker.get('success_codes', [0])
@@ -62,7 +62,7 @@ def run_command_checker(checker: Dict[str, Any]) -> CheckerResult:
     
     import shlex
     try:
-        proc = run_cmd(shlex.split(cmd), check=False, capture_output=True)
+        proc = run_cmd(shlex.split(cmd), check=False, capture_output=True, cwd=cwd)
         is_clean = proc.returncode in success_codes
         
         findings = None
@@ -80,7 +80,7 @@ def run_command_checker(checker: Dict[str, Any]) -> CheckerResult:
         if report_file and os.path.exists(report_file):
             os.remove(report_file)
 
-def run_tactus_checker(checker: Dict[str, Any]) -> CheckerResult:
+def run_tactus_checker(checker: Dict[str, Any], cwd: str = None) -> CheckerResult:
     name = checker.get('name', 'tactus-scan')
     procedure = checker.get('procedure')
     if not procedure:
@@ -88,18 +88,18 @@ def run_tactus_checker(checker: Dict[str, Any]) -> CheckerResult:
     
     # Mocking tactus invocation based on common patterns
     cmd = ["tactus", "run", procedure]
-    proc = run_cmd(cmd, check=False, capture_output=True)
+    proc = run_cmd(cmd, check=False, capture_output=True, cwd=cwd)
     is_clean = proc.returncode == 0
     return CheckerResult(name, is_clean, proc.stdout if not is_clean else None)
 
-def execute_checkers(checkers: List[Dict[str, Any]]) -> List[CheckerResult]:
+def execute_checkers(checkers: List[Dict[str, Any]], cwd: str = None) -> List[CheckerResult]:
     results = []
     for checker in checkers:
         ctype = checker.get('type', 'command')
         if ctype == 'command':
-            results.append(run_command_checker(checker))
+            results.append(run_command_checker(checker, cwd=cwd))
         elif ctype == 'tactus':
-            results.append(run_tactus_checker(checker))
+            results.append(run_tactus_checker(checker, cwd=cwd))
         else:
             results.append(CheckerResult(checker.get('name', 'unknown'), False, f"Unknown checker type: {ctype}"))
     return results

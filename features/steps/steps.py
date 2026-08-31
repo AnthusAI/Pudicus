@@ -19,6 +19,7 @@ def step_impl(context, scanner_type):
     run_cmd("git init", cwd=context.repo_dir)
     run_cmd('git config user.email "test@example.com"', cwd=context.repo_dir)
     run_cmd('git config user.name "Test User"', cwd=context.repo_dir)
+    run_cmd('git commit --allow-empty -m "initial commit"', cwd=context.repo_dir)
     
     # Create pudicus config
     config_path = os.path.join(context.repo_dir, ".pudicus.yml")
@@ -148,3 +149,65 @@ def step_impl(context, trailer):
     with open(context.msg_file, 'r') as f:
         content = f.read()
     assert trailer in content, f"Trailer {trailer} not found in {content}"
+
+@given('a range of {count:d} unsigned commits')
+def step_impl(context, count):
+    # Disable the hook temporarily to create unsigned commits easily
+    hook_path = os.path.join(context.repo_dir, ".git", "hooks", "commit-msg")
+    if os.path.exists(hook_path):
+        os.remove(hook_path)
+        
+    for i in range(count):
+        file_path = os.path.join(context.repo_dir, f"testfile_{i}.txt")
+        with open(file_path, 'w') as f:
+            f.write(f"safe code {i}\n")
+        run_cmd(f"git add testfile_{i}.txt", cwd=context.repo_dir)
+        run_cmd(f'git commit -m "unsigned commit {i}"', cwd=context.repo_dir)
+        
+    context.commit_range = f"HEAD~{count}..HEAD"
+
+@given('an unsigned commit containing a secret')
+def step_impl(context):
+    hook_path = os.path.join(context.repo_dir, ".git", "hooks", "commit-msg")
+    if os.path.exists(hook_path):
+        os.remove(hook_path)
+        
+    file_path = os.path.join(context.repo_dir, "testfile.txt")
+    with open(file_path, 'w') as f:
+        f.write("AWS_KEY=AKIAIOSFODNN7EXAMPLE\n")
+    run_cmd("git add testfile.txt", cwd=context.repo_dir)
+    run_cmd('git commit -m "unsigned commit with secret"', cwd=context.repo_dir)
+    context.commit_range = "HEAD~1..HEAD"
+
+@when('I run the pudicus approve command for those commits')
+def step_impl(context):
+    cmd = f"python3 -m pudicus.cli approve {context.commit_range}"
+    context.result = subprocess.run(
+        cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
+    )
+
+@when('I run the pudicus approve command for that commit without a TTY')
+def step_impl(context):
+    cmd = f"python3 -m pudicus.cli approve {context.commit_range}"
+    context.result = subprocess.run(
+        cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
+    )
+
+@then('a new approval commit should be created')
+def step_impl(context):
+    assert context.result.returncode == 0, f"Expected success but got {context.result.returncode}\n{context.result.stderr}"
+    msg = run_cmd("git log -1 --format=%B", cwd=context.repo_dir).stdout
+    assert "Retroactive approval" in msg or "retroactive" in msg.lower(), "Approval commit not found"
+
+@then('the approval commit should not be created')
+def step_impl(context):
+    assert context.result.returncode != 0, "Expected failure but got 0"
+
+@then('the verification should pass for the entire range')
+def step_impl(context):
+    cmd = f"python3 -m pudicus.cli verify HEAD~3..HEAD" # covers the 2 commits + 1 approval commit
+    res = subprocess.run(
+        cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
+    )
+    assert res.returncode == 0, f"Verification failed:\n{res.stderr}"
+
