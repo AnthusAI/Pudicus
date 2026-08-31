@@ -10,7 +10,7 @@ Pudicus bridges the gap between agent automation and deployment safety by acting
 
 ## How It Works
 
-Instead of forcing complex asymmetric cryptography on developers, Pudicus uses **"little-sister encryption"** (a simple shared HMAC secret). The agent doesn't have access to the secret, so the easiest path for the agent is simply to run the tool that holds the secret. 
+Instead of forcing complex asymmetric cryptography on developers, Pudicus uses a simple shared HMAC secret. The agent doesn't have access to the secret, so the easiest path for the agent is simply to run the tool that holds the secret. 
 
 If the tool (the local git hook) runs and the code is clean, the commit is signed. If the tool finds secrets, it blocks the commit unless a human manually enters the override password.
 
