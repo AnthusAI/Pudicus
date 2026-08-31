@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import subprocess
+import shlex
 from datetime import datetime, timezone
 from pudicus.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
@@ -20,8 +21,15 @@ def print_err(msg):
 
 def cmd_install(args):
     """Setup the git hook and secret."""
-    repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
-    hook_path = os.path.join(repo_root, ".git", "hooks", "commit-msg")
+    # A linked worktree has a `.git` *file*, not a `.git/hooks` directory.
+    # Hooks are shared through the repository's common Git directory, so resolve
+    # that directory through Git instead of constructing a path from repo_root.
+    git_common_dir = run_cmd(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"]
+    ).stdout.strip()
+    hook_dir = os.path.join(git_common_dir, "hooks")
+    os.makedirs(hook_dir, exist_ok=True)
+    hook_path = os.path.join(hook_dir, "commit-msg")
     
     if os.path.exists(hook_path):
         print_warn(f"Hook already exists at {hook_path}. Overwrite? [y/N]")
@@ -29,10 +37,18 @@ def cmd_install(args):
             print_info("Skipped hook installation.")
             return
 
-    # Install the wrapper that calls pudicus hook
+    # Git invokes hooks with a deliberately minimal PATH.  Pin the Python
+    # interpreter that installed Pudicus and retain the install-time PATH so
+    # command checkers (for example Homebrew's gitleaks) remain discoverable.
+    # Re-run `pudicus install` after moving the environment or checker binary.
+    install_path = os.environ.get("PATH", "")
+    python_executable = sys.executable
     hook_script = f"""#!/usr/bin/env bash
 # Pudicus commit-msg hook
-pudicus hook "$1"
+# Installed Python: {python_executable}
+# PATH captured at installation time for configured command checkers.
+export PATH={shlex.quote(install_path)}:${{PATH:-}}
+exec {shlex.quote(python_executable)} -m pudicus.cli hook "$1"
 """
     with open(hook_path, 'w') as f:
         f.write(hook_script)

@@ -53,6 +53,18 @@ cd my-repo
 pudicus install
 ```
 
+The installed hook pins the Python environment used for installation and keeps
+the PATH that was available then, so checker binaries such as `gitleaks` remain
+available when Git runs the hook. Re-run `pudicus install` after moving that
+environment or installing a checker in a new location. Linked worktrees share
+the same installed hook.
+
+Pudicus receipts are HMAC trailers, not Git GPG/SSH signatures, so they do not
+appear in `git log --show-signature`. Every machine that runs `pudicus verify`
+must receive the same secret (by default `~/.config/pudicus/secret`, or the
+path in `PUDICUS_SECRET_PATH`). The hook signs only new commits; use
+`pudicus approve` when an existing commit range needs a retroactive receipt.
+
 **3. Configure your scanners:**
 Create a `.pudicus.yml` file in the root of your repository to define what must pass before a commit is signed:
 ```yaml
