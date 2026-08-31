@@ -1,0 +1,10 @@
+pyproject.toml
+pudicus/__init__.py
+pudicus/cli.py
+pudicus/core.py
+pudicus.egg-info/PKG-INFO
+pudicus.egg-info/SOURCES.txt
+pudicus.egg-info/dependency_links.txt
+pudicus.egg-info/entry_points.txt
+pudicus.egg-info/requires.txt
+pudicus.egg-info/top_level.txt

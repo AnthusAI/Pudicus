@@ -10,7 +10,7 @@ from typing import List, Dict, Any, Tuple
 import tempfile
 import yaml
 
-SECRET_FILE_DEFAULT = os.path.expanduser("~/.config/pudicus/secret")
+SECRET_FILE_DEFAULT = os.environ.get("PUDICUS_SECRET_PATH", os.path.expanduser("~/.config/pudicus/secret"))
 
 def get_secret(secret_path: str = SECRET_FILE_DEFAULT) -> str:
     if not os.path.exists(secret_path):
@@ -60,8 +60,9 @@ def run_command_checker(checker: Dict[str, Any]) -> CheckerResult:
         os.close(fd)
         cmd = cmd.replace("{report_file}", report_file)
     
+    import shlex
     try:
-        proc = run_cmd(cmd.split(), check=False, capture_output=True)
+        proc = run_cmd(shlex.split(cmd), check=False, capture_output=True)
         is_clean = proc.returncode in success_codes
         
         findings = None

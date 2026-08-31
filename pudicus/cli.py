@@ -2,6 +2,7 @@ import argparse
 import sys
 import os
 import json
+import subprocess
 from datetime import datetime, timezone
 from pudicus.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
