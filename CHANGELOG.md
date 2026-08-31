@@ -2,6 +2,19 @@
 
 
 
+## v0.1.1 (2026-08-31)
+
+### Fix
+
+* fix: add pypa/gh-action-pypi-publish step to actually upload to PyPI
+
+Inspected-by: pudicus-v1
+Inspection-tree: 9a61257b66b30be32cba77ec0dfcb5aec3b8dd98
+Inspection-result: clean
+Inspection-at: 2026-08-31T18:04:31Z
+Inspection-sig: hmac-sha256:fe33fc94291d25b41e4c057f311b217408aee63872aff95dabb353718499b80b ([`c839332`](https://github.com/AnthusAI/Pudicus/commit/c839332fa422e00d59df9f06cc70efc5d35946af))
+
+
 ## v0.1.0 (2026-08-31)
 
 ### Ci
