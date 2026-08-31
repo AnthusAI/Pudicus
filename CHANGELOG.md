@@ -2,6 +2,26 @@
 
 
 
+## v0.1.2 (2026-08-31)
+
+### Fix
+
+* fix: pin hook Python interpreter and PATH for command checkers (#1)
+
+Git runs commit-msg with a stripped PATH, so `pudicus` and Homebrew
+gitleaks were often missing. Install now writes a hook that execs the
+install-time Python, prepends that PATH, and targets the shared Git
+hooks directory so linked worktrees get the same hook.
+
+Inspected-by: pudicus-v1
+Inspection-tree: 84b26185e4fe3152d2c1c698ca14907848791c6d
+Inspection-result: clean
+Inspection-at: 2026-08-31T19:21:13Z
+Inspection-sig: hmac-sha256:67a28f2ee3221e78c0ee6e462bf994b4dc01d5c57e4f22b024ef67b3287472bf
+
+Co-authored-by: Ryan Porter &lt;ryan@anth.us&gt; ([`62bafe6`](https://github.com/AnthusAI/Pudicus/commit/62bafe640e9301843046ec5ff615fdb7a8ee2098))
+
+
 ## v0.1.1 (2026-08-31)
 
 ### Fix
