@@ -8,23 +8,23 @@ Pudicus bridges the gap between agent automation and deployment safety by acting
 
 ```mermaid
 flowchart LR
-    Agent[Agent / Developer] -->|Writes Code| Hook[Pudicus Git Hook]
+    Agent["Agent / Developer"] -->|Writes Code| Hook["Pudicus Git Hook"]
     
     subgraph Pudicus Validation
-        Hook -->|Runs| Scanners[Scanners<br/>(Gitleaks, Tactus, etc.)]
-        Scanners -->|Clean| Sig[Cryptographic Signature<br/>(HMAC-SHA256)]
-        Scanners -->|Issues Found| Block[Commit Blocked]
+        Hook -->|Runs| Scanners["Scanners<br/>(Gitleaks, Tactus, etc.)"]
+        Scanners -->|Clean| Sig["Cryptographic Signature<br/>(HMAC-SHA256)"]
+        Scanners -->|Issues Found| Block["Commit Blocked"]
     end
     
-    Sig --> Commit[Signed Commit]
+    Sig --> Commit["Signed Commit"]
     
-    Agent -.->|Bypasses hook| Unsigned[Unsigned Commit]
+    Agent -.->|Bypasses hook| Unsigned["Unsigned Commit"]
     
-    Commit --> Gate{Deploy Gate<br/>(CI/CD)}
+    Commit --> Gate{"Deploy Gate<br/>(CI/CD)"}
     Unsigned -.-> Gate
     
-    Gate -->|Valid Signature| Prod[(Production)]
-    Gate -->|No Signature| Reject[Deploy Rejected]
+    Gate -->|Valid Signature| Prod[("(Production)")]
+    Gate -->|No Signature| Reject["Deploy Rejected"]
     
     style Prod fill:#ccffcc,stroke:#00aa00
     style Reject fill:#ffcccc,stroke:#ff0000
@@ -122,13 +122,13 @@ If an agent bypasses the hook with `--no-verify`, or if you are onboarding an ol
 
 ```mermaid
 flowchart LR
-    C1[Commit 1<br/>Tree: A<br/>Signed: Yes] --> C2[Commit 2<br/>Tree: B<br/>Signed: No]
-    C2 --> C3[Commit 3<br/>Tree: C<br/>Signed: No]
-    C3 --> AC[Approval Commit<br/>Signs Trees: B, C]
+    C1["Commit 1<br/>Tree: A<br/>Signed: Yes"] --> C2["Commit 2<br/>Tree: B<br/>Signed: No"]
+    C2 --> C3["Commit 3<br/>Tree: C<br/>Signed: No"]
+    C3 --> AC["Approval Commit<br/>Signs Trees: B, C"]
     
-    AC --> Gate{Deploy Gate<br/>pudicus verify}
-    Gate -->|Pools valid signatures| Check[Are Trees A, B, and C in the pool?]
-    Check -->|Yes| Deploy[Deploy Success]
+    AC --> Gate{"Deploy Gate<br/>pudicus verify"}
+    Gate -->|Pools valid signatures| Check["Are Trees A, B, and C in the pool?"]
+    Check -->|Yes| Deploy["Deploy Success"]
 ```
 
 This provides a clean escape hatch that achieves full compliance without destroying Git history.
