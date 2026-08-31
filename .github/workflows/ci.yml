@@ -23,6 +23,10 @@ jobs:
         pip install -e .
         pip install behave
         
+    - name: Run installer unit tests
+      run: |
+        python -m unittest tests.test_install -v
+
     - name: Run Gherkin Behavior Specs
       run: |
         behave
