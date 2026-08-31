@@ -13,6 +13,9 @@ dependencies = [
     "behave",
 ]
 
+[tool.setuptools]
+packages = ["pudicus"]
+
 [project.scripts]
 pudicus = "pudicus.cli:main"
 
