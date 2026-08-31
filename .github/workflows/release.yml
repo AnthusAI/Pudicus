@@ -18,9 +18,11 @@ jobs:
           fetch-depth: 0
           
       - name: Python Semantic Release
+        id: release
         uses: python-semantic-release/python-semantic-release@v9.8.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           
-      # PyPI publishing is handled by python-semantic-release via OIDC 
-      # if a PyPI Trusted Publisher is configured for this workflow.
+      - name: Publish package to PyPI
+        if: steps.release.outputs.released == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
