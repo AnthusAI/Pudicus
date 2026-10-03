@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-7d7f25ff-242d-430a-8ce3-cab68a31dd1f",
+  "title": "Add shipped gitleaks config as package data (defaults + sensitive-data rules)",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:15.066673Z",
+  "updated_at": "2026-10-03T16:16:13.110199Z",
+  "closed_at": "2026-10-03T16:16:13.110134Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

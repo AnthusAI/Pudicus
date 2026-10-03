@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "8b70c884-c1c1-4db1-8f2e-8529bb4918eb",
+  "issue_id": "kanbus-dcf6557c-a433-474c-8fb6-7e408133a771",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:14.409Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Record side-by-side comparison and pick scanner set",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-7508db25-bf30-4825-a7d9-73678289a0e2",
+    "labels": []
+  }
+}

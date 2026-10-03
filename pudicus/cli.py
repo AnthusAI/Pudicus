@@ -19,8 +19,60 @@ def print_warn(msg):
 def print_err(msg):
     print(f"\033[1;31m[pudicus ERROR]\033[0m {msg}", file=sys.stderr)
 
+DEFAULT_PUDICUS_YML = """\
+version: 1
+checkers:
+  - name: gitleaks
+    type: command
+    command: gitleaks protect --staged --config .pudicus/gitleaks.toml --report-format json --report-path {report_file}
+    success_codes: [0]
+    finding_codes: [1]
+"""
+
+def write_default_configs(repo_root):
+    """Install the zero-config defaults into a repo.
+
+    Writes a default .pudicus.yml (pointing at the shipped gitleaks
+    ruleset) and copies the packaged gitleaks.toml into
+    <repo>/.pudicus/. Existing files are never overwritten.
+    """
+    config_dir = os.path.join(repo_root, ".pudicus")
+    pudicus_yml = os.path.join(repo_root, ".pudicus.yml")
+    ruleset_target = os.path.join(config_dir, "gitleaks.toml")
+
+    if not os.path.exists(pudicus_yml):
+        with open(pudicus_yml, "w") as f:
+            f.write(DEFAULT_PUDICUS_YML)
+        print_info(f"Wrote default checker config at {pudicus_yml}")
+    else:
+        print_info(f"Existing {pudicus_yml} left untouched.")
+
+    packaged_ruleset = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "data", "gitleaks.toml"
+    )
+    if os.path.exists(packaged_ruleset):
+        os.makedirs(config_dir, exist_ok=True)
+        if not os.path.exists(ruleset_target):
+            import shutil
+            shutil.copyfile(packaged_ruleset, ruleset_target)
+            print_info(f"Installed shipped gitleaks ruleset at {ruleset_target}")
+        else:
+            print_info(f"Existing {ruleset_target} left untouched.")
+    else:
+        print_warn(f"Packaged ruleset missing at {packaged_ruleset}; default gitleaks rules only.")
+
 def cmd_install(args):
     """Setup the git hook and secret."""
+    repo_root = run_cmd(
+        ["git", "rev-parse", "--show-toplevel"], check=False
+    ).stdout.strip()
+    if repo_root:
+        # Install the zero-config defaults first so they exist regardless
+        # of the answer to the (interactive) hook overwrite prompt below.
+        write_default_configs(repo_root)
+    else:
+        print_warn("Not inside a git repository; default configs not written.")
+
     # A linked worktree has a `.git` *file*, not a `.git/hooks` directory.
     # Hooks are shared through the repository's common Git directory, so resolve
     # that directory through Git instead of constructing a path from repo_root.

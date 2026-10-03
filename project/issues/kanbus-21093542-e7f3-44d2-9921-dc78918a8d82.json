@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-21093542-e7f3-44d2-9921-dc78918a8d82",
+  "title": "Build synthetic-fixture evaluation corpus (seeded, no real values)",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-7508db25-bf30-4825-a7d9-73678289a0e2",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:11.329555Z",
+  "updated_at": "2026-10-03T16:16:06.385940Z",
+  "closed_at": "2026-10-03T16:16:06.385909Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

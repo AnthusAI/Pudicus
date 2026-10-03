@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "e2f5125a-1fa5-44dc-a0bf-6171ccc75ebe",
+  "issue_id": "kanbus-60463398-6c20-4d76-86bb-23ce44962b37",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:15.638Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Wire default .pudicus.yml and install to write the config into target repos",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+    "labels": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "3255ef1c-bfcf-45a2-93ff-81aafd161585",
+  "issue_id": "kanbus-cb373ff5-7932-4205-9a62-c11171b44ea6",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T16:16:26.367Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Fix mnemonic rule gap: label-assignment shapes (label = \"words\") were not matched",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+    "labels": []
+  }
+}

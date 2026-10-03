@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-c87cc43a-0d69-412c-a2b5-7b51d4feaa38",
+  "title": "Evaluate detect-secrets on the corpus",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-7508db25-bf30-4825-a7d9-73678289a0e2",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:11.946262Z",
+  "updated_at": "2026-10-03T16:16:08.766160Z",
+  "closed_at": "2026-10-03T16:16:08.766107Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

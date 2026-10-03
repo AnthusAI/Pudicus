@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "9a40eb44-4f41-468c-b5fc-094ba7e3f37b",
+  "issue_id": "kanbus-93909fbc-fd55-4021-ba88-e60665cd8471",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:59.681Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Extend receipt trailers with scanner version(s) and ruleset hash",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-cd12bc06-f6ef-45fe-b00a-2aebf2b146bc",
+    "labels": []
+  }
+}

@@ -16,6 +16,9 @@ dependencies = [
 [tool.setuptools]
 packages = ["pudicus"]
 
+[tool.setuptools.package-data]
+pudicus = ["data/*.toml"]
+
 [project.scripts]
 pudicus = "pudicus.cli:main"
 

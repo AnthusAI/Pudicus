@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-396f60bd-e462-4972-8831-396d92f6f300",
+  "title": "Dogfood install as-is in BotSpy after Pudicus ships",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:58.977819Z",
+  "updated_at": "2026-10-03T15:58:09.348339Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

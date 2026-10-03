@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+  "title": "Piece 1: deterministic test suite (synthetic fixtures, FP checks)",
+  "description": "",
+  "type": "epic",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:00.895107Z",
+  "updated_at": "2026-10-03T16:16:21.702369Z",
+  "closed_at": "2026-10-03T16:16:21.702337Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

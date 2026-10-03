@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-59715c55-3182-465f-86d4-42f527ad95aa",
+  "title": "Gate fails commits without a valid scan record",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-e132e16d-35e4-41da-a88c-a3ee9b52fad2",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:58:01.675279Z",
+  "updated_at": "2026-10-03T15:58:11.934281Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

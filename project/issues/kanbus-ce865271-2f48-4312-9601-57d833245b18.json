@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
+  "title": "README: sensitive-data detection section and scanner matrix",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:18.788254Z",
+  "updated_at": "2026-10-03T16:16:18.239942Z",
+  "closed_at": "2026-10-03T16:16:18.239911Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

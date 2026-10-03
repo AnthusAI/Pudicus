@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "bb445162-c403-4c77-865d-3a4bd7d65520",
+  "issue_id": "kanbus-f27537db-6d6e-4650-97a3-93d26b241887",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-03T16:16:22.536Z",
+  "actor_id": "example-user",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "",
+        "to": "Extend CI to develop and main; install pinned gitleaks 8.30.1; run unit + BDD suites. BIP-39 words are embedded as a seeded subset in the test module instead of adding a wordlist dependency."
+      }
+    }
+  }
+}

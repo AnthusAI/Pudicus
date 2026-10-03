@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-181e1bd5-38fb-49f6-aef4-24f9d8167126",
+  "title": "Scope structural allowlists to exact values/fields; no blanket path exemptions",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:16.291925Z",
+  "updated_at": "2026-10-03T16:16:55.492146Z",
+  "closed_at": "2026-10-03T16:16:55.492113Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

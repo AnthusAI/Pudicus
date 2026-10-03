@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-71ee80c3-cc6e-4b6c-ae9d-909c9f4ba68c",
+  "title": "Extend install to write default .pudicus.yml + shipped gitleaks config into target repos with zero custom config",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:55.906340Z",
+  "updated_at": "2026-10-03T16:16:14.405015Z",
+  "closed_at": "2026-10-03T16:16:14.404987Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

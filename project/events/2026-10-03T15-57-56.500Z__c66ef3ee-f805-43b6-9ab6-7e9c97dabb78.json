@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "c66ef3ee-f805-43b6-9ab6-7e9c97dabb78",
+  "issue_id": "kanbus-e29a6364-0911-4743-8cbd-2623590d9495",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:56.500Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Add generated-at-test-time fixtures for API keys, PII and crypto to the BDD suite",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+    "labels": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "9733e0ca-5607-4bc6-afcd-e764711d677b",
+  "issue_id": "kanbus-0be318aa-916a-497a-88e5-17ff275702d1",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:55.359Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Scope allowlists to exact structural values/fields only; no blanket path exemptions",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+    "labels": []
+  }
+}
