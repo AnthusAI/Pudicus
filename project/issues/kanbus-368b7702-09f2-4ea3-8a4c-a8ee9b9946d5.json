@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-368b7702-09f2-4ea3-8a4c-a8ee9b9946d5",
+  "title": "Evaluate gitleaks defaults plus Pudicus-shipped rules",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-7508db25-bf30-4825-a7d9-73678289a0e2",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:13.759268Z",
+  "updated_at": "2026-10-03T16:16:10.033855Z",
+  "closed_at": "2026-10-03T16:16:10.033822Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

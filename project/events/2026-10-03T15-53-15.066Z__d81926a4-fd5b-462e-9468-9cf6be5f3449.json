@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "d81926a4-fd5b-462e-9468-9cf6be5f3449",
+  "issue_id": "kanbus-7d7f25ff-242d-430a-8ce3-cab68a31dd1f",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:15.066Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Add shipped gitleaks config as package data (defaults + sensitive-data rules)",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+    "labels": []
+  }
+}

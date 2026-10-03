@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-cb373ff5-7932-4205-9a62-c11171b44ea6",
+  "title": "Fix mnemonic rule gap: label-assignment shapes (label = \"words\") were not matched",
+  "description": "Probing real-world label shapes showed seed_phrase = \"...\", vault_seed = \"...\" and recovery_phrase = \"...\" were silently missed: the regex required the opening quote immediately after the separator. Fixed by allowing a short run of spaces/quotes after the separator; regression tests added for quoted, tight-quoted and unquoted label shapes.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T16:16:26.367905Z",
+  "updated_at": "2026-10-03T16:16:30.114920Z",
+  "closed_at": "2026-10-03T16:16:26.923577Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

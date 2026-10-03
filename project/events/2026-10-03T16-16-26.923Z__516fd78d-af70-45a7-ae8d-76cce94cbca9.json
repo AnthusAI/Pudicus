@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "516fd78d-af70-45a7-ae8d-76cce94cbca9",
+  "issue_id": "kanbus-cb373ff5-7932-4205-9a62-c11171b44ea6",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-03T16:16:26.923Z",
+  "actor_id": "example-user",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "",
+        "to": "Probing real-world label shapes showed seed_phrase = \"...\", vault_seed = \"...\" and recovery_phrase = \"...\" were silently missed: the regex required the opening quote immediately after the separator. Fixed by allowing a short run of spaces/quotes after the separator; regression tests added for quoted, tight-quoted and unquoted label shapes."
+      }
+    }
+  }
+}

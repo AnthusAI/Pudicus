@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "070a6785-9b92-41d0-af8e-48669fe248ac",
+  "issue_id": "kanbus-f27537db-6d6e-4650-97a3-93d26b241887",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:57.711Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Extend CI to develop; install pinned gitleaks; add mnemonic wordlist dependency",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+    "labels": []
+  }
+}

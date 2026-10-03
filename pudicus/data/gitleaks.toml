@@ -1,0 +1,182 @@
+# Pudicus shipped gitleaks ruleset.
+#
+# Extends gitleaks' default secret rules (AWS, Google API keys, private
+# keys, generic API keys, ...) with personal-data and wallet rules so a
+# freshly installed Pudicus finds sensitive information with zero custom
+# configuration:
+#
+#   - personal email addresses (infrastructure identities allowlisted)
+#   - home-folder paths: /Users/<name>/, /home/<name>/, C:\Users\<name>
+#   - session UUIDs (bare UUIDs outside structural id fields)
+#   - actor/user IDs
+#   - OpenAI (sk-, sk-proj-, sk-svcacct-) and Anthropic (sk-ant-) keys
+#     (Gemini/Google AI keys AIza... are covered by gitleaks' default
+#     gcp-api-key rule)
+#   - crypto wallet material: 0x-prefixed 64-hex private keys, keyword-
+#     context bare 64-hex keys (generic-api-key covers labeled ones),
+#     WIF-format Bitcoin keys, BIP-39 mnemonics
+#
+# Public wallet addresses and hash-like hex (SHA-256, git SHAs) are NOT
+# flagged by themselves: bare 64-hex without 0x or a key-like keyword is
+# indistinguishable from SHA-256 and is intentionally left to the
+# generic-api-key keyword context (see docs).
+#
+# Allowlists are scoped to exact structural values and field names
+# (placeholder usernames/actor ids, Kanbus structural id fields, the
+# 00000000-0000-4000-8000-... example UUID shape) — never whole paths.
+
+title = "Pudicus sensitive-data rules"
+
+[extend]
+useDefault = true
+
+# Line-scoped global allowance: quoted, all-lowercase scanner keyword
+# literals (fixture-corpus generators list trigger keywords like
+# "-----begin rsa private key-----" as data). Real PEM material is
+# mixed-case with base64 payload and is never shaped like this.
+[allowlist]
+description = "lowercase keyword-list literals in fixture generators"
+regexTarget = "line"
+regexes = [
+  '''"[a-z -]*private key-----"''',
+]
+# Compiled bytecode duplicates string constants from the sources (which
+# are themselves scanned) and produces garbage matches from folded
+# literals; Python projects regenerate these caches constantly.
+paths = [
+  '''(^|/)__pycache__/''',
+  '''\.pyc$''',
+]
+
+# --------------------------------------------------------------------
+# Personal data
+# --------------------------------------------------------------------
+
+[[rules]]
+id = "pudicus-personal-email"
+description = "Personal email address"
+regex = '''[a-zA-Z0-9._%+\-']+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'''
+keywords = ["@"]
+
+[rules.allowlist]
+regexes = [
+  # Infrastructure and placeholder identities, not personal ones.
+  '''@users\.noreply\.github\.com''',
+  '''git@github\.com''',
+  '''@(example|github)\.(com|org|net|io|ai)''',
+]
+
+[[rules]]
+id = "pudicus-home-path-posix"
+description = "Home-folder path (/Users/<name> or /home/<name>)"
+# The path segment after the prefix is the secret. Requiring a
+# non-path character before /Users or /home keeps mid-path segments
+# like /tmp/home/... out (test fixtures use those legitimately).
+regex = '''(?:^|[^a-zA-Z0-9._\-/])(?:/Users|/home)(/[a-zA-Z0-9._\-]+)'''
+keywords = ["/Users/", "/home/"]
+
+[rules.allowlist]
+regexes = [
+  # Anonymized placeholder usernames, not real ones.
+  '''^/example(-[a-z0-9]+)?$''',
+]
+
+[[rules]]
+id = "pudicus-home-path-windows"
+description = "Home-folder path (C:\\Users\\<name> or \\Users\\<name>)"
+regex = '''\\+Users\\+([a-zA-Z0-9._\-]+)'''
+keywords = ["Users"]
+
+[rules.allowlist]
+regexes = [
+  '''^\\?example(-[a-z0-9]+)?$''',
+]
+
+[[rules]]
+id = "pudicus-session-uuid"
+description = "Bare UUID (potential session/agent identifier)"
+regex = '''\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b'''
+keywords = ["-"]
+
+[rules.allowlist]
+regexTarget = "line"
+regexes = [
+  # Structural id fields only (Kanbus issue/event bookkeeping: ids of
+  # issues, comments, events, parents and move targets). A UUID in any
+  # other field, in free text, or in session_id-style fields is still
+  # reported.
+  '''"(id|comment_id|event_id|issue_id|parent_id|parent|target|target_id|from|to)"\s*:\s*"((?:BOTSPY-|kanbus-))?[0-9a-f]{8}-[0-9a-f]{4}[^"]*"''',
+  # All-zero / all-ones example UUID shapes used by test fixtures and docs.
+  '''00000000-0000-4000-8000-''',
+  '''11111111-1111-4111-8111-1111111111''',
+  # Kanbus board cache index: issue files as JSON object keys.
+  '''[a-zA-Z]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json''',
+  # Board issue ids are always <PREFIX>-<uuid> in board data; the prefix
+  # is the structural discriminator (bare session UUIDs are not).
+  '''BOTSPY-[0-9a-f]{8}-[0-9a-f]{4}''',
+  '''kanbus-[0-9a-f]{8}-[0-9a-f]{4}''',
+]
+
+[[rules]]
+id = "pudicus-actor-id"
+description = "actor/user/author ID value"
+regex = '''"(?:actor_id|user_id|author_id)"\s*:\s*"([^"]{4,})"'''
+keywords = ["actor_id", "user_id", "author_id"]
+
+[rules.allowlist]
+regexes = [
+  # Anonymized placeholder ids, not real ones.
+  '''^example[-_a-z0-9]*$''',
+]
+
+# --------------------------------------------------------------------
+# LLM provider API keys not covered by gitleaks defaults
+# (OpenAI sk- / sk-proj- / sk-svcacct-, Anthropic sk-ant-. Google
+# AI/Gemini keys AIza... are covered by the default gcp-api-key rule.)
+# --------------------------------------------------------------------
+
+[[rules]]
+id = "pudicus-openai-key"
+description = "OpenAI API key (sk-, sk-proj-, sk-svcacct-)"
+regex = '''\bsk-(?:proj|svcacct)-[A-Za-z0-9_\-]{40,}|\bsk-[A-Za-z0-9]{20,}'''
+keywords = ["sk-"]
+
+[[rules]]
+id = "pudicus-anthropic-key"
+description = "Anthropic API key (sk-ant-)"
+regex = '''\bsk-ant-[A-Za-z0-9_\-]{20,}'''
+keywords = ["sk-ant-"]
+
+# --------------------------------------------------------------------
+# Crypto wallet material
+# --------------------------------------------------------------------
+
+[[rules]]
+id = "pudicus-eth-private-key"
+description = "Ethereum-style private key (0x-prefixed 64 hex chars)"
+# Only the 0x-prefixed form is reported context-free: bare 64-hex
+# strings are indistinguishable from SHA-256 digests and are covered
+# by generic-api-key's keyword context instead.
+regex = '''\b0x[0-9a-fA-F]{64}\b'''
+keywords = ["0x"]
+
+[[rules]]
+id = "pudicus-wif-key"
+description = "Bitcoin WIF private key (base58check)"
+regex = '''\b[KLM][1-9A-HJ-NP-Za-km-z]{51}\b|\b5[1-9A-HJ-NP-Za-km-z]{50}\b'''
+keywords = ["K", "L", "5"]
+
+[[rules]]
+id = "pudicus-bip39-mnemonic"
+description = "BIP-39 seed phrase (12-24 lowercase words, seed/mnemonic context)"
+# Separation from prose and from SHA-256-style hex noise: the phrase
+# must follow seed/mnemonic/recovery-style context (assignment or
+# label, optionally quoted), and BIP-39 wordlist words are 3-8 letters.
+# Bare, unlabeled 12+ word lowercase sequences are NOT flagged — English
+# prose is shape-identical and a bare phrase cannot be told apart from
+# unpunctuated prose by regex alone (documented residual gap: prose that
+# itself contains "seed"/"mnemonic" within the context window plus a
+# long unpunctuated lowercase run; BIP-39 checksum validation belongs in
+# a future validator pass).
+regex = '''(?:seed[_-]?phrase|recovery[_-]?phrase|mnemonic|vault[_-]?seed|seed|secret[_-]?words)[^=\n"']{0,24}[=:\s][\s"']{0,3}(?:[a-z]{3,8} ){11,23}[a-z]{3,8}\b"?'''
+keywords = ["seed", "mnemonic", "recovery"]

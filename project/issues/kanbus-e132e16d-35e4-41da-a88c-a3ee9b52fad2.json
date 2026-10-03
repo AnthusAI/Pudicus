@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-e132e16d-35e4-41da-a88c-a3ee9b52fad2",
+  "title": "Piece 4: PR gate fails unscanned or mismatched commits",
+  "description": "",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:43.362119Z",
+  "updated_at": "2026-10-03T15:57:44.580374Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

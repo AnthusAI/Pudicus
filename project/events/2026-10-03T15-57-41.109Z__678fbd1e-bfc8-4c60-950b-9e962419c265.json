@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "678fbd1e-bfc8-4c60-950b-9e962419c265",
+  "issue_id": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-03T15:57:41.109Z",
+  "actor_id": "example-user",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Ship sensitive-data gitleaks rules in Pudicus",
+        "to": "Piece 1: out-of-the-box detection rules shipped by Pudicus (gitleaks config)"
+      }
+    }
+  }
+}

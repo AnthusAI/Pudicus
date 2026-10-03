@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "29acadb3-340b-4059-9a4e-8617d00bfdeb",
+  "issue_id": "kanbus-661a096f-f25f-424d-9940-4af3501d8b87",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:58:00.884Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Provide PR-gate workflow template/action in Pudicus",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-e132e16d-35e4-41da-a88c-a3ee9b52fad2",
+    "labels": []
+  }
+}

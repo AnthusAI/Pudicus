@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-01bf6b8b-0770-492f-92e4-ed9a91a22272",
+  "title": "Confirm hook blocks a staged synthetic bad commit and allows clean commits (existing hook, default config)",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:58.326570Z",
+  "updated_at": "2026-10-03T16:16:19.397717Z",
+  "closed_at": "2026-10-03T16:16:19.397683Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

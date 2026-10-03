@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-661a096f-f25f-424d-9940-4af3501d8b87",
+  "title": "Provide PR-gate workflow template/action in Pudicus",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-e132e16d-35e4-41da-a88c-a3ee9b52fad2",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:58:00.884046Z",
+  "updated_at": "2026-10-03T15:58:11.300058Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
