@@ -2,6 +2,102 @@
 
 
 
+## v0.2.0 (2026-10-03)
+
+### Chore
+
+* chore: add Kanbus board for the out-of-the-box detection initiative
+
+Initiative kanbus-f66623 with epics for scanner evaluation, shipped
+detection rules, the deterministic test suite, hook dogfood, scan
+records and the PR gate. All work items carry agent provenance
+(GLM 5.3 Flash, Cloud Agent on BlackbookM1); identities are synthetic
+(actor_id example-user, git identity Example Dev &lt;agent@example.com&gt;). ([`d0653d4`](https://github.com/AnthusAI/Pudicus/commit/d0653d4812d3f4b3c5c537f62114d669641660f4))
+
+### Ci
+
+* ci: run full suite with pinned gitleaks on main and develop; dogfood self-scan
+
+CI installs gitleaks 8.30.1, runs the unit tests and BDD specs, and
+scans the Pudicus tree with its own shipped ruleset. README documents
+out-of-the-box detection, the crypto wallet flagging policy (public
+addresses and hashes are not flagged by themselves), and the scanner
+evaluation matrix. .gitleaksignore records one reviewed pre-existing
+finding (semantic-release commit-metadata email in the generated
+CHANGELOG). ([`b247cd2`](https://github.com/AnthusAI/Pudicus/commit/b247cd275e2c400fd65105eeda1c90572c04aa6f))
+
+### Documentation
+
+* docs: pudicus is on PyPI since 0.1.1; make pip install pudicus the primary install command
+
+Inspected-by: pudicus-v1
+Inspection-tree: ec4ddeb4293bc36fb6a7469df502802e1b3bfd44
+Inspection-result: clean
+Inspection-at: 2026-10-03T16:23:09Z
+Inspection-sig: hmac-sha256:5524d894e76fbe824256342f5a9973211cc59da36d6a3c4c08229243194763c5
+Inspected-by: pudicus-v1
+Inspection-tree: ec4ddeb4293bc36fb6a7469df502802e1b3bfd44
+Inspection-result: clean
+Inspection-at: 2026-10-03T16:23:20Z
+Inspection-sig: hmac-sha256:71f1118d92424197b0ff8e7246f219714bcb8146aadf10a910747801783e3d9b ([`e4afa8e`](https://github.com/AnthusAI/Pudicus/commit/e4afa8ec36be23e8b1a456aa0d11d7a74ffede29))
+
+### Feature
+
+* feat: out-of-the-box sensitive-data detection
+
+Ship a gitleaks ruleset (pudicus/data/gitleaks.toml) that extends the
+gitleaks defaults with personal-data and crypto-wallet rules: personal
+emails, home paths (POSIX and Windows), session UUIDs, actor IDs,
+OpenAI/Anthropic API keys, Ethereum-style private keys, WIF Bitcoin
+keys, and BIP-39 seed phrases (12-24 words in seed/mnemonic context).
+
+&#39;pudicus install&#39; now writes a default .pudicus.yml pointing at the
+shipped ruleset and copies the ruleset into .pudicus/, never
+overwriting existing files. The ruleset ships as package data.
+
+Public wallet addresses and hash-like hex (SHA-256/git SHA) are not
+flagged on their own; bare 64-hex is only reported in key-like keyword
+context. Bytecode caches (__pycache__) are excluded as compiled
+artifacts. ([`6e65b55`](https://github.com/AnthusAI/Pudicus/commit/6e65b55c93952ef4eed751fd83b7f831bbc6b7eb))
+
+### Test
+
+* test: pass the hook environment to git commit in sensitive-data steps
+
+The behave steps set PUDICUS_SECRET_PATH in their own env but did not
+forward it to git commit, so the commit-msg hook could not find the
+test secret and the allow-clean scenarios failed on machines without
+~/.config/pudicus/secret (masked locally by an existing secret file).
+
+Inspected-by: pudicus-v1
+Inspection-tree: 138ff44d2fbbee14db5c27c6d932643cc99c338a
+Inspection-result: clean
+Inspection-at: 2026-10-03T17:02:32Z
+Inspection-sig: hmac-sha256:4f3f23132dc7dedf904d7f3746d72114896653fc78c43a3ae78623483c55260c ([`2e7c385`](https://github.com/AnthusAI/Pudicus/commit/2e7c385476133b7a1a3959f62c998452dfc0b0ff))
+
+* test: deterministic synthetic-fixture suite for the shipped ruleset
+
+Unit tests regenerate all fixtures at test time from a seeded RNG
+(random hex, base58check-alphabet WIF shapes, BIP-39 wordlist subset
+mnemonics) — no real credential is embedded anywhere. Sensitive
+categories must be flagged; public wallet addresses, hash-like hex
+(SHA-256/git SHA/SHA-512), unlabeled hex and prose must produce zero
+findings. Dogfood tests scan an env-provided tree (PUDICUS_DOGFOOD_TREE)
+and honor that tree&#39;s .gitleaksignore entries. BDD scenarios cover a
+real pudicus install: default config blocks a staged synthetic key,
+allows clean commits, and does not flag public addresses/digests. ([`1dc1537`](https://github.com/AnthusAI/Pudicus/commit/1dc153710d2d204682cf077aed8aef0db45e30db))
+
+### Unknown
+
+* Merge pull request #3 from AnthusAI/develop
+
+Release: promote develop to main (out-of-the-box sensitive-data detection) ([`204f285`](https://github.com/AnthusAI/Pudicus/commit/204f285d6406d66fa2c801a463d63f199eac7329))
+
+* Merge pull request #2 from AnthusAI/cursor/ootb-detection-b3b8
+
+feat: out-of-the-box sensitive-data detection rules + default config wiring ([`759598d`](https://github.com/AnthusAI/Pudicus/commit/759598dff42adf4b282fea38e450db11539d253e))
+
+
 ## v0.1.2 (2026-08-31)
 
 ### Fix
