@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-e29a6364-0911-4743-8cbd-2623590d9495",
+  "title": "Add generated-at-test-time fixtures for API keys, PII and crypto to the BDD suite",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:56.500749Z",
+  "updated_at": "2026-10-03T16:16:16.289526Z",
+  "closed_at": "2026-10-03T16:16:16.289498Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

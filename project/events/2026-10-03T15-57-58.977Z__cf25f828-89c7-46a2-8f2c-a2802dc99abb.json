@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "cf25f828-89c7-46a2-8f2c-a2802dc99abb",
+  "issue_id": "kanbus-396f60bd-e462-4972-8831-396d92f6f300",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:58.977Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Dogfood install as-is in BotSpy after Pudicus ships",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+    "labels": []
+  }
+}

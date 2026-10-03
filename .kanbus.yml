@@ -1,0 +1,183 @@
+project_directory: project
+virtual_projects: {}
+new_issue_project: null
+ignore_paths: []
+console_port: null
+project_key: kanbus
+project_management_template: null
+hierarchy:
+- initiative
+- epic
+- task
+- sub-task
+types:
+- bug
+- story
+- chore
+workflows:
+  default:
+    backlog:
+    - open
+    - closed
+    blocked:
+    - in_progress
+    - closed
+    closed:
+    - open
+    in_progress:
+    - open
+    - blocked
+    - closed
+    open:
+    - in_progress
+    - closed
+    - backlog
+  epic:
+    closed:
+    - open
+    in_progress:
+    - open
+    - closed
+    open:
+    - in_progress
+    - closed
+transition_labels:
+  default:
+    backlog:
+      closed: Drop
+      open: Start discovery
+    blocked:
+      closed: Drop
+      in_progress: Unblock
+    closed:
+      open: Reopen
+    in_progress:
+      blocked: Block
+      closed: Complete
+      open: Pause
+    open:
+      backlog: Back to backlog
+      closed: Drop
+      in_progress: Start work
+  epic:
+    closed:
+      open: Reopen
+    in_progress:
+      closed: Complete
+      open: Pause
+    open:
+      closed: Complete
+      in_progress: Start
+initial_status: open
+priorities:
+  0:
+    name: critical
+    color: red
+  1:
+    name: high
+    color: bright_red
+  2:
+    name: medium
+    color: yellow
+  3:
+    name: low
+    color: blue
+  4:
+    name: trivial
+    color: white
+default_priority: 2
+assignee: null
+time_zone: null
+statuses:
+- key: backlog
+  name: Backlog
+  category: To do
+  semantic_category: todo
+  color: null
+  collapsed: true
+- key: open
+  name: Discovery
+  category: To do
+  semantic_category: todo
+  color: null
+  collapsed: false
+- key: in_progress
+  name: In Progress
+  category: In progress
+  semantic_category: in_progress
+  color: null
+  collapsed: false
+- key: blocked
+  name: Blocked
+  category: In progress
+  semantic_category: in_progress
+  color: null
+  collapsed: true
+- key: closed
+  name: Done
+  category: Done
+  semantic_category: done
+  color: null
+  collapsed: true
+categories:
+- name: To do
+  color: grey
+- name: In progress
+  color: blue
+- name: Done
+  color: green
+sort_order: {}
+type_colors:
+  bug: red
+  chore: green
+  epic: magenta
+  event: bright_blue
+  initiative: bright_blue
+  story: yellow
+  sub-task: bright_cyan
+  task: blue
+beads_compatibility: false
+wiki_directory: null
+ai:
+  provider: litellm
+  model: gpt-5.6-luna
+right_now:
+  enabled: true
+  default_tree_expanded: false
+  max_length: 120
+  model: gpt-5.6-luna
+standup:
+  window: rolling
+  lookback: 24h
+  skip_weekends: false
+  timezone: null
+jira: null
+snyk: null
+realtime:
+  transport: auto
+  broker: auto
+  autostart: true
+  keepalive: false
+  uds_socket_path: null
+  mqtt_custom_authorizer_name: null
+  mqtt_api_token: null
+  topics:
+    project_events: projects/{project}/events
+overlay:
+  enabled: true
+  ttl_s: 86400
+hooks:
+  enabled: true
+  run_in_beads_mode: true
+  default_timeout_ms: 5000
+  before: {}
+  after: {}
+github_security: null
+coordination:
+  providers:
+  - git
+  contention_window: 5s
+  default_lease_ttl: 300s
+  mutex_api:
+    endpoint: null
+    bearer_token: null

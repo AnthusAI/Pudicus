@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-4db8acac-c117-4e4b-89fc-d86e21ebcc0e",
+  "title": "Extend CI to develop and install gitleaks for tests",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:19.399547Z",
+  "updated_at": "2026-10-03T16:16:18.811616Z",
+  "closed_at": "2026-10-03T16:16:18.811579Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

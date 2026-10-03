@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-9d1d4bba-b1b2-4326-b64f-d6f718a072c4",
+  "title": "Ship gitleaks rules: personal emails, home paths (POSIX and Windows), session UUIDs, actor IDs, API key formats, crypto material",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:54.700317Z",
+  "updated_at": "2026-10-03T16:16:11.902789Z",
+  "closed_at": "2026-10-03T16:16:11.902756Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "e8e2442a-d388-4113-ab27-d0b7ae13db77",
+  "issue_id": "kanbus-71ee80c3-cc6e-4b6c-ae9d-909c9f4ba68c",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:55.906Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Extend install to write default .pudicus.yml + shipped gitleaks config into target repos with zero custom config",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+    "labels": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-757b4c72-1724-4e56-bc9b-16d4af53a1df",
+  "title": "Verify records survive verify pooling and travel with commits",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-cd12bc06-f6ef-45fe-b00a-2aebf2b146bc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:58:00.303888Z",
+  "updated_at": "2026-10-03T15:58:10.584472Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

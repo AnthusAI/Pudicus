@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "8d372f9c-256e-49dd-9bd8-81280b0fdbd0",
+  "issue_id": "kanbus-c9ca66c5-1a26-45e4-9d20-5532123fb481",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:58:02.350Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Gate fails records that do not match commit content (tree hash)",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-e132e16d-35e4-41da-a88c-a3ee9b52fad2",
+    "labels": []
+  }
+}

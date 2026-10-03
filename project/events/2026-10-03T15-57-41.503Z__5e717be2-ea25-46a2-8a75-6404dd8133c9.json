@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "5e717be2-ea25-46a2-8a75-6404dd8133c9",
+  "issue_id": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-03T15:57:41.503Z",
+  "actor_id": "example-user",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Deterministic test suite for sensitive-data detection",
+        "to": "Piece 1: deterministic test suite (synthetic fixtures, FP checks)"
+      }
+    }
+  }
+}

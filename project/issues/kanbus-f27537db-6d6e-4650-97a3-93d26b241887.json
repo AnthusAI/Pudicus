@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-f27537db-6d6e-4650-97a3-93d26b241887",
+  "title": "Extend CI to develop; install pinned gitleaks; add mnemonic wordlist dependency",
+  "description": "Extend CI to develop and main; install pinned gitleaks 8.30.1; run unit + BDD suites. BIP-39 words are embedded as a seeded subset in the test module instead of adding a wordlist dependency.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:57.710998Z",
+  "updated_at": "2026-10-03T16:16:22.536963Z",
+  "closed_at": "2026-10-03T16:16:17.450274Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

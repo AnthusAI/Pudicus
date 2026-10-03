@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "cc85ee9e-f052-4cb4-bbda-02631c270fdc",
+  "issue_id": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-03T15:57:41.917Z",
+  "actor_id": "example-user",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Document and wire default configuration",
+        "to": "Docs, CI wiring and dogfood notes"
+      }
+    }
+  }
+}

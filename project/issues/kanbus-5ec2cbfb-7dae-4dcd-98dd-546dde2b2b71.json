@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "title": "Piece 1: out-of-the-box detection rules shipped by Pudicus (gitleaks config)",
+  "description": "",
+  "type": "epic",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:53:00.488635Z",
+  "updated_at": "2026-10-03T16:16:21.249293Z",
+  "closed_at": "2026-10-03T16:16:21.249259Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

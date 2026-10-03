@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "c1f7a6b8-2e9a-4fe4-b8e0-7ca2751e1040",
+  "issue_id": "kanbus-166334b0-7f3d-4a90-98e3-98385a21f616",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:54.139Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Negative tests: public wallet addresses and hash-like hex must not be flagged",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-7508db25-bf30-4825-a7d9-73678289a0e2",
+    "labels": []
+  }
+}

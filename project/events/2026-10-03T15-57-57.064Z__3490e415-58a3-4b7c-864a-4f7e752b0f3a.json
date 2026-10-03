@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "3490e415-58a3-4b7c-864a-4f7e752b0f3a",
+  "issue_id": "kanbus-7c446e5d-d19d-483a-b830-901cf496fc8e",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:57:57.064Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Unit-test FP rate on clean content and BotSpy rewritten develop tree (dogfood tree via env var)",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+    "labels": []
+  }
+}

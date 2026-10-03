@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "d8be2b88-29d7-4aed-aa78-d395d658e905",
+  "issue_id": "kanbus-81fa0ffd-773f-401d-b0c8-7c399473dbb4",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:13.169Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Evaluate Presidio or similar PII scanner",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-7508db25-bf30-4825-a7d9-73678289a0e2",
+    "labels": []
+  }
+}

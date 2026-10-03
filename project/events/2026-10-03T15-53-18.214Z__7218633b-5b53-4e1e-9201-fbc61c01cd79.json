@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "7218633b-5b53-4e1e-9201-fbc61c01cd79",
+  "issue_id": "kanbus-00d6ae99-adbf-4d5d-91ef-e770133d207d",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:18.214Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Add dogfood check: zero findings on rewritten BotSpy develop tree",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+    "labels": []
+  }
+}

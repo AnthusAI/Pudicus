@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-7c446e5d-d19d-483a-b830-901cf496fc8e",
+  "title": "Unit-test FP rate on clean content and BotSpy rewritten develop tree (dogfood tree via env var)",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-03T15:57:57.064423Z",
+  "updated_at": "2026-10-03T16:16:16.865734Z",
+  "closed_at": "2026-10-03T16:16:16.865702Z",
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "kanbus",
+    "source": "shared"
+  }
+}

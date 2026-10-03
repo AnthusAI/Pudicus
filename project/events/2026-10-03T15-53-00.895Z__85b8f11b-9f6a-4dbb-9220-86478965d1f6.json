@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "85b8f11b-9f6a-4dbb-9220-86478965d1f6",
+  "issue_id": "kanbus-1841ad4c-e2df-4826-a7f1-130560a4562c",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:00.895Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Deterministic test suite for sensitive-data detection",
+    "description": "",
+    "issue_type": "epic",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+    "labels": []
+  }
+}

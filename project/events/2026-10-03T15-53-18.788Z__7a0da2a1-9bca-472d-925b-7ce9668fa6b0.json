@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "7a0da2a1-9bca-472d-925b-7ce9668fa6b0",
+  "issue_id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:18.788Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "README: sensitive-data detection section and scanner matrix",
+    "description": "",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+    "labels": []
+  }
+}

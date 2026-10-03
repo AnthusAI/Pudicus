@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "5009c070-28b9-41d8-ad8c-51656e6a45c2",
+  "issue_id": "kanbus-5ec2cbfb-7dae-4dcd-98dd-546dde2b2b71",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-03T15:53:00.488Z",
+  "actor_id": "example-user",
+  "payload": {
+    "title": "Ship sensitive-data gitleaks rules in Pudicus",
+    "description": "",
+    "issue_type": "epic",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+    "labels": []
+  }
+}
