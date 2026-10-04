@@ -44,7 +44,7 @@ Pudicus is built in Python and requires `git` on the host machine.
 ```bash
 pip install pudicus
 ```
-To install from source instead: `pip install git+https://github.com/AnthusAI/Pudicus.git`
+*(Note: Until published to PyPI, use `pip install git+ssh://git@github.com/AnthusAI/Pudicus.git`)*
 
 **2. Initialize a repository:**
 Run this in your target repository. It generates the shared secret, installs the `.git/hooks/commit-msg` hook, and writes the zero-config defaults:
