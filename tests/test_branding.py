@@ -158,7 +158,7 @@ class DistributionCompatibilityTests(unittest.TestCase):
 
     def test_new_distribution_owns_only_new_command(self):
         self.assertIn("\nName: leftblock\n", "\n" + self.metadata)
-        self.assertIn("\nVersion: 0.3.0\n", "\n" + self.metadata)
+        self.assertIn("\nVersion: 0.3.1\n", "\n" + self.metadata)
         self.assertIn("\nLicense-File: LICENSE\n", "\n" + self.metadata)
         self.assertEqual(dict(self.entry_points["console_scripts"]), {"leftblock": "leftblock.cli:main"})
 
@@ -166,7 +166,7 @@ class DistributionCompatibilityTests(unittest.TestCase):
         for name in (
             "leftblock/__init__.py", "leftblock/cli.py", "leftblock/core.py",
             "leftblock/hooks.py", "leftblock/data/gitleaks.toml",
-            "leftblock-0.3.0.dist-info/LICENSE",
+            "leftblock-0.3.1.dist-info/LICENSE",
         ):
             self.assertIn(name, self.names)
         self.assertFalse(any(name.startswith(("pudicus/", "pudicus-", "gitbouncer/")) for name in self.names))
