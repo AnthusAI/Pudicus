@@ -1,7 +1,7 @@
 {
   "id": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
-  "title": "Pudicus / GitBouncer: shift-left sensitive-data protection",
-  "description": "GitBouncer (formerly Pudicus) is a practical shift-left security illustration intended for donation to Data Parade alongside BotSpy. Codex owns the current scanner hardening, README/branding migration, and tracker reconciliation; other agents should check assignment and coordination claims before editing these records. Local Gitleaks integration and synthetic regression evidence are complete. Product publication and cross-project adoption remain pending. User selected GitBouncer and authorized transfer, but external rename/transfer is paused pending resolution of the existing achrafash/gitbouncer Git/privacy branding overlap. DataParade-io is verified through BotSpy ownership and authenticated permissions. No repository, access, deployment or package publication change has occurred. Preserve compatibility with existing Pudicus hooks, commands, configuration, and receipts.",
+  "title": "LeftBlock: shift-left sensitive-data protection",
+  "description": "LeftBlock is the final product name and the repository transfer to https://github.com/DataParade-io/LeftBlock is complete. Source is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b with hook scanning and receipt verification. The README shift-left Mermaid diagram is verified. Actual local installation and synthetic validation are complete for all 137 eligible repositories with empty hook locations: clean commits passed, sensitive fixtures were blocked, and project state was preserved. Three repositories using hook managers still need 17 checkout-specific adapters, owner coordination and required project workflows; this is pending integration work, not a scanner failure. Generated/vendor/upstream exclusions and unresolved Git pointers remain outside completed coverage. The new LeftBlock PyPI release is not published: exact trusted-publisher approval and authenticated management access are pending. Existing pudicus releases are preserved. Ryan owns the logo; later factual publicity remains review-only.",
   "type": "initiative",
   "status": "in_progress",
   "priority": 2,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:52:50.917270Z",
-  "updated_at": "2026-10-20T12:17:30.919959Z",
+  "updated_at": "2026-10-20T13:12:47.866736Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

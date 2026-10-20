@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "a7012a51-7ca3-4b71-9dea-2f831e0dbf17",
+  "issue_id": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:31.910Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Pudicus / GitBouncer: shift-left sensitive-data protection",
+        "to": "LeftBlock: shift-left sensitive-data protection"
+      },
+      "description": {
+        "from": "GitBouncer (formerly Pudicus) is a practical shift-left security illustration intended for donation to Data Parade alongside BotSpy. Codex owns the current scanner hardening, README/branding migration, and tracker reconciliation; other agents should check assignment and coordination claims before editing these records. Local Gitleaks integration and synthetic regression evidence are complete. Product publication and cross-project adoption remain pending. User selected GitBouncer and authorized transfer, but external rename/transfer is paused pending resolution of the existing achrafash/gitbouncer Git/privacy branding overlap. DataParade-io is verified through BotSpy ownership and authenticated permissions. No repository, access, deployment or package publication change has occurred. Preserve compatibility with existing Pudicus hooks, commands, configuration, and receipts.",
+        "to": "LeftBlock is the final product name. The repository rename and Data Parade transfer are verified at https://github.com/DataParade-io/LeftBlock with repository identity and existing access preserved. Local Gitleaks hardening and synthetic acceptance evidence are complete. Codex is implementing the canonical LeftBlock distribution and CLI, preserving legacy Pudicus compatibility, preparing the explicitly authorized new LeftBlock PyPI publication, and performing actual per-project installation and validation. Broad adoption is in progress, not complete. Coordinate active Papyrus and Claude-owned work before changing shared hooks. New trusted-publisher grants or credentials require exact approval; the existing pudicus project and releases remain intact. Ryan owns the logo. Later factual Papyrus and Anth.us drafts are for review only."
+      }
+    }
+  }
+}

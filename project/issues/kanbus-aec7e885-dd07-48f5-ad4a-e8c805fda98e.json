@@ -1,24 +1,19 @@
 {
   "id": "kanbus-aec7e885-dd07-48f5-ad4a-e8c805fda98e",
-  "title": "Rename repository and transfer to verified Data Parade organization",
-  "description": "External rename/transfer is explicitly PAUSED pending this project's owner's naming decision after reviewing https://github.com/achrafash/gitbouncer, an existing tool for private-repository share links. Its purpose differs, but the Git/privacy branding overlap is material. Verified target is DataParade-io through existing BotSpy ownership; authenticated account has source admin and destination repository-creation permission. Source access currently includes a team grant that cannot be assumed to survive cross-organization transfer. Preserve access without expanding team or credential permissions. No external rename, transfer or access change has occurred. Codex owns the technical preparation; the project owner must resolve branding before external action resumes.",
+  "title": "Rename and transfer repository to DataParade-io/LeftBlock",
+  "description": "Completed and verified: https://github.com/DataParade-io/LeftBlock is the same public repository with unchanged repository ID 1352673840, history and branches; the former AnthusAI/Pudicus URL redirects. Existing access roles were preserved through equivalent repository grants without adding people, teams or credential scope. Repository rename/transfer is technically complete. Canonical package migration, PyPI publishing, logo and rollout remain separate tasks and are not implied complete by this transfer.",
   "type": "task",
-  "status": "blocked",
+  "status": "closed",
   "priority": 2,
   "assignee": "Codex",
   "creator": null,
   "parent": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
   "labels": [],
-  "dependencies": [
-    {
-      "target": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
-      "type": "blocked-by"
-    }
-  ],
+  "dependencies": [],
   "comments": [],
   "created_at": "2026-10-20T12:17:38.883738Z",
-  "updated_at": "2026-10-20T12:25:54.751235Z",
-  "closed_at": null,
+  "updated_at": "2026-10-20T12:49:02.289909Z",
+  "closed_at": "2026-10-20T12:48:53.893899Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {

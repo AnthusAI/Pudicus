@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "6f16f7d8-d4a3-4f75-9551-987a3f37e45a",
+  "issue_id": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:33.911Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Piece 2: pre-commit hook blocks staged findings (dogfood as-is)",
+        "to": "LeftBlock: staged commit protection and dogfood validation"
+      },
+      "description": {
+        "from": "Codex completed local Gitleaks dogfood hardening: packaged privacy rules, noninteractive staged check, fail-closed missing/invalid policy and scanner errors, sanitized diagnostics, index-stability detection, and installer preservation of other hooks. Verification: 46 unit tests passed (1 optional external-tree test skipped), 9 behavior scenarios passed; installed-hook synthetic sensitive content blocked before HEAD changed and clean content passed. Changes are local and not yet published. Rollout to additional projects waits for reviewed publication and per-project hook/config inspection. Current Papyrus work is excluded from this rollout.",
+        "to": "Local Gitleaks dogfood hardening is complete: packaged privacy rules, noninteractive staged check, fail-closed policy and scanner errors, sanitized diagnostics, index-stability detection, and preservation of other hooks. Evidence: 46 unit tests passed with one optional external-tree test skipped, and nine behavior scenarios passed. The installed-hook synthetic sensitive fixture was blocked before HEAD changed; clean content passed. Canonical LeftBlock packaging, release validation and actual cross-project installation are now in progress under their linked tasks. Do not treat prior local evidence as proof that the new package or every project is installed."
+      }
+    }
+  }
+}

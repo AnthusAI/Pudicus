@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "dd719ea2-5f34-4a6e-9027-6ae3bee3fed8",
+  "issue_id": "kanbus-ce9f78f6-50bd-4425-b1bb-b1b1a9368cac",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:48.059Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Roll out GitBouncer per project while preserving existing hooks",
+        "to": "Install and verify LeftBlock across active projects"
+      },
+      "description": {
+        "from": "Planning inventory is complete and retained locally. Execution is pending. Reuse existing installations where appropriate; inspect each project owner/claim, policy, effective hooks path and shared worktrees; compose with existing hook managers and verify synthetic clean/sensitive/error cases. Do not globally replace hooks or publish private inventory/policy. Papyrus and active publishing work remain deferred. Adoption follows reviewed product publication.",
+        "to": "The user authorized actual installation and testing across the active project estate. Codex owns execution; planning is complete but installations are not yet claimed complete. Inspect each project and existing coordination claims, effective hooks path, custom policy, runtime and shared worktrees, then preserve or compose existing hooks and run synthetic clean/sensitive/error tests. Coordinate active Papyrus and Claude-owned work before touching their shared hooks; those projects are now in scope rather than automatically deferred. Coordinate BotSpy with its separate readiness owner. Record verified per-project results locally without publishing private policy, machine inventory, or sensitive findings. Do not globally replace hooks."
+      },
+      "assignee": {
+        "from": null,
+        "to": "Codex"
+      }
+    }
+  }
+}

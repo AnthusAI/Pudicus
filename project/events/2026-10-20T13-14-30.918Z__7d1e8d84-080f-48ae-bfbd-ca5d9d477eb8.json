@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "7d1e8d84-080f-48ae-bfbd-ca5d9d477eb8",
+  "issue_id": "kanbus-ce9f78f6-50bd-4425-b1bb-b1b1a9368cac",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:14:30.918Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "Actual local installation and validation are complete for all 137 eligible repositories with empty hook locations: one pilot, 115 in the initial batch, one refreshed coordinated installation, and 20 coordinated installations. All 137 distinct repositories preserved project state, accepted clean synthetic commits and blocked sensitive fixtures without changing the temporary test HEAD on rejection. An initial state-drift skip was safely replanned and subsequently passed. Three repositories using hook managers need 17 checkout-specific adapters that preserve configured hook paths and existing hooks; the current installer cannot safely compose them unchanged. Required project issue/branch workflows, unavailable project-tracker tooling and active-owner coordination remain prerequisites. No manager hook changes were attempted or denied. Forty-four generated/vendor/upstream repositories were excluded and eleven dangling Git pointers remain unresolved. These aggregates describe completed versus pending scope; private inventory and policy remain local. Public package release is separately pending and does not invalidate the verified local installations.",
+        "to": "Actual local installation and validation are complete for all 137 eligible Git repositories with empty hook locations, covering 260 present checkouts: one pilot, 115 in the initial batch, one refreshed coordinated installation, and 20 coordinated installations. All 137 distinct repositories preserved project state, accepted clean synthetic commits and blocked sensitive fixtures without changing the temporary test HEAD on rejection. An initial state-drift skip was safely replanned and subsequently passed. Three repositories using hook managers need 17 checkout-specific adapters that preserve configured hook paths and existing hooks; the current installer cannot safely compose them unchanged. Required project issue/branch workflows, unavailable project-tracker tooling and active-owner coordination remain prerequisites. No manager hook changes were attempted or denied. Forty-four generated/vendor/upstream repositories were excluded and eleven dangling Git pointers remain unresolved. These aggregates describe completed versus pending scope; private inventory and policy remain local. Public package release is separately pending and does not invalidate the verified local installations."
+      }
+    }
+  }
+}

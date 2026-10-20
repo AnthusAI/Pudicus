@@ -1,0 +1,37 @@
+{
+  "id": "kanbus-0e7ee0ff-ef20-496f-963d-31ce82295948",
+  "title": "Prepare factual LeftBlock Papyrus and Anth.us drafts for review",
+  "description": "Prepare later factual draft material for the Papyrus site and Anth.us describing LeftBlock, its Data Parade home, the shift-left inspection flow, verified detection evidence, limitations, and compatibility. Coordinate active Papyrus/Claude ownership and use the Ryan-approved logo when available. Distinguish verified release/install facts from pending work; no claims of perfect protection or completed rollout. This task authorizes preparation for review only: do not publish, deploy, schedule a post, or send promotional messages. Separate publication approval is required after review.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": "Codex",
+  "creator": null,
+  "parent": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+      "type": "blocked-by"
+    },
+    {
+      "target": "kanbus-c679a44c-5b2e-44f5-8903-061cbb130233",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-10-20T12:48:58.247661Z",
+  "updated_at": "2026-10-20T12:49:07.775505Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

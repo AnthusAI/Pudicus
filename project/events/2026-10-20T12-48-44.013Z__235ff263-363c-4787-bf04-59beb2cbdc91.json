@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "235ff263-363c-4787-bf04-59beb2cbdc91",
+  "issue_id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:44.013Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "README: shift-left diagram, detection evidence, and GitBouncer migration",
+        "to": "README: LeftBlock shift-left diagram, evidence, and migration"
+      },
+      "description": {
+        "from": "Local README now shows working/staged changes -> inspection before commit -> local history -> push/remote -> downstream clones/pulls. It distinguishes detected material blocked before commit from later checks after history exists, actual commit-msg timing, staged-diff limits, bypasses, overrides, HMAC trust and layered defenses. Both Mermaid diagrams parsed and rendered offline. GitBouncer branding and Data Parade positioning are being reconciled with the explicit naming decision; source publication remains pending.",
+        "to": "Retain the verified Mermaid flow from working/staged changes through inspection before commit, local Git history, push/remote, and downstream copies. Explain early interception versus later checks, actual commit-msg timing, staged-diff limits, misses, bypasses, overrides, HMAC trust, and layered defenses. Update identity and usage for LeftBlock and https://github.com/DataParade-io/LeftBlock, preserving legacy Pudicus compatibility. Integrate the Ryan-owned logo when supplied and rerender any changed diagrams. Release/install claims must follow actual verified outcomes."
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "47e6f3c9-df47-463b-8b58-15106d54ac53",
+  "issue_id": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:12:47.862Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "LeftBlock is the final product name. The repository rename and Data Parade transfer are verified at https://github.com/DataParade-io/LeftBlock with repository identity and existing access preserved. Local Gitleaks hardening and synthetic acceptance evidence are complete. Codex is implementing the canonical LeftBlock distribution and CLI, preserving legacy Pudicus compatibility, preparing the explicitly authorized new LeftBlock PyPI publication, and performing actual per-project installation and validation. Broad adoption is in progress, not complete. Coordinate active Papyrus and Claude-owned work before changing shared hooks. New trusted-publisher grants or credentials require exact approval; the existing pudicus project and releases remain intact. Ryan owns the logo. Later factual Papyrus and Anth.us drafts are for review only.",
+        "to": "LeftBlock is the final product name and the repository transfer to https://github.com/DataParade-io/LeftBlock is complete. Source is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b with hook scanning and receipt verification. The README shift-left Mermaid diagram is verified. Actual local installation and synthetic validation are complete for all 137 eligible repositories with empty hook locations: clean commits passed, sensitive fixtures were blocked, and project state was preserved. Three repositories using hook managers still need 17 checkout-specific adapters, owner coordination and required project workflows; this is pending integration work, not a scanner failure. Generated/vendor/upstream exclusions and unresolved Git pointers remain outside completed coverage. The new LeftBlock PyPI release is not published: exact trusted-publisher approval and authenticated management access are pending. Existing pudicus releases are preserved. Ryan owns the logo; later factual publicity remains review-only."
+      }
+    }
+  }
+}

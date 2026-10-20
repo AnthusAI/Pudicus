@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "cfa4aefc-fbae-415c-b995-4d9572e646f2",
+  "issue_id": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:50.138Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "GitBouncer identity and Data Parade donation",
+        "to": "LeftBlock identity and Data Parade donation"
+      },
+      "description": {
+        "from": "User chose GitBouncer as the official name and authorized donation to Data Parade alongside BotSpy. DataParade-io and admin permissions are verified through the BotSpy donation. External actions are paused for naming overlap review: https://github.com/achrafash/gitbouncer shares private-repository links, an adjacent Git/privacy use. Local compatibility preparation may continue. No rename, transfer or permission change has occurred. Keep public visibility and access intact except the authorized ownership change. Preserve repository identity, history and issues. Record verified URLs and outcomes; do not imply a transfer finished before checking it.",
+        "to": "LeftBlock is the final name; the previous GitBouncer naming hold is resolved by the new choice. Repository rename and donation are complete and verified at https://github.com/DataParade-io/LeftBlock. The same public repository identity, history and branches remain, the prior URL redirects, and existing access roles were preserved without new people, teams or credential scope. Remaining identity work is canonical package/CLI migration, release instructions and the Ryan-owned logo. External release authorization is tracked separately."
+      }
+    }
+  }
+}

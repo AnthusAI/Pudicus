@@ -1,7 +1,7 @@
 {
   "id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
-  "title": "README: shift-left diagram, detection evidence, and GitBouncer migration",
-  "description": "Local README now shows working/staged changes -> inspection before commit -> local history -> push/remote -> downstream clones/pulls. It distinguishes detected material blocked before commit from later checks after history exists, actual commit-msg timing, staged-diff limits, bypasses, overrides, HMAC trust and layered defenses. Both Mermaid diagrams parsed and rendered offline. GitBouncer branding and Data Parade positioning are being reconciled with the explicit naming decision; source publication remains pending.",
+  "title": "README: LeftBlock shift-left diagram, evidence, and migration",
+  "description": "The LeftBlock README text and Mermaid shift-left diagram are implemented and verified at local source checkpoint e3934c90bedec7fbaa137f62c6e0503ba708ed9b. The explanation distinguishes early interception from detection after local history or downstream copies already contain material, including actual hook timing, staged-diff limits, misses, bypasses, overrides, receipt trust boundaries and layered defenses. Core documentation and diagram acceptance are complete. This row remains active for integration of the Ryan-owned logo and any resulting verification; the logo dependency is preserved. New PyPI publication and managed-hook rollout remain pending; no perfect-protection or universal-rollout claim is made. The README pinned-reference follow-up is committed locally at 4ec816d956c98cfe4a2409ca17c6d718b012e55c and also passed source hook scanning and receipt verification. Release integration remains pending; neither a main-branch release nor PyPI publication is claimed.",
   "type": "task",
   "status": "in_progress",
   "priority": 2,
@@ -9,10 +9,15 @@
   "creator": null,
   "parent": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
   "labels": [],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "target": "kanbus-c679a44c-5b2e-44f5-8903-061cbb130233",
+      "type": "blocked-by"
+    }
+  ],
   "comments": [],
   "created_at": "2026-10-03T15:53:18.788254Z",
-  "updated_at": "2026-10-20T12:17:35.299607Z",
+  "updated_at": "2026-10-20T13:14:34.203742Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
