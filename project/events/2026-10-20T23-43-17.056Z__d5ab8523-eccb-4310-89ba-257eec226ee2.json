@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "d5ab8523-eccb-4310-89ba-257eec226ee2",
+  "issue_id": "kanbus-9a747d1b-6efe-4282-a70d-9af5a7d5bf35",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T23:43:17.056Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Machine-readable output: --format json and distinct exit codes",
+    "description": "Wrappers (kbs, git GUIs, agents) need structured results and distinct exit codes for blocked, error and passed. (Biblicus #5)",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+    "labels": []
+  }
+}
