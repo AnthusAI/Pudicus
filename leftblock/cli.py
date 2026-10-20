@@ -213,7 +213,14 @@ def print_override_instructions(failures, repo_root, config_path):
     findings = [
         f for result in failures if isinstance(result.findings, list) for f in result.findings
     ]
+    own = [f for f in findings if f.get("File") == allowlist.ALLOW_FILE]
+    findings = [f for f in findings if f.get("File") != allowlist.ALLOW_FILE]
     ids = [f["id"] for f in findings if f.get("id")]
+    if own:
+        print_warn(
+            f"A reason in {allowlist.ALLOW_FILE} contains a flagged value; "
+            "reword that reason (don't repeat the value)."
+        )
     if len(ids) < len(findings):
         print_warn("Findings without an id cannot be overridden and must be removed.")
     if not ids:
@@ -233,7 +240,7 @@ def print_override_instructions(failures, repo_root, config_path):
 
 def cmd_allow(args):
     """Record reviewed overrides for current findings in .leftblock-allow.yml."""
-    reason = " ".join(args.reason.split())
+    reason = " ".join((args.reason or "").split())
     if len(reason) < allowlist.MIN_REASON:
         print_err(f"--reason must explain the override (at least {allowlist.MIN_REASON} characters).")
         sys.exit(1)
@@ -255,6 +262,7 @@ def cmd_allow(args):
     if unknown:
         print_err("Not a current finding id: " + ", ".join(json.dumps(i) for i in unknown))
         sys.exit(1)
+    snapshot = allowlist.snapshot(repo_root)
     try:
         added = allowlist.record_overrides(
             repo_root, [current[i] for i in dict.fromkeys(args.ids)], reason,
@@ -263,6 +271,22 @@ def cmd_allow(args):
         print_err(f"Existing {allowlist.ALLOW_FILE} is unreadable or invalid; fix it first.")
         sys.exit(1)
     run_cmd(["git", "add", "--", allowlist.ALLOW_FILE], cwd=repo_root)
+    # A reason that repeats the flagged value would get the allow file flagged.
+    _, after = configured_checks(repo_root, config_path, overrides=False)
+    own = [
+        f for result in after if isinstance(result.findings, list)
+        for f in result.findings if f.get("File") == allowlist.ALLOW_FILE
+    ]
+    if own or any(result.error for result in after):
+        allowlist.restore(repo_root, snapshot)
+        if own:
+            print_err(
+                f"The reason would itself be flagged (rule {own[0].get('RuleID')}). "
+                "Don't repeat the flagged value in the reason; describe it instead."
+            )
+        else:
+            print_err("A checker could not complete. No override recorded.")
+        sys.exit(1)
     for finding in added:
         print_info(f"Recorded override {finding['id']} for {finding['RuleID']} in {finding['File']}.")
     if not added:
@@ -529,7 +553,7 @@ def main():
 
     allow_p = subparsers.add_parser("allow", help="Record a reviewed override for current findings")
     allow_p.add_argument("ids", nargs="+", metavar="ID", help="Finding id(s) shown by the blocked check")
-    allow_p.add_argument("--reason", required=True, help="Why the finding is not sensitive")
+    allow_p.add_argument("--reason", default=None, help="Why the finding is not sensitive")
     allow_p.add_argument("--config", help="Checker policy; defaults to the local install policy, else .leftblock.yml")
 
     hook_p = subparsers.add_parser("hook", help="Run checkers (used internally by git hook)")

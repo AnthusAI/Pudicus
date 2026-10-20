@@ -119,8 +119,53 @@ class RecordedOverrideTests(RepositoryFixture):
                 proc = self.allow(ident, reason=reason)
                 self.assertEqual(proc.returncode, 1)
         missing = self.leftblock("allow", ident)
-        self.assertNotEqual(missing.returncode, 0)
+        self.assertEqual(missing.returncode, 1)
+        self.assertIn("at least 10 characters", missing.stderr)
+        self.assertNotIn("usage:", missing.stderr)
         self.assertFalse((self.repo / ".leftblock-allow.yml").exists())
+
+    def index_blob(self):
+        return self.git("ls-files", "--stage", "--", ".leftblock-allow.yml").stdout
+
+    def test_reason_repeating_value_is_refused_and_restored_when_absent(self):
+        ident = self.blocked_id()
+        proc = self.allow(ident, reason=f"Public address {EMAIL} on the site")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("The reason would itself be flagged (rule leftblock-personal-email)", proc.stderr)
+        self.assertIn("describe it instead", proc.stderr)
+        self.assertFalse((self.repo / ".leftblock-allow.yml").exists())
+        self.assertEqual(self.index_blob(), "")
+
+    def test_reason_repeating_value_restores_existing_entries(self):
+        first = self.blocked_id()
+        self.assertEqual(self.allow(first).returncode, 0)
+        path = self.repo / ".leftblock-allow.yml"
+        before, staged = path.read_bytes(), self.index_blob()
+        self.write_stage(f"x\nContact: {OTHER_EMAIL}\n", name="second.tsx")
+        proc = self.check()
+        second = [i for i in self.ids(proc) if i != first]
+        self.assertEqual(len(second), 1)
+        # Unstaged edit to the file must also survive a refused attempt.
+        path.write_bytes(before + b"# local note\n")
+        before = path.read_bytes()
+        refused = self.allow(second[0], reason=f"It is {OTHER_EMAIL} really")
+        self.assertEqual(refused.returncode, 1)
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual(self.index_blob(), staged)
+
+    def test_finding_in_allow_file_has_no_id_and_friendly_message(self):
+        ident = self.blocked_id()
+        self.assertEqual(self.allow(ident).returncode, 0)
+        path = self.repo / ".leftblock-allow.yml"
+        path.write_text(path.read_text().replace(REASON, f"Address {EMAIL} is public"))
+        self.git("add", ".leftblock-allow.yml", check=True)
+        proc = self.check()
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(self.ids(proc), [])
+        self.assertIn(
+            "A reason in .leftblock-allow.yml contains a flagged value; "
+            "reword that reason (don't repeat the value).", proc.stderr)
+        self.assertNotIn("allow ", proc.stderr.split("blocked")[-1])
 
     def test_hand_edited_entry_with_empty_reason_blocks_as_invalid(self):
         ident = self.blocked_id()

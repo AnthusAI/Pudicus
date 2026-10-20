@@ -58,6 +58,8 @@ def attach_ids(repo_root, results):
             continue
         for finding in result.findings:
             start, end = finding.pop("StartLine", None), finding.pop("EndLine", None)
+            if finding.get("File") == ALLOW_FILE:
+                continue  # the allow file can never approve itself
             ident = finding_id(
                 repo_root, finding.get("RuleID"), finding.get("File"), start, end,
             )
@@ -175,3 +177,34 @@ def record_overrides(repo_root, findings, reason):
     with open(path, "w", encoding="utf-8") as f:
         f.write(_render(entries))
     return added
+
+
+def snapshot(repo_root):
+    """Working-tree bytes (or None) and the index entry (or None) of the file."""
+    path = os.path.join(repo_root, ALLOW_FILE)
+    content = None
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            content = f.read()
+    staged = _git_bytes(repo_root, "ls-files", "--stage", "--", ALLOW_FILE)
+    entry = None
+    if staged.returncode == 0 and staged.stdout.strip():
+        meta = staged.stdout.decode().split("\t")[0].split()
+        entry = (meta[0], meta[1])
+    return content, entry
+
+
+def restore(repo_root, snap):
+    """Put the allow file and its index entry back exactly as snapshotted."""
+    content, entry = snap
+    path = os.path.join(repo_root, ALLOW_FILE)
+    if content is None:
+        if os.path.exists(path):
+            os.remove(path)
+    else:
+        with open(path, "wb") as f:
+            f.write(content)
+    if entry is None:
+        _git_bytes(repo_root, "rm", "--cached", "-q", "--ignore-unmatch", "--", ALLOW_FILE)
+    else:
+        _git_bytes(repo_root, "update-index", "--add", "--cacheinfo", f"{entry[0]},{entry[1]},{ALLOW_FILE}")
