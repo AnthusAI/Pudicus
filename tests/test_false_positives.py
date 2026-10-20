@@ -81,6 +81,48 @@ class KanbusIdTests(unittest.TestCase):
         }))
 
 
+def _uuid4(rng):
+    return "%s-%s-4%s-%s%s-%s" % (
+        rand_hex(rng, 8), rand_hex(rng, 4), rand_hex(rng, 3),
+        rng.choice("89ab"), rand_hex(rng, 3), rand_hex(rng, 12))
+
+
+@unittest.skipIf(GITLEAKS is None, "gitleaks binary not installed")
+class KanbusProjectIdTests(unittest.TestCase):
+    def _yml(self, body):
+        return scan_and_rule_ids({".kanbus.yml": body})
+
+    def test_top_level_project_id_passes(self):
+        rng = _rng()
+        self.assertEqual(self._yml(
+            "project_key: kbs\nproject_id: %s\n" % _uuid4(rng)), [])
+        self.assertEqual(scan_and_rule_ids({
+            "sub/.kanbus.yml": "project_id: %s  \n" % _uuid4(rng)}), [])
+
+    def test_indented_project_id_is_flagged(self):
+        self.assertEqual(self._yml(
+            "realtime:\n  project_id: %s\n" % _uuid4(_rng())),
+            ["leftblock-session-uuid"])
+
+    def test_other_key_in_kanbus_yml_is_flagged(self):
+        self.assertEqual(self._yml("session_id: %s\n" % _uuid4(_rng())),
+                         ["leftblock-session-uuid"])
+
+    def test_project_id_outside_kanbus_yml_is_flagged(self):
+        self.assertEqual(scan_and_rule_ids({
+            "config.yml": "project_id: %s\n" % _uuid4(_rng())}),
+            ["leftblock-session-uuid"])
+
+    def test_non_v4_uuid_is_flagged(self):
+        # Version nibble 1, not 4: only UUID v4 project ids are exempt.
+        rng = _rng()
+        v1 = "%s-%s-1%s-a%s-%s" % (rand_hex(rng, 8), rand_hex(rng, 4),
+                                   rand_hex(rng, 3), rand_hex(rng, 3),
+                                   rand_hex(rng, 12))
+        self.assertEqual(self._yml("project_id: %s\n" % v1),
+                         ["leftblock-session-uuid"])
+
+
 @unittest.skipIf(GITLEAKS is None, "gitleaks binary not installed")
 class MergeScopeTests(unittest.TestCase):
     def setUp(self):

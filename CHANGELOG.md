@@ -1,10 +1,17 @@
 # CHANGELOG
 
-These are historical release summaries. The 0.3.2 release is still in
-preparation; earlier release numbers refer to the earlier distribution,
-not published versions of the current `leftblock` package. Summaries use
+These are release summaries. LeftBlock 0.3.2 was the first release of the
+current `leftblock` package on PyPI; earlier release numbers refer to the
+earlier distribution. Summaries use
 current terminology where helpful. Original commits, receipts, and releases
 remain unchanged; commit links retain their original hashes.
+
+## v0.3.3 (2026-10-20)
+
+### Fix
+
+- Allow the public Kanbus `project_id` (a UUID v4) as a top-level key in
+  `.kanbus.yml`. Other keys, indented keys and other files stay detected.
 
 ## v0.2.0 (2026-10-03)
 
