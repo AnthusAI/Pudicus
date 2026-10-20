@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-dd45c4e9-4503-422d-bafa-85fc8911c10a",
+  "title": "Show line number and a masked excerpt or category per finding",
+  "description": "Findings show only rule, file and id, so users can't tell which line an id means. Add the line number and a masked excerpt or category (e.g. email at domain X) to the output and to allow entries for reviewers, never the raw value. (Biblicus #1, Babulus #4 and #6)",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T23:43:16.891942Z",
+  "updated_at": "2026-10-20T23:43:16.891968Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-9a747d1b-6efe-4282-a70d-9af5a7d5bf35",
+  "title": "Machine-readable output: --format json and distinct exit codes",
+  "description": "Wrappers (kbs, git GUIs, agents) need structured results and distinct exit codes for blocked, error and passed. (Biblicus #5)",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T23:43:17.056591Z",
+  "updated_at": "2026-10-20T23:43:17.056614Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

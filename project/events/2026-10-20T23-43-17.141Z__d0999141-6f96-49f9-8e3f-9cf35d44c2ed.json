@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "d0999141-6f96-49f9-8e3f-9cf35d44c2ed",
+  "issue_id": "kanbus-00d7f473-20bd-4228-88dc-1fb3fc035666",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T23:43:17.141Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Per-rule remediation hints, including generated paths such as Kanbus files",
+    "description": "Give per-rule advice (e.g. home path: use a relative path or $HOME). Let policy mark generated paths with a tool hint (project/events is written by Kanbus; fix it via kbs). Add a Kanbus integration regression test. (Biblicus #2 and #6, Babulus #5)",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+    "labels": []
+  }
+}

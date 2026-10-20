@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "de06e3c6-cf28-42f5-974b-5ead8ecfde69",
+  "issue_id": "kanbus-8f9c400a-cb45-4f99-b9a1-5ac3118296b1",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T23:43:16.972Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Print LeftBlock version and ruleset in check output; document a dry-run check",
+    "description": "Nothing says which version or ruleset ran, so reports went stale silently. Print version and ruleset id. Make 'leftblock check' default to the local policy and point to it from blocked output. (Babulus #1 and #2, Biblicus #4)",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+    "labels": []
+  }
+}
