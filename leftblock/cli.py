@@ -5,6 +5,7 @@ import json
 import subprocess
 import getpass
 import shlex
+import shutil
 import yaml
 from datetime import datetime, timezone
 from leftblock.merge import (
@@ -193,12 +194,45 @@ def _run_configured_checks(repo_root, config_path=None):
             os.remove(scoped_index)
 
 
+def _plain(text):
+    """Printable ASCII as-is; anything else JSON-escaped so it cannot drive the terminal."""
+    text = str(text)
+    if text.isascii() and text.isprintable():
+        return text
+    return json.dumps(text, ensure_ascii=True)
+
+
+def command_prefix():
+    """How to invoke this LeftBlock in printed advice, without leaking a home path.
+
+    Uses `leftblock` when that name on PATH runs this same installation;
+    otherwise this interpreter with the home directory shortened to `~`.
+    """
+    here = os.path.dirname(os.path.abspath(sys.executable))
+    found = shutil.which("leftblock")
+    if found and os.path.dirname(os.path.realpath(found)) in (here, os.path.realpath(here)):
+        return "leftblock"
+    return shell_path(sys.executable) + " -I -B -m leftblock.cli"
+
+
+def shell_path(path):
+    """A shell-quoted path with the home directory shown as `~`."""
+    path = os.path.abspath(path)
+    home = os.path.expanduser("~")
+    if home and path.startswith(home + os.sep):
+        return "~/" + shlex.quote(path[len(home) + 1:])
+    return shlex.quote(path)
+
+
 def print_failures(failures):
     for result in failures:
         print_warn(f"Checker {json.dumps(str(result.name))} did not pass.")
         if isinstance(result.findings, list):
             for finding in result.findings:
-                print("      " + json.dumps(finding, ensure_ascii=True), file=sys.stderr)
+                line = f"{_plain(finding.get('File', 'unknown file'))}: {_plain(finding.get('RuleID', 'finding'))}"
+                if finding.get("id"):
+                    line += f" [id {finding['id']}]"
+                print("      " + line, file=sys.stderr)
         else:
             print_warn(str(result.findings))
 
@@ -248,10 +282,10 @@ def print_override_instructions(failures, repo_root, config_path):
     if findings:
         steps.append("remove the flagged content")
     if ids:
-        command = f"{shlex.quote(sys.executable)} -I -B -m leftblock.cli allow {' '.join(dict.fromkeys(ids))}"
+        command = f"{command_prefix()} allow {' '.join(dict.fromkeys(ids))}"
         default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
         if config_path and os.path.abspath(config_path) != os.path.abspath(default):
-            command += f" --config {shlex.quote(config_path)}"
+            command += f" --config {shell_path(config_path)}"
         command += ' --reason "<why this is not sensitive>"'
         print_info(
             "An override adds the finding to .leftblock-allow.yml and stages it, so it "
