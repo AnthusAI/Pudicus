@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "a74f319f-c7a8-4e12-ab52-7899d175a788",
+  "issue_id": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:18:52.988Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "Codex owns the local migration: add GitBouncer command/module and README positioning while retaining Pudicus command/import compatibility, existing configuration filenames, secret path, hook runtime and receipt validators. Check distribution-name availability and release behavior before changing the PyPI distribution. Add offline tests; record local versus published state explicitly.",
+        "to": "Local compatibility preparation is complete in a separate small review copy: GitBouncer alias package and CLI entry point, legacy Pudicus command/imports retained, distribution name still pudicus, and original configuration paths/secret path/receipt identifiers/rules preserved. Five compatibility tests pass, including offline wheel inspection using existing build tools. Actual hook runtime passed three runtime tests; packaging checks ran in the existing packaging environment. No dependency installation, metadata refresh, package publication or rename-source push occurred. External branding is paused for https://github.com/achrafash/gitbouncer overlap resolution; keep local work reviewable and preserve the working Pudicus integration. New bare launcher requires a reviewed metadata refresh after the decision."
+      }
+    }
+  }
+}

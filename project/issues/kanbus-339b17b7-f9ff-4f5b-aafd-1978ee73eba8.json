@@ -1,25 +1,28 @@
 {
   "id": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
   "title": "Piece 2: pre-commit hook blocks staged findings (dogfood as-is)",
-  "description": "",
+  "description": "Codex completed local Gitleaks dogfood hardening: packaged privacy rules, noninteractive staged check, fail-closed missing/invalid policy and scanner errors, sanitized diagnostics, index-stability detection, and installer preservation of other hooks. Verification: 46 unit tests passed (1 optional external-tree test skipped), 9 behavior scenarios passed; installed-hook synthetic sensitive content blocked before HEAD changed and clean content passed. Changes are local and not yet published. Rollout to additional projects waits for reviewed publication and per-project hook/config inspection. Current Papyrus work is excluded from this rollout.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
-  "assignee": null,
+  "assignee": "Codex",
   "creator": null,
   "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
   "labels": [],
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:57:42.449632Z",
-  "updated_at": "2026-10-03T15:57:43.825868Z",
+  "updated_at": "2026-10-20T12:17:31.446772Z",
   "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
   "agent": {
     "platform": "cursor",
     "model": "GLM 5.3 Flash",
     "name": "Cloud Agent on BlackbookM1"
-  },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {}
+  }
 }

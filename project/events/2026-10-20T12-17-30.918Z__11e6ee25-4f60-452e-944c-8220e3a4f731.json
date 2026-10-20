@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "11e6ee25-4f60-452e-944c-8220e3a4f731",
+  "issue_id": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:17:30.918Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Pudicus: out-of-the-box sensitive-data detection",
+        "to": "Pudicus / GitBouncer: shift-left sensitive-data protection"
+      },
+      "description": {
+        "from": "",
+        "to": "GitBouncer (formerly Pudicus) is a practical shift-left security illustration intended for donation to Data Parade alongside BotSpy. Codex owns the current scanner hardening, README/branding migration, and tracker reconciliation; other agents should check assignment and coordination claims before editing these records. Local Gitleaks integration and synthetic regression evidence are complete. Product publication and cross-project adoption remain pending. User selected GitBouncer and authorized transfer, but external rename/transfer is paused pending resolution of the existing achrafash/gitbouncer Git/privacy branding overlap. DataParade-io is verified through BotSpy ownership and authenticated permissions. No repository, access, deployment or package publication change has occurred. Preserve compatibility with existing Pudicus hooks, commands, configuration, and receipts."
+      },
+      "assignee": {
+        "from": null,
+        "to": "Codex"
+      }
+    }
+  }
+}

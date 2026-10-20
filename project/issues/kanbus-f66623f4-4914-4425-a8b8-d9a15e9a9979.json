@@ -1,25 +1,28 @@
 {
   "id": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
-  "title": "Pudicus: out-of-the-box sensitive-data detection",
-  "description": "",
+  "title": "Pudicus / GitBouncer: shift-left sensitive-data protection",
+  "description": "GitBouncer (formerly Pudicus) is a practical shift-left security illustration intended for donation to Data Parade alongside BotSpy. Codex owns the current scanner hardening, README/branding migration, and tracker reconciliation; other agents should check assignment and coordination claims before editing these records. Local Gitleaks integration and synthetic regression evidence are complete. Product publication and cross-project adoption remain pending. User selected GitBouncer and authorized transfer, but external rename/transfer is paused pending resolution of the existing achrafash/gitbouncer Git/privacy branding overlap. DataParade-io is verified through BotSpy ownership and authenticated permissions. No repository, access, deployment or package publication change has occurred. Preserve compatibility with existing Pudicus hooks, commands, configuration, and receipts.",
   "type": "initiative",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
-  "assignee": null,
+  "assignee": "Codex",
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:52:50.917270Z",
-  "updated_at": "2026-10-03T15:52:59.194940Z",
+  "updated_at": "2026-10-20T12:17:30.919959Z",
   "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
   "agent": {
     "platform": "cursor",
     "model": "GLM 5.3 Flash",
     "name": "Cloud Agent on BlackbookM1"
-  },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {}
+  }
 }

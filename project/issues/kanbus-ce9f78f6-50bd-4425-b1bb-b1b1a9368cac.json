@@ -1,0 +1,33 @@
+{
+  "id": "kanbus-ce9f78f6-50bd-4425-b1bb-b1b1a9368cac",
+  "title": "Roll out GitBouncer per project while preserving existing hooks",
+  "description": "Planning inventory is complete and retained locally. Execution is pending. Reuse existing installations where appropriate; inspect each project owner/claim, policy, effective hooks path and shared worktrees; compose with existing hook managers and verify synthetic clean/sensitive/error cases. Do not globally replace hooks or publish private inventory/policy. Papyrus and active publishing work remain deferred. Adoption follows reviewed product publication.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:36.322169Z",
+  "updated_at": "2026-10-20T12:17:39.939332Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "title": "GitBouncer identity and Data Parade donation",
+  "description": "User chose GitBouncer as the official name and authorized donation to Data Parade alongside BotSpy. DataParade-io and admin permissions are verified through the BotSpy donation. External actions are paused for naming overlap review: https://github.com/achrafash/gitbouncer shares private-repository links, an adjacent Git/privacy use. Local compatibility preparation may continue. No rename, transfer or permission change has occurred. Keep public visibility and access intact except the authorized ownership change. Preserve repository identity, history and issues. Record verified URLs and outcomes; do not imply a transfer finished before checking it.",
+  "type": "epic",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": "Codex",
+  "creator": null,
+  "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:36.812225Z",
+  "updated_at": "2026-10-20T12:17:37.327559Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

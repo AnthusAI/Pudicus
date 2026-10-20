@@ -1,28 +1,28 @@
 {
   "id": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
   "title": "Docs, CI wiring and dogfood notes",
-  "description": "",
+  "description": "README shift-left changes are implemented locally and rendered successfully. Current documentation work now includes GitBouncer branding and safe legacy migration guidance, plus Data Parade positioning. Publishing the source/docs remains pending; do not mistake local evidence for a released package.",
   "type": "epic",
-  "status": "closed",
+  "status": "in_progress",
   "priority": 2,
-  "assignee": null,
+  "assignee": "Codex",
   "creator": null,
   "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
   "labels": [],
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:53:01.557338Z",
-  "updated_at": "2026-10-03T16:16:22.094018Z",
-  "closed_at": "2026-10-03T16:16:22.093984Z",
-  "agent": {
-    "platform": "cursor",
-    "model": "GLM 5.3 Flash",
-    "name": "Cloud Agent on BlackbookM1"
-  },
+  "updated_at": "2026-10-20T12:17:34.724665Z",
+  "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
     "project_label": "kanbus",
     "source": "shared"
+  },
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
   }
 }

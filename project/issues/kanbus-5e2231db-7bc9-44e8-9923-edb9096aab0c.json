@@ -1,0 +1,33 @@
+{
+  "id": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+  "title": "Publish reviewed scanner hardening and GitBouncer compatibility",
+  "description": "Local scanner hardening and evidence are ready. Prepare a source-only review that preserves unrelated owner changes, complete compatibility checks and decide the distribution transition before a release. Tracker-only publication is authorized separately and must not accidentally publish unrelated code. Package upload/release credentials and PyPI naming transition require verification. No production deployment or package release has occurred.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:35.819253Z",
+  "updated_at": "2026-10-20T12:18:53.565564Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

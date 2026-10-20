@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+  "title": "Introduce GitBouncer branding and CLI with Pudicus compatibility",
+  "description": "Local compatibility preparation is complete in a separate small review copy: GitBouncer alias package and CLI entry point, legacy Pudicus command/imports retained, distribution name still pudicus, and original configuration paths/secret path/receipt identifiers/rules preserved. Five compatibility tests pass, including offline wheel inspection using existing build tools. Actual hook runtime passed three runtime tests; packaging checks ran in the existing packaging environment. No dependency installation, metadata refresh, package publication or rename-source push occurred. External branding is paused for https://github.com/achrafash/gitbouncer overlap resolution; keep local work reviewable and preserve the working Pudicus integration. New bare launcher requires a reviewed metadata refresh after the decision.",
+  "type": "task",
+  "status": "blocked",
+  "priority": 2,
+  "assignee": "Codex",
+  "creator": null,
+  "parent": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:37.832572Z",
+  "updated_at": "2026-10-20T12:18:52.990908Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

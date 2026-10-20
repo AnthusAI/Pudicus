@@ -1,7 +1,7 @@
 {
   "id": "kanbus-60463398-6c20-4d76-86bb-23ce44962b37",
   "title": "Wire default .pudicus.yml and install to write the config into target repos",
-  "description": "",
+  "description": "Local installer hardening completed and tested: keep foreign/legacy/edited/disabled hooks intact, reject configured core.hooksPath rather than replacing hook managers, verify managed-hook content hashes before refresh, support linked worktrees and minimal PATH. Fourteen installer regressions pass. Existing config files remain preserved. Source publication and adoption in other projects are tracked separately; original implementation acceptance remains closed.",
   "type": "task",
   "status": "closed",
   "priority": 2,
@@ -12,17 +12,17 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:53:15.638604Z",
-  "updated_at": "2026-10-03T16:16:13.665338Z",
+  "updated_at": "2026-10-20T12:17:33.206879Z",
   "closed_at": "2026-10-03T16:16:13.665308Z",
-  "agent": {
-    "platform": "cursor",
-    "model": "GLM 5.3 Flash",
-    "name": "Cloud Agent on BlackbookM1"
-  },
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
     "project_label": "kanbus",
     "source": "shared"
+  },
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
   }
 }

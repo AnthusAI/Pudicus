@@ -1,0 +1,33 @@
+{
+  "id": "kanbus-aec7e885-dd07-48f5-ad4a-e8c805fda98e",
+  "title": "Rename repository and transfer to verified Data Parade organization",
+  "description": "External rename/transfer is explicitly PAUSED pending resolution with the project owner of https://github.com/achrafash/gitbouncer, an existing tool for private-repository share links. Its purpose differs, but the Git/privacy branding overlap is material. Verified target is DataParade-io through existing BotSpy ownership; authenticated account has source admin and destination repository-creation permission. Source access currently includes a team grant that cannot be assumed to survive cross-organization transfer. Preserve access without expanding team or credential permissions. No external rename, transfer or access change has occurred. Codex owns the technical preparation; the project owner must resolve branding before external action resumes.",
+  "type": "task",
+  "status": "blocked",
+  "priority": 2,
+  "assignee": "Codex",
+  "creator": null,
+  "parent": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:38.883738Z",
+  "updated_at": "2026-10-20T12:18:54.547957Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}
