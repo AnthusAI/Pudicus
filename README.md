@@ -66,12 +66,10 @@ python -m pip install leftblock==0.3.0
 
 Before publication, install the reviewed local source containing these
 changes with `python -m pip install .`. Do not assume the repository's
-`main` branch already contains this release. A GitHub source install must
-pin a reviewed feature ref that has actually been pushed; replace the
-placeholder below with that ref:
+`main` branch already contains this release. The reviewed source installation pins the release-preparation commit:
 
 ```bash
-python -m pip install "git+https://github.com/DataParade-io/LeftBlock.git@<reviewed-feature-ref>"
+python -m pip install "git+https://github.com/DataParade-io/LeftBlock.git@e3934c90bedec7fbaa137f62c6e0503ba708ed9b"
 ```
 
 **2. Enable local staged protection:**
