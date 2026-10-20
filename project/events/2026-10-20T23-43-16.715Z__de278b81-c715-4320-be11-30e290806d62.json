@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "de278b81-c715-4320-be11-30e290806d62",
+  "issue_id": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T23:43:16.715Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "LeftBlock UX from dogfooding (Babulus, Biblicus, Kanbus sessions, 2026-10-20)",
+    "description": "Usability gaps that agent sessions hit on real blocks. Fixed in 0.3.4: recorded per-finding overrides; self-contained final line; no colour codes when captured. The tasks below are the remaining items.",
+    "issue_type": "epic",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": null,
+    "labels": []
+  }
+}

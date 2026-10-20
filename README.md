@@ -22,7 +22,7 @@ flowchart LR
     style Check fill:#e5f3ff,stroke:#175cd3
 ```
 
-Local check-only mode installs a Git **`pre-commit` hook**. Receipt mode installs a **`commit-msg` hook**, which runs later but still before Git creates the commit object. The local hook never offers an override or adds a receipt. The default Gitleaks command scans the staged diff, not every working-tree file or all existing history. Staging may already write blobs to the local object database, so blocking a commit does not erase every local copy.
+Local check-only mode installs a Git **`pre-commit` hook**. Receipt mode installs a **`commit-msg` hook**, which runs later but still before Git creates the commit object. The local hook offers no interactive override and adds no receipt; a false alarm can be handled only by a recorded, reasoned override that is committed and reviewable (see [Overriding a false alarm](#overriding-a-false-alarm)). The default Gitleaks command scans the staged diff, not every working-tree file or all existing history. Staging may already write blobs to the local object database, so blocking a commit does not erase every local copy.
 
 This is a layered defense, not a guarantee that a repository contains no sensitive information. Scanners can miss formats or context, allowlists and configuration affect coverage, and hooks can be bypassed with `--no-verify` or disabled. In receipt mode, interactive approval can intentionally override findings. Missing scanners, invalid configuration, or other checker errors block the commit without an override. Use review, narrowly scoped exceptions, and independent checks before pushing or deploying as additional layers.
 
@@ -91,7 +91,7 @@ configures the integration; it does not install scanner binaries.
 In the intended Python environment:
 
 ```bash
-python -m pip install leftblock==0.3.3
+python -m pip install leftblock==0.3.4
 python -m leftblock.cli --help
 ```
 
@@ -129,10 +129,58 @@ leftblock check --config /absolute/path/to/policy.yml
 
 Use the actual policy path for the repository. The command returns a
 nonzero status for findings, unavailable scanners, or an invalid setup;
-it never offers an override. Before adopting a hook in another project,
+it offers no interactive override, only the recorded override described
+below. Before adopting a hook in another project,
 verify that a synthetic sensitive fixture is blocked and a clean fixture
 passes in a throwaway repository. Keep private policy files in local Git
 metadata or another private location.
+
+### Overriding a false alarm
+
+A block stays the default. If a finding is a false alarm (for example a
+public role address in a privacy notice), record a reviewed override. The
+blocked check prints an `id` for each finding, never the matched value, and
+the exact command to run:
+
+```bash
+leftblock allow ID [ID ...] --reason "Why this is not sensitive"
+```
+
+`allow` re-runs the checks on the staged changes, appends one entry per id
+to `.leftblock-allow.yml` at the repository root, and stages that file. It
+never commits. The reason is required and must be at least 10 characters.
+An entry looks like:
+
+```yaml
+version: 1
+allow:
+  - id: "3f2a9c1e7b4d5a60"
+    rule: "leftblock-personal-email"
+    file: "apps/web/privacy/page.tsx"
+    reason: "Public role address required in the privacy notice."
+    added: 2026-10-20
+```
+
+- **Scoped to line content.** The id hashes the rule, the file, and the exact
+  staged content of the flagged lines. Editing that line, or adding another
+  finding anywhere, blocks again.
+- **Staged to count.** Only the version of `.leftblock-allow.yml` in the Git
+  index is read, so the override is always part of the commit and its review.
+  A file that is only in the working tree has no effect.
+- **Visible every time.** Each run prints the file, rule, id, and reason of
+  every applied override.
+- **Fail closed.** Invalid YAML, an unsupported version, an entry missing
+  `id`, `rule`, or `file`, or a reason under 10 characters blocks the commit.
+  Scanner errors are never overridden, and a finding with no id (its lines
+  could not be read) must be removed instead.
+- **Configuration.** Without `--config`, `allow` uses the local install's
+  policy when present, otherwise `.leftblock.yml`; pass the same `--config`
+  you use for `check` if it differs.
+
+This mechanism is separate from Gitleaks' own suppressions: inline
+`gitleaks:allow` markers and a root `.gitleaksignore` are still honoured by
+Gitleaks itself, and they are outside this mechanism's reason, scope, and
+review trail.
 
 During an in-progress merge, command checkers skip only regular files whose
 complete blob and mode already exist at the same path in a parent. Changed

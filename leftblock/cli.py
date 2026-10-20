@@ -4,25 +4,33 @@ import os
 import json
 import subprocess
 import getpass
+import shlex
 import yaml
 from datetime import datetime, timezone
 from leftblock.merge import (
     MergeScopeError, build_scoped_index, checker_environment, index_entries, merge_state,
 )
+from leftblock import allow as allowlist
 from leftblock.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
     load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT,
     CheckerResult,
 )
 
+def _label(text, color):
+    # Plain labels when output is captured (git GUIs, wrappers, CI) or NO_COLOR is set.
+    if os.environ.get("NO_COLOR") or not sys.stderr.isatty():
+        return text
+    return f"\033[{color}m{text}\033[0m"
+
 def print_info(msg):
-    print(f"\033[1;34m[leftblock]\033[0m {msg}", file=sys.stderr)
+    print(f"{_label('[leftblock]', '1;34')} {msg}", file=sys.stderr)
 
 def print_warn(msg):
-    print(f"\033[1;33m[leftblock]\033[0m {msg}", file=sys.stderr)
+    print(f"{_label('[leftblock]', '1;33')} {msg}", file=sys.stderr)
 
 def print_err(msg):
-    print(f"\033[1;31m[leftblock ERROR]\033[0m {msg}", file=sys.stderr)
+    print(f"{_label('[leftblock ERROR]', '1;31')} {msg}", file=sys.stderr)
 
 DEFAULT_LEFTBLOCK_YML = """\
 version: 1
@@ -110,7 +118,36 @@ def cmd_install(args):
     else:
         print_info(f"Shared secret already exists at {SECRET_FILE_DEFAULT}")
 
-def configured_checks(repo_root, config_path=None):
+def configured_checks(repo_root, config_path=None, overrides=True):
+    """Run the checkers, attach override ids and apply staged overrides."""
+    config, results = _run_configured_checks(repo_root, config_path)
+    allowlist.attach_ids(repo_root, results)
+    if not overrides:
+        return config, results
+    try:
+        entries = allowlist.load_allowlist(repo_root)
+    except allowlist.AllowError:
+        results.append(CheckerResult(
+            "leftblock-allow", False,
+            "Invalid .leftblock-allow.yml; inspection blocked.", error=True,
+        ))
+        return config, results
+    shown = set()
+    for finding, reason in allowlist.apply_allowlist(results, entries):
+        # Several matches on one line share an id; report each override once.
+        if finding["id"] in shown:
+            continue
+        shown.add(finding["id"])
+        print_info(
+            "Override applied: file " + json.dumps(finding["File"], ensure_ascii=True)
+            + ", rule " + json.dumps(finding["RuleID"], ensure_ascii=True)
+            + ", id " + finding["id"]
+            + ", reason " + json.dumps(reason, ensure_ascii=True)
+        )
+    return config, results
+
+
+def _run_configured_checks(repo_root, config_path=None):
     try:
         config = load_config(repo_root, config_path)
         checkers = validate_checkers(config)
@@ -166,6 +203,121 @@ def print_failures(failures):
             print_warn(str(result.findings))
 
 
+def default_local_policy(repo_root):
+    """The local check-only policy file when one is installed, else None."""
+    proc = run_cmd(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        check=False, cwd=repo_root,
+    )
+    if proc.returncode or not proc.stdout.strip():
+        return None
+    path = os.path.join(proc.stdout.strip(), "leftblock", "policy.json")
+    return path if os.path.isfile(path) else None
+
+
+def finding_summary(findings):
+    """One-line list of rule, file and id, for callers that show only the last line."""
+    parts = []
+    for f in findings:
+        part = f"{f.get('RuleID', 'finding')} in {f.get('File', 'unknown file')}"
+        if f.get("id"):
+            part += f" [id {f['id']}]"
+        if part not in parts:
+            parts.append(part)
+    return "; ".join(parts)
+
+
+def print_override_instructions(failures, repo_root, config_path):
+    # Tools that drive `git commit` often surface only the final line, so the
+    # last ERROR line names every finding and the next step on its own.
+    findings = [
+        f for result in failures if isinstance(result.findings, list) for f in result.findings
+    ]
+    own = [f for f in findings if f.get("File") == allowlist.ALLOW_FILE]
+    findings = [f for f in findings if f.get("File") != allowlist.ALLOW_FILE]
+    ids = [f["id"] for f in findings if f.get("id")]
+    steps = []
+    if own:
+        print_warn(
+            f"A reason in {allowlist.ALLOW_FILE} contains a flagged value; "
+            "reword that reason (don't repeat the value)."
+        )
+        steps.append(f"reword the flagged reason in {allowlist.ALLOW_FILE}")
+    if len(ids) < len(findings):
+        print_warn("Findings without an id cannot be overridden and must be removed.")
+    if findings:
+        steps.append("remove the flagged content")
+    if ids:
+        command = f"{shlex.quote(sys.executable)} -I -B -m leftblock.cli allow {' '.join(dict.fromkeys(ids))}"
+        default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
+        if config_path and os.path.abspath(config_path) != os.path.abspath(default):
+            command += f" --config {shlex.quote(config_path)}"
+        command += ' --reason "<why this is not sensitive>"'
+        print_info(
+            "An override adds the finding to .leftblock-allow.yml and stages it, so it "
+            "appears in the commit and its review."
+        )
+        steps.append("if it is a false alarm, record a reviewed override: " + command)
+    advice = "; or ".join(steps)
+    print_err(f"Inspection blocked: {finding_summary(own + findings)}. {advice[:1].upper()}{advice[1:]}.")
+
+
+def cmd_allow(args):
+    """Record reviewed overrides for current findings in .leftblock-allow.yml."""
+    reason = " ".join((args.reason or "").split())
+    if len(reason) < allowlist.MIN_REASON:
+        print_err(f"--reason must explain the override (at least {allowlist.MIN_REASON} characters).")
+        sys.exit(1)
+    repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
+    config_path = args.config or default_local_policy(repo_root)
+    tree_hash = get_tree_hash()
+    _, results = configured_checks(repo_root, config_path, overrides=False)
+    if get_tree_hash() != tree_hash:
+        print_err("Staged tree changed during inspection. Run it again.")
+        sys.exit(1)
+    if any(result.error for result in results):
+        print_err("A checker could not complete. No override recorded.")
+        sys.exit(1)
+    current = {
+        f["id"]: f for result in results if isinstance(result.findings, list)
+        for f in result.findings if f.get("id")
+    }
+    unknown = [i for i in args.ids if i not in current]
+    if unknown:
+        print_err("Not a current finding id: " + ", ".join(json.dumps(i) for i in unknown))
+        sys.exit(1)
+    snapshot = allowlist.snapshot(repo_root)
+    try:
+        added = allowlist.record_overrides(
+            repo_root, [current[i] for i in dict.fromkeys(args.ids)], reason,
+        )
+    except (OSError, allowlist.AllowError):
+        print_err(f"Existing {allowlist.ALLOW_FILE} is unreadable or invalid; fix it first.")
+        sys.exit(1)
+    run_cmd(["git", "add", "--", allowlist.ALLOW_FILE], cwd=repo_root)
+    # A reason that repeats the flagged value would get the allow file flagged.
+    _, after = configured_checks(repo_root, config_path, overrides=False)
+    own = [
+        f for result in after if isinstance(result.findings, list)
+        for f in result.findings if f.get("File") == allowlist.ALLOW_FILE
+    ]
+    if own or any(result.error for result in after):
+        allowlist.restore(repo_root, snapshot)
+        if own:
+            print_err(
+                f"The reason would itself be flagged (rule {own[0].get('RuleID')}). "
+                "Don't repeat the flagged value in the reason; describe it instead."
+            )
+        else:
+            print_err("A checker could not complete. No override recorded.")
+        sys.exit(1)
+    for finding in added:
+        print_info(f"Recorded override {finding['id']} for {finding['RuleID']} in {finding['File']}.")
+    if not added:
+        print_info("Those ids were already recorded.")
+    print_info(f"{allowlist.ALLOW_FILE} is staged; the commit must include it.")
+
+
 def cmd_check(args):
     """Noninteractive staged inspection for existing pre-commit hook managers."""
     repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
@@ -177,7 +329,13 @@ def cmd_check(args):
     failures = [result for result in results if not result.clean]
     if failures:
         print_failures(failures)
-        print_err("Inspection blocked. No approval override is available for 'check'.")
+        if any(result.error for result in failures) and not any(
+            isinstance(result.findings, list) for result in failures
+        ):
+            problems = "; ".join(f"{result.name}: {result.findings}" for result in failures if result.error)
+            print_err(f"Inspection blocked: {problems} Fix this first; no override is available.")
+        else:
+            print_override_instructions(failures, repo_root, getattr(args, "config", None))
         sys.exit(1)
     print_info("All configured checks passed for staged changes.")
 
@@ -415,8 +573,13 @@ def main():
     install_p.add_argument("--check-only", action="store_true", help="Install a pre-commit check without signing (with --local)")
     install_p.add_argument("--gitleaks", help="Existing Gitleaks executable for a local check-only installation")
 
-    check_p = subparsers.add_parser("check", help="Inspect staged changes without signing or allowing overrides")
+    check_p = subparsers.add_parser("check", help="Inspect staged changes without signing")
     check_p.add_argument("--config", help="Explicit local checker policy; defaults to .leftblock.yml")
+
+    allow_p = subparsers.add_parser("allow", help="Record a reviewed override for current findings")
+    allow_p.add_argument("ids", nargs="+", metavar="ID", help="Finding id(s) shown by the blocked check")
+    allow_p.add_argument("--reason", default=None, help="Why the finding is not sensitive")
+    allow_p.add_argument("--config", help="Checker policy; defaults to the local install policy, else .leftblock.yml")
 
     hook_p = subparsers.add_parser("hook", help="Run checkers (used internally by git hook)")
     hook_p.add_argument("commit_msg_file", help="Path to the commit message file")
@@ -433,6 +596,8 @@ def main():
         cmd_install(args)
     elif args.command == "check":
         cmd_check(args)
+    elif args.command == "allow":
+        cmd_allow(args)
     elif args.command == "hook":
         cmd_hook(args)
     elif args.command == "verify":

@@ -113,10 +113,15 @@ def run_command_checker(checker: Dict[str, Any], cwd: str = None, env: Dict[str,
                     raise ValueError("Invalid report")
                 # Never carry matched values, source lines, descriptions or raw logs
                 # into the UI. Files/rule identifiers are the diagnostic boundary.
-                findings = [
-                    {key: item[key] for key in ("File", "RuleID") if isinstance(item.get(key), str)}
-                    for item in report
-                ]
+                # Line numbers are kept only to derive an override id and are
+                # dropped before display (see leftblock.allow.attach_ids).
+                findings = []
+                for item in report:
+                    finding = {key: item[key] for key in ("File", "RuleID") if isinstance(item.get(key), str)}
+                    for key in ("StartLine", "EndLine"):
+                        if type(item.get(key)) is int:
+                            finding[key] = item[key]
+                    findings.append(finding)
             except (OSError, ValueError, TypeError):
                 return CheckerResult(name, False, "Checker report unavailable or invalid; output suppressed.", error=True)
         return CheckerResult(name, False, findings)

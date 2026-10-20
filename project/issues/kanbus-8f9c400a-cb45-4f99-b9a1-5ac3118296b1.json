@@ -1,0 +1,20 @@
+{
+  "id": "kanbus-8f9c400a-cb45-4f99-b9a1-5ac3118296b1",
+  "title": "Print LeftBlock version and ruleset in check output; document a dry-run check",
+  "description": "Nothing says which version or ruleset ran, so reports went stale silently. Print version and ruleset id. Make 'leftblock check' default to the local policy and point to it from blocked output. (Babulus #1 and #2, Biblicus #4)",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T23:43:16.972746Z",
+  "updated_at": "2026-10-20T23:43:16.972770Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -6,6 +6,22 @@ earlier distribution. Summaries use
 current terminology where helpful. Original commits, receipts, and releases
 remain unchanged; commit links retain their original hashes.
 
+## v0.3.4 (2026-10-20)
+
+### Feature
+
+- Recorded per-finding overrides. A blocked `leftblock check` now prints an
+  id for each finding and the `leftblock allow ID --reason TEXT` command,
+  which records a scoped entry in a committed `.leftblock-allow.yml` and
+  stages it. An entry covers one rule on one exact line content in one file,
+  needs a reason of at least 10 characters, and counts only when staged.
+  Applied overrides are printed on every run; invalid allow files and scanner
+  errors still block.
+- The final blocked line now names each rule, file and finding id and the
+  next step, so tools that show only the last line (such as `kbs commit`)
+  still explain the block.
+- Output has no colour codes when it is captured or `NO_COLOR` is set.
+
 ## v0.3.3 (2026-10-20)
 
 ### Fix

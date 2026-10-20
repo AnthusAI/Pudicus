@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "e770254d-0824-4daa-b77d-964cb75d1192",
+  "issue_id": "kanbus-def72b59-3821-4e6d-9253-7f3634cd64b9",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T23:43:16.795Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "Stable leftblock shim on PATH; hook calls it with a clear not-installed message",
+    "description": "Hooks bake in ~/.local/share/leftblock/<version>/bin/python and a frozen PATH. Upgrades or uninstalls could fail every commit with an unclear error, and override commands are long. Install a stable shim and make hooks call it. (Biblicus #8, Babulus #3)",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+    "labels": []
+  }
+}
