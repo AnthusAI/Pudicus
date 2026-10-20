@@ -17,14 +17,20 @@ from leftblock.core import (
     CheckerResult,
 )
 
+def _label(text, color):
+    # Plain labels when output is captured (git GUIs, wrappers, CI) or NO_COLOR is set.
+    if os.environ.get("NO_COLOR") or not sys.stderr.isatty():
+        return text
+    return f"\033[{color}m{text}\033[0m"
+
 def print_info(msg):
-    print(f"\033[1;34m[leftblock]\033[0m {msg}", file=sys.stderr)
+    print(f"{_label('[leftblock]', '1;34')} {msg}", file=sys.stderr)
 
 def print_warn(msg):
-    print(f"\033[1;33m[leftblock]\033[0m {msg}", file=sys.stderr)
+    print(f"{_label('[leftblock]', '1;33')} {msg}", file=sys.stderr)
 
 def print_err(msg):
-    print(f"\033[1;31m[leftblock ERROR]\033[0m {msg}", file=sys.stderr)
+    print(f"{_label('[leftblock ERROR]', '1;31')} {msg}", file=sys.stderr)
 
 DEFAULT_LEFTBLOCK_YML = """\
 version: 1
@@ -209,33 +215,51 @@ def default_local_policy(repo_root):
     return path if os.path.isfile(path) else None
 
 
+def finding_summary(findings):
+    """One-line list of rule, file and id, for callers that show only the last line."""
+    parts = []
+    for f in findings:
+        part = f"{f.get('RuleID', 'finding')} in {f.get('File', 'unknown file')}"
+        if f.get("id"):
+            part += f" [id {f['id']}]"
+        if part not in parts:
+            parts.append(part)
+    return "; ".join(parts)
+
+
 def print_override_instructions(failures, repo_root, config_path):
+    # Tools that drive `git commit` often surface only the final line, so the
+    # last ERROR line names every finding and the next step on its own.
     findings = [
         f for result in failures if isinstance(result.findings, list) for f in result.findings
     ]
     own = [f for f in findings if f.get("File") == allowlist.ALLOW_FILE]
     findings = [f for f in findings if f.get("File") != allowlist.ALLOW_FILE]
     ids = [f["id"] for f in findings if f.get("id")]
+    steps = []
     if own:
         print_warn(
             f"A reason in {allowlist.ALLOW_FILE} contains a flagged value; "
             "reword that reason (don't repeat the value)."
         )
+        steps.append(f"reword the flagged reason in {allowlist.ALLOW_FILE}")
     if len(ids) < len(findings):
         print_warn("Findings without an id cannot be overridden and must be removed.")
-    if not ids:
-        return
-    command = f"{shlex.quote(sys.executable)} -I -B -m leftblock.cli allow {' '.join(dict.fromkeys(ids))}"
-    default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
-    if config_path and os.path.abspath(config_path) != os.path.abspath(default):
-        command += f" --config {shlex.quote(config_path)}"
-    print_err("Inspection blocked. If a finding is a false alarm, record a reviewed override:")
-    print(f"  {command} --reason \"<why this is not sensitive>\"", file=sys.stderr)
-    print(
-        "This adds the finding to .leftblock-allow.yml and stages it, so the override "
-        "appears in the commit and its review.",
-        file=sys.stderr,
-    )
+    if findings:
+        steps.append("remove the flagged content")
+    if ids:
+        command = f"{shlex.quote(sys.executable)} -I -B -m leftblock.cli allow {' '.join(dict.fromkeys(ids))}"
+        default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
+        if config_path and os.path.abspath(config_path) != os.path.abspath(default):
+            command += f" --config {shlex.quote(config_path)}"
+        command += ' --reason "<why this is not sensitive>"'
+        print_info(
+            "An override adds the finding to .leftblock-allow.yml and stages it, so it "
+            "appears in the commit and its review."
+        )
+        steps.append("if it is a false alarm, record a reviewed override: " + command)
+    advice = "; or ".join(steps)
+    print_err(f"Inspection blocked: {finding_summary(own + findings)}. {advice[:1].upper()}{advice[1:]}.")
 
 
 def cmd_allow(args):
@@ -308,7 +332,8 @@ def cmd_check(args):
         if any(result.error for result in failures) and not any(
             isinstance(result.findings, list) for result in failures
         ):
-            print_err("Inspection blocked. A checker could not complete; no override is available.")
+            problems = "; ".join(f"{result.name}: {result.findings}" for result in failures if result.error)
+            print_err(f"Inspection blocked: {problems} Fix this first; no override is available.")
         else:
             print_override_instructions(failures, repo_root, getattr(args, "config", None))
         sys.exit(1)

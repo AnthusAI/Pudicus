@@ -55,6 +55,16 @@ class RecordedOverrideTests(RepositoryFixture):
         self.assertNotIn("public-role", out)
         self.assertNotIn("No approval override", out)
 
+    def test_last_line_alone_names_the_finding_and_next_step(self):
+        # Wrappers such as `kbs commit` often show only the final line.
+        ident = self.blocked_id()
+        last = self.check().stderr.strip().splitlines()[-1]
+        self.assertIn("Inspection blocked", last)
+        self.assertIn(f"leftblock-personal-email in {PAGE} [id {ident}]", last)
+        self.assertIn("Remove the flagged content", last)
+        self.assertIn(f"allow {ident}", last)
+        self.assertNotIn("\033[", last)  # captured output carries no colour codes
+
     def test_allow_stages_entry_then_check_passes_and_reports(self):
         ident = self.blocked_id()
         proc = self.allow(ident)
