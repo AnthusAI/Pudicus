@@ -181,3 +181,4 @@ coordination:
   mutex_api:
     endpoint: null
     bearer_token: null
+project_id: c8363f05-28e0-4c78-9347-95f7a0f0852b
