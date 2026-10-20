@@ -14,7 +14,7 @@ from unittest.mock import patch
 import venv
 import yaml
 
-from pudicus.hooks import install_local_check_hook, validate_local_check_install
+from leftblock.hooks import install_local_check_hook, validate_local_check_install
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,7 +54,7 @@ class LocalInstallTests(unittest.TestCase):
         self.env.update({
             "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_TERMINAL_PROMPT": "0",
-            "PUDICUS_SECRET_PATH": str(Path(self.temp.name) / "must-not-be-created"),
+            "LEFTBLOCK_SECRET_PATH": str(Path(self.temp.name) / "must-not-be-created"),
         })
         self.environment = patch.dict(os.environ, self.env, clear=True)
         self.environment.start()
@@ -82,20 +82,20 @@ class LocalInstallTests(unittest.TestCase):
         )
 
     def test_local_install_changes_only_git_metadata_and_no_secret(self):
-        (self.repo / ".pudicus.yml").write_text("owner policy must remain unchanged\n")
+        (self.repo / ".leftblock.yml").write_text("owner policy must remain unchanged\n")
         hooks = self.hook.parent
         hooks.mkdir()
         existing = hooks / "commit-msg"
         existing.write_text("#!/bin/sh\n# owner's existing hook\nexit 0\n")
         existing.chmod(0o755)
-        before_policy = (self.repo / ".pudicus.yml").read_bytes()
+        before_policy = (self.repo / ".leftblock.yml").read_bytes()
         before_hook = existing.read_bytes()
         before_status = self.git("status", "--porcelain=v1", "-z").stdout
         self.install()
         self.assertEqual(before_status, self.git("status", "--porcelain=v1", "-z").stdout)
-        self.assertEqual(before_policy, (self.repo / ".pudicus.yml").read_bytes())
+        self.assertEqual(before_policy, (self.repo / ".leftblock.yml").read_bytes())
         self.assertEqual(before_hook, existing.read_bytes())
-        self.assertFalse(Path(self.env["PUDICUS_SECRET_PATH"]).exists())
+        self.assertFalse(Path(self.env["LEFTBLOCK_SECRET_PATH"]).exists())
         self.assertIn("-I -B -m leftblock.cli check --config", self.hook.read_text())
         paths = validate_local_check_install(self.repo)
         state = json.loads(paths["state"].read_text())
@@ -163,7 +163,7 @@ class LocalInstallTests(unittest.TestCase):
             install_local_check_hook(linked, GITLEAKS or "/usr/bin/true")
         paths = validate_local_check_install(linked)
         self.assertEqual(paths["hook"].resolve(), self.hook.resolve())
-        self.assertFalse((linked / ".pudicus.yml").exists())
+        self.assertFalse((linked / ".leftblock.yml").exists())
 
     def test_cli_requires_both_flags_and_uses_no_signing_secret(self):
         for flags in (("--local",), ("--check-only",)):
@@ -173,8 +173,8 @@ class LocalInstallTests(unittest.TestCase):
         result = self.cli("install", "--local", "--check-only", "--gitleaks", GITLEAKS or "/usr/bin/true")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(self.hook.exists())
-        self.assertFalse((self.repo / ".pudicus.yml").exists())
-        self.assertFalse(Path(self.env["PUDICUS_SECRET_PATH"]).exists())
+        self.assertFalse((self.repo / ".leftblock.yml").exists())
+        self.assertFalse(Path(self.env["LEFTBLOCK_SECRET_PATH"]).exists())
 
     @unittest.skipUnless(GITLEAKS, "Existing Gitleaks executable required")
     def test_clean_commit_passes_and_sensitive_commit_is_blocked_before_history(self):
@@ -192,11 +192,11 @@ class LocalInstallTests(unittest.TestCase):
         self.assertNotEqual(blocked.returncode, 0)
         self.assertEqual(self.git("rev-parse", "HEAD").stdout, head)
         self.assertNotIn(synthetic, blocked.stdout + blocked.stderr)
-        self.assertIn("pudicus-openai-key", blocked.stderr)
-        self.assertFalse(Path(self.env["PUDICUS_SECRET_PATH"]).exists())
+        self.assertIn("leftblock-openai-key", blocked.stderr)
+        self.assertFalse(Path(self.env["LEFTBLOCK_SECRET_PATH"]).exists())
 
     def test_explicit_config_missing_fails_closed_without_root_fallback(self):
-        (self.repo / ".pudicus.yml").write_text(
+        (self.repo / ".leftblock.yml").write_text(
             "version: 1\ncheckers:\n  - type: command\n    command: /usr/bin/true\n"
         )
         for config in (str(Path(self.temp.name) / "missing-policy"), ""):

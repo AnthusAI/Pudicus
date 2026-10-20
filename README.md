@@ -1,6 +1,6 @@
-# LeftBlock (formerly Pudicus)
+# LeftBlock
 
-**LeftBlock**, formerly Pudicus, is a pluggable inspection gate for Git commits. It runs configured scanners, including Gitleaks, on staged changes. Local check-only mode blocks findings before a commit; optional receipt mode also records the inspection result in an HMAC receipt.
+**LeftBlock** is a pluggable inspection gate for Git commits. It runs configured scanners, including Gitleaks, on staged changes. Local check-only mode blocks findings before a commit; optional receipt mode also records the inspection result in an HMAC receipt.
 
 LeftBlock **shifts privacy checks left**: detected sensitive material can be blocked before it enters a commit and becomes part of local Git history. Pushing distributes that history to a remote; subsequent clones and pulls distribute it further. A later check can stop the next step, but cannot undo copies already made.
 
@@ -30,25 +30,55 @@ This is a layered defense, not a guarantee that a repository contains no sensiti
 
 ---
 
-## Name and compatibility status
+## Project and release status
 
-LeftBlock, formerly Pudicus, has been donated to **Data Parade
-(`DataParade-io`)**, alongside BotSpy. The repository is now
+LeftBlock has been donated to **Data Parade (`DataParade-io`)**, alongside
+BotSpy. Its repository is
 [DataParade-io/LeftBlock](https://github.com/DataParade-io/LeftBlock).
 
-**LeftBlock 0.3.0 is being prepared and is not yet confirmed published to
-PyPI.** It uses the new `leftblock` distribution, Python package, and CLI.
-It does not install the `pudicus` package or command, so an existing Pudicus
-installation can remain untouched. The existing `pudicus` PyPI project and
-releases, including 0.2.0, remain available. Legacy Python shims are retained
-only in the source checkout; they are not part of the LeftBlock distribution.
+**LeftBlock 0.3.0 is unreleased.** The current source uses `leftblock` as its
+distribution, Python package, and CLI name. It includes no earlier package
+aliases or command shims. The CLI is also available as
+`python -m leftblock.cli`.
 
-Existing `.pudicus.yml` configuration, `.pudicus/` rule paths,
-`PUDICUS_SECRET_PATH`, `pudicus-*` rule IDs, and inspection receipt formats
-remain supported. The new CLI is also available as `python -m leftblock.cli`.
-A source checkout needs refreshed package metadata to expose the installed
-`leftblock` command; an older installed Pudicus launcher does not gain the
-new behavior automatically.
+Current receipt-mode configuration uses `.leftblock.yml`, `.leftblock/`
+rule paths, `LEFTBLOCK_SECRET_PATH`, and `leftblock-*` rule IDs. New receipts
+use the `leftblock-v1` validator for configuration version 1. Earlier
+configuration filenames, environment-variable names, and hook ownership
+records are not migrated automatically.
+
+### Migrating an earlier installation
+
+This release does not remove or replace a separately installed earlier
+distribution, and it does not rewrite published releases or Git history.
+That does **not** make an existing installation automatically compatible:
+an editable install or hook may still load code from the checkout being
+updated. Before pulling these changes into such a checkout:
+
+1. Inventory each protected repository's common Git directory, hook manager,
+   interpreter, installed package, checker policy, rules, and secret location.
+   Linked worktrees share their common Git metadata; coordinate them together.
+2. Prepare and test the new runtime independently. Retain the working earlier
+   runtime and protection until the replacement has passed validation.
+3. Review and migrate policy paths and rule IDs to the current names. Preserve
+   custom rules, narrow exceptions, owner edits, and existing hook-manager
+   behavior. Do not replace an edited or foreign hook to force installation.
+4. For receipt mode, retain the **same secret bytes**. Securely migrate the
+   existing file to the new default location, or set `LEFTBLOCK_SECRET_PATH`
+   to its existing absolute path in the hook and verifier environments.
+   Do not print the secret, commit it, or run an installer that generates a
+   replacement secret as a shortcut. New receipt installation is not a
+   credential migration tool.
+5. Coordinate the runtime, policy, hook command and ownership-state transition.
+   Keep a rollback path and existing protection until the new setup accepts
+   clean fixtures, blocks synthetic sensitive fixtures without advancing
+   `HEAD`, and verifies the required historical receipt range.
+
+Historical receipts must remain byte-for-byte unchanged. Verification reads
+and authenticates the validator string stored in each receipt, so a naming
+change does not require resigning history when the original secret is
+available. This is a migration checklist, not an automatic migration or a
+claim that existing repositories have already been upgraded.
 
 ## Quick Start
 
@@ -58,18 +88,24 @@ configures the integration; it does not install scanner binaries.
 
 **1. Install the CLI:**
 
-After LeftBlock 0.3.0 is published:
+While 0.3.0 is unreleased, install only a reviewed local checkout containing
+these changes. From that checkout, in the intended Python environment:
+
+```bash
+python -m pip install .
+python -m leftblock.cli --help
+```
+
+The installation is from local source, not a published release. Confirm the
+checkout's commit and validation results before installing; do not assume
+`main` or an earlier feature-branch commit contains this implementation.
+Follow the migration checklist above before replacing an earlier setup.
+
+After the release is published and its distribution identity is verified,
+the versioned package installation will be:
 
 ```bash
 python -m pip install leftblock==0.3.0
-```
-
-Before publication, install the reviewed local source containing these
-changes with `python -m pip install .`. Do not assume the repository's
-`main` branch already contains this release. The reviewed source installation pins the release-preparation commit:
-
-```bash
-python -m pip install "git+https://github.com/DataParade-io/LeftBlock.git@e3934c90bedec7fbaa137f62c6e0503ba708ed9b"
 ```
 
 **2. Enable local staged protection:**
@@ -92,9 +128,9 @@ leftblock install --local --check-only --gitleaks "$(command -v gitleaks)"
 The installer preserves existing hooks and refuses to overwrite a foreign
 or edited hook. An unchanged hook managed by LeftBlock can be refreshed.
 A configured `core.hooksPath` is left untouched; compose the check explicitly
-with the existing hook manager instead of replacing it. Hooks from older
-Pudicus versions lack the new ownership record and require a reviewed
-migration even if they are still functional.
+with the existing hook manager instead of replacing it. An earlier hook
+without the current ownership record requires a reviewed migration even
+if it is still functional.
 
 To run a noninteractive staged check with an explicit policy:
 
@@ -118,18 +154,20 @@ leftblock install
 Receipt mode installs a `commit-msg` hook, creates a shared secret if one
 is absent, and writes defaults when they do not already exist:
 
-- `.pudicus.yml` — checker configuration
-- `.pudicus/gitleaks.toml` — the shipped sensitive-data ruleset
+- `.leftblock.yml` — checker configuration
+- `.leftblock/gitleaks.toml` — the shipped sensitive-data ruleset
 
-Existing checker configuration, rulesets, and other hooks are preserved.
-The default receipt-mode configuration uses Gitleaks with redacted output:
+Existing files at the current configuration and ruleset paths are not
+overwritten. Other hooks are preserved. Earlier path names are not discovered
+or migrated automatically. The default receipt-mode configuration uses
+Gitleaks with redacted output:
 
 ```yaml
 version: 1
 checkers:
   - name: gitleaks
     type: command
-    command: gitleaks protect --staged --config .pudicus/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
+    command: gitleaks protect --staged --config .leftblock/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
     success_codes: [0]
     finding_codes: [1]
 ```
@@ -143,9 +181,10 @@ Preserve existing behavior and propagate any failure's exit status.
 
 Receipts use HMAC trailers, not Git GPG/SSH signatures; they do not appear
 in `git log --show-signature`. Every machine running `leftblock verify`
-needs the same secret, stored by default at `~/.config/pudicus/secret`
-or the path in `PUDICUS_SECRET_PATH`. The secret and receipt formats remain
-compatible with Pudicus. Local check-only mode does not need this secret.
+needs the same secret, stored by default at `~/.config/leftblock/secret`
+or the path in `LEFTBLOCK_SECRET_PATH`. Preserve the existing secret during
+migration so historical receipts remain verifiable. Local check-only mode
+does not need this secret.
 
 **4. Add independent checks before distribution or deployment:**
 
@@ -165,7 +204,7 @@ the receipts required by this gate.
 
 ## Out-of-the-Box Detection
 
-LeftBlock ships a Gitleaks ruleset (copied to `.pudicus/gitleaks.toml` in receipt mode) that
+LeftBlock ships a Gitleaks ruleset (copied to `.leftblock/gitleaks.toml` in receipt mode) that
 extends gitleaks' default secret rules with personal-data and crypto-wallet
 rules. These patterns provide a starting point for detection; they do not
 cover every kind of sensitive information.
@@ -174,20 +213,20 @@ cover every kind of sensitive information.
 (`AIza...`, default `gcp-api-key` rule), generic API keys in keyword context,
 PEM private keys, and other standard secret formats.
 
-**Added by the Pudicus ruleset:**
+**Added by the LeftBlock ruleset:**
 
 | Rule | What it catches |
 |---|---|
-| `pudicus-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com` and `@example.*` placeholders are allowlisted) |
-| `pudicus-home-path-posix` | Home-folder paths `/Users/<name>`, `/home/<name>` |
-| `pudicus-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
-| `pudicus-session-uuid` | Bare UUIDs outside structural id fields (Kanbus `id`-style fields are allowlisted; a UUID in `session_id`-style fields or free text is reported) |
-| `pudicus-actor-id` | `actor_id` / `user_id` / `author_id` JSON values |
-| `pudicus-openai-key` | `sk-`, `sk-proj-`, `sk-svcacct-` OpenAI keys |
-| `pudicus-anthropic-key` | `sk-ant-` Anthropic keys |
-| `pudicus-eth-private-key` | Ethereum-style private keys (`0x` + 64 hex) |
-| `pudicus-wif-key` | Bitcoin WIF private keys (compressed `K/L/M…`, uncompressed `5…`) |
-| `pudicus-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
+| `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com` and `@example.*` placeholders are allowlisted) |
+| `leftblock-home-path-posix` | Home-folder paths `/Users/<name>`, `/home/<name>` |
+| `leftblock-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
+| `leftblock-session-uuid` | Bare UUIDs outside structural id fields (Kanbus `id`-style fields are allowlisted; a UUID in `session_id`-style fields or free text is reported) |
+| `leftblock-actor-id` | `actor_id` / `user_id` / `author_id` JSON values |
+| `leftblock-openai-key` | `sk-`, `sk-proj-`, `sk-svcacct-` OpenAI keys |
+| `leftblock-anthropic-key` | `sk-ant-` Anthropic keys |
+| `leftblock-eth-private-key` | Ethereum-style private keys (`0x` + 64 hex) |
+| `leftblock-wif-key` | Bitcoin WIF private keys (compressed `K/L/M…`, uncompressed `5…`) |
+| `leftblock-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
 
 ### Crypto wallet material: what is and is not flagged
 
@@ -210,12 +249,12 @@ PEM private keys, and other standard secret formats.
 
 The earlier scanner evaluation used a synthetic fixture corpus, clean
 content, and a ~2 MB repository tree. Gitleaks results below include the
-Pudicus ruleset; these measurements describe that corpus, not a guarantee
+LeftBlock ruleset; these measurements describe that corpus, not a guarantee
 about other repositories or scanner versions:
 
 | Scanner | Verdict |
 |---|---|
-| **Gitleaks 8.30.1** (default checker) | Catches API keys, crypto keys (with the Pudicus ruleset), and personal data via custom rules; deterministic exit codes (0 clean / 1 findings); zero false positives on clean content and on the real tree with the shipped ruleset; fast (~35 ms on 2 MB). |
+| **Gitleaks 8.30.1** (default checker) | Catches API keys, crypto keys (with the LeftBlock ruleset), and personal data via custom rules; deterministic exit codes (0 clean / 1 findings); zero false positives on clean content and on the real tree with the shipped ruleset; fast (~35 ms on 2 MB). |
 | detect-secrets | No OpenAI/AWS-type detector hits for these formats — findings appear only as generic "High Entropy String"/"Secret Keyword"; misses mnemonics and all personal data; exit code 0 even with findings, so not gate-suitable without a wrapper. |
 | TruffleHog (offline) | Its AWS detector caught the credential pair, but nothing else offline (OpenAI/Anthropic/Gemini/crypto/personal data all missed); scans git objects including gitignored files, which produces a different, noisier finding set; no allowlist mechanism for custom detectors. |
 | Presidio | Built for PII text analytics; requires a 500 MB model, flags benign URLs/IPs/timestamps while missing every target category here (including `.test`-TLD emails and keys); unsuitable for commit gating. |
@@ -223,7 +262,7 @@ about other repositories or scanner versions:
 False-positive measurements with the shipped ruleset: **0 findings** on a
 clean corpus (benign source/config files, placeholder emails and paths that
 must stay allowed) and **0 findings** on a ~2 MB real repository tree
-(PUDICUS_DOGFOOD_TREE dogfood test). The unit-test suite
+(LEFTBLOCK_DOGFOOD_TREE dogfood test). The unit-test suite
 (`tests/test_sensitive_rules.py`) regenerates all fixtures synthetically at
 test time from a seeded RNG — no real credential ever appears in the repo.
 
@@ -240,7 +279,7 @@ Imagine you have a list of highly confidential clients that should never be ment
 
 1. Create a `.gitignored` file named `confidential_clients.txt`.
 2. Write a Tactus procedure (e.g., `check_clients`) that reads `confidential_clients.txt` and scans the staged files to ensure none of those names appear.
-3. Add the procedure to your `.pudicus.yml`:
+3. Add the procedure to your `.leftblock.yml`:
 
 ```yaml
 version: 1
@@ -269,7 +308,7 @@ The tree hash identifies the staged snapshot. It does not imply that the
 scanner examined every file in that snapshot or the repository's history.
 
 ```text
-Inspected-by: pudicus-v1
+Inspected-by: leftblock-v1
 Inspection-tree: f18588e0c5f5b0a5ba281b5a78242127919d2388
 Inspection-result: clean
 Inspection-at: 2026-08-31T17:01:34Z

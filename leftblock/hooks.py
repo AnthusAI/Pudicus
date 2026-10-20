@@ -1,4 +1,4 @@
-"""Install only Pudicus-owned hooks without replacing a project's hook setup."""
+"""Install only LeftBlock-owned hooks without replacing a project's hook setup."""
 
 import hashlib
 import json
@@ -13,8 +13,8 @@ import sys
 import tempfile
 
 
-STATE_NAME = ".pudicus-commit-msg.json"
-HOOK_MARKER = "# Pudicus managed commit-msg hook v1\n"
+STATE_NAME = ".leftblock-commit-msg.json"
+HOOK_MARKER = "# LeftBlock managed commit-msg hook v1\n"
 MANUAL_INTEGRATION = (
     'Keep the existing hook setup and compose `leftblock check` into its pre-commit '
     'hook, or `leftblock hook "$1"` into its commit-msg hook, propagating failures.'
@@ -73,9 +73,9 @@ def _check_ownership(hook, state):
         HOOK_MARKER.encode() not in data.splitlines(keepends=True)[:3]
         or hashlib.sha256(data).hexdigest() != digest
     ):
-        raise ValueError("The existing hook was changed or is not managed by Pudicus. " + MANUAL_INTEGRATION)
+        raise ValueError("The existing hook was changed or is not managed by LeftBlock. " + MANUAL_INTEGRATION)
     if not hook.stat().st_mode & stat.S_IXUSR:
-        raise ValueError("The existing Pudicus hook was disabled; no hooks changed. " + MANUAL_INTEGRATION)
+        raise ValueError("The existing LeftBlock hook was disabled; no hooks changed. " + MANUAL_INTEGRATION)
     return data
 
 
@@ -99,7 +99,7 @@ def _hook_script():
 
 
 def _replace_file(path, data, mode):
-    fd, temporary = tempfile.mkstemp(prefix=".pudicus-", dir=str(path.parent))
+    fd, temporary = tempfile.mkstemp(prefix=".leftblock-", dir=str(path.parent))
     try:
         with os.fdopen(fd, "wb") as output:
             output.write(data)

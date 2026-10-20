@@ -1,4 +1,4 @@
-"""Tests for the Pudicus shipped gitleaks ruleset.
+"""Tests for the LeftBlock shipped gitleaks ruleset.
 
 All fixtures are synthetic and generated at test time from a seeded RNG.
 No real credential, wallet, or personal value is ever embedded here:
@@ -20,7 +20,7 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-RULESET = PROJECT_ROOT / "pudicus" / "data" / "gitleaks.toml"
+RULESET = PROJECT_ROOT / "leftblock" / "data" / "gitleaks.toml"
 
 GITLEAKS = shutil.which("gitleaks")
 
@@ -119,11 +119,11 @@ class SensitiveFixtureTests(unittest.TestCase):
             "notes/windows.md": "Cache lives at C:\\Users\\%s\\AppData.\n" % user,
             "notes/posix.md": "see /home/%s/build.log for details\n" % user,
         })
-        self.assertIn("pudicus-personal-email", findings)
-        self.assertIn("pudicus-session-uuid", findings)
-        self.assertIn("pudicus-actor-id", findings)
-        self.assertIn("pudicus-home-path-posix", findings)
-        self.assertIn("pudicus-home-path-windows", findings)
+        self.assertIn("leftblock-personal-email", findings)
+        self.assertIn("leftblock-session-uuid", findings)
+        self.assertIn("leftblock-actor-id", findings)
+        self.assertIn("leftblock-home-path-posix", findings)
+        self.assertIn("leftblock-home-path-windows", findings)
 
     def test_llm_api_key_findings(self):
         rng = _rng()
@@ -136,8 +136,8 @@ class SensitiveFixtureTests(unittest.TestCase):
                 "GEMINI_API_KEY=AIza" + rand_openai_like(rng, 35),
             ]) + "\n",
         })
-        self.assertIn("pudicus-openai-key", findings)
-        self.assertIn("pudicus-anthropic-key", findings)
+        self.assertIn("leftblock-openai-key", findings)
+        self.assertIn("leftblock-anthropic-key", findings)
         # Gemini/Google AI keys ride the default gcp-api-key rule.
         self.assertIn("gcp-api-key", findings)
 
@@ -169,7 +169,7 @@ class SensitiveFixtureTests(unittest.TestCase):
                 f"eth_private_key = {prefixed}",
             ]) + "\n",
         })
-        self.assertIn("pudicus-eth-private-key", findings)
+        self.assertIn("leftblock-eth-private-key", findings)
 
     def test_wif_bitcoin_keys_flagged(self):
         rng = _rng()
@@ -181,7 +181,7 @@ class SensitiveFixtureTests(unittest.TestCase):
                 f"btc_wif_uncompressed = {wif_uncompressed}",
             ]) + "\n",
         })
-        self.assertIn("pudicus-wif-key", findings)
+        self.assertIn("leftblock-wif-key", findings)
 
     def test_bip39_mnemonics_flagged(self):
         rng = _rng()
@@ -193,7 +193,7 @@ class SensitiveFixtureTests(unittest.TestCase):
                 f"recovery_mnemonic: {mnemonic(rng, 24)}",
             ]) + "\n",
         })
-        self.assertIn("pudicus-bip39-mnemonic", findings)
+        self.assertIn("leftblock-bip39-mnemonic", findings)
 
     def test_quoted_assignment_mnemonic_shapes_flagged(self):
         # Locks in the real-world label shapes: `label = "words"` and
@@ -205,7 +205,7 @@ class SensitiveFixtureTests(unittest.TestCase):
             "unquoted.txt": f"mnemonic: {mnemonic(rng, 15)}\n",
             "tight.txt": f'seed_phrase="{p12}"\n',
         })
-        self.assertEqual(findings, ["pudicus-bip39-mnemonic"])
+        self.assertEqual(findings, ["leftblock-bip39-mnemonic"])
 
     def test_all_bip39_phrase_lengths_flagged(self):
         rng = _rng()
@@ -214,7 +214,7 @@ class SensitiveFixtureTests(unittest.TestCase):
             for n in (12, 15, 18, 21, 24)
         }
         findings = scan_and_rule_ids(files)
-        self.assertIn("pudicus-bip39-mnemonic", findings)
+        self.assertIn("leftblock-bip39-mnemonic", findings)
         self.assertEqual(len(findings), 1, f"unexpected rules: {findings}")
 
 
@@ -298,12 +298,12 @@ def _is_ignored(finding: dict, ignored: set) -> bool:
 
 
 class DogfoodTests(unittest.TestCase):
-    """Scan a real tree end-to-end when PUDICUS_DOGFOOD_TREE is set."""
+    """Scan a real tree end-to-end when LEFTBLOCK_DOGFOOD_TREE is set."""
 
     def test_dogfood_tree_is_clean(self):
-        tree = os.environ.get("PUDICUS_DOGFOOD_TREE")
+        tree = os.environ.get("LEFTBLOCK_DOGFOOD_TREE")
         if not tree:
-            self.skipTest("PUDICUS_DOGFOOD_TREE not set")
+            self.skipTest("LEFTBLOCK_DOGFOOD_TREE not set")
         if GITLEAKS is None:
             self.skipTest("gitleaks binary not installed")
         tree_path = Path(tree).resolve()
@@ -348,14 +348,14 @@ class KanbusBoardAllowlistTests(unittest.TestCase):
         event = json.dumps({"event_id": _uuid(self.rng), "issue_id": f"LIM-{_uuid(self.rng)}",
                             "event_type": "issue_created", "actor" + "_id": "local" + "user"}, indent=2)
         self.assertEqual(scan_and_rule_ids({"project/events/2026-10-20T00-00-00.000Z__x.json": event}), [])
-        self.assertIn("pudicus-actor-id", scan_and_rule_ids({"src/telemetry.json": event}))
-        self.assertIn("pudicus-actor-id", scan_and_rule_ids({"project/issues/x.json": event}))
+        self.assertIn("leftblock-actor-id", scan_and_rule_ids({"src/telemetry.json": event}))
+        self.assertIn("leftblock-actor-id", scan_and_rule_ids({"project/issues/x.json": event}))
 
     def test_prefixed_ids_outside_board_files_still_flagged(self):
         doc = json.dumps({"id": f"LIM-{_uuid(self.rng)}"}, indent=2)
-        self.assertIn("pudicus-session-uuid", scan_and_rule_ids({"src/state.json": doc}))
+        self.assertIn("leftblock-session-uuid", scan_and_rule_ids({"src/state.json": doc}))
 
     def test_bare_uuid_in_board_free_text_still_flagged(self):
         doc = json.dumps({"id": f"PPY-{_uuid(self.rng)}",
                           "description": f"session {_uuid(self.rng)} reproduced it"}, indent=2)
-        self.assertIn("pudicus-session-uuid", scan_and_rule_ids({"project/issues/PPY-x.json": doc}))
+        self.assertIn("leftblock-session-uuid", scan_and_rule_ids({"project/issues/PPY-x.json": doc}))

@@ -1,11 +1,11 @@
-"""Compatibility checks for the LeftBlock name and the existing Pudicus API."""
+"""Checks for the LeftBlock namespace and independent distribution ownership."""
 
+import argparse
 import base64
 import configparser
 import csv
 import hashlib
 import io
-import json
 import importlib.util
 import os
 from pathlib import Path
@@ -18,8 +18,8 @@ from unittest import mock
 import zipfile
 import venv
 
-from leftblock import cli as leftblock_cli
-from pudicus import cli as pudicus_cli
+from leftblock import cli
+from leftblock.core import compute_hmac
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -29,9 +29,8 @@ BUILD_TOOLS_AVAILABLE = (
 )
 
 
-class BrandingCompatibilityTests(unittest.TestCase):
-    def test_both_entry_points_share_command_dispatch(self):
-        self.assertIs(leftblock_cli.main, pudicus_cli.main)
+class BrandingTests(unittest.TestCase):
+    def test_entry_point_dispatches_each_command(self):
         commands = (
             ("install", [], "cmd_install"),
             ("check", [], "cmd_check"),
@@ -39,85 +38,120 @@ class BrandingCompatibilityTests(unittest.TestCase):
             ("verify", ["HEAD"], "cmd_verify"),
             ("approve", ["HEAD~1..HEAD"], "cmd_approve"),
         )
-        for command_name in ("leftblock", "pudicus"):
-            for command, arguments, handler in commands:
-                with self.subTest(entry=command_name, command=command):
-                    with mock.patch.object(pudicus_cli, handler) as invoked, \
-                            mock.patch.object(sys, "argv", [command_name, command, *arguments]):
-                        entry = leftblock_cli if command_name == "leftblock" else pudicus_cli
-                        entry.main()
-                    invoked.assert_called_once()
-                    self.assertEqual(invoked.call_args.args[0].command, command)
+        for command, arguments, handler in commands:
+            with self.subTest(command=command):
+                with mock.patch.object(cli, handler) as invoked, \
+                        mock.patch.object(sys, "argv", ["leftblock", command, *arguments]):
+                    cli.main()
+                invoked.assert_called_once()
+                self.assertEqual(invoked.call_args.args[0].command, command)
 
-    def test_both_module_names_can_display_help(self):
+    def test_module_displays_help_for_all_public_commands(self):
         env = dict(os.environ, PYTHONPATH=str(PROJECT_ROOT))
-        for module in ("leftblock.cli", "pudicus.cli"):
-            with self.subTest(module=module):
+        for arguments in ([], ["install"], ["check"], ["hook"], ["verify"], ["approve"]):
+            with self.subTest(command=arguments):
                 result = subprocess.run(
-                    [sys.executable, "-m", module, "--help"],
+                    [sys.executable, "-m", "leftblock.cli", *arguments, "--help"],
                     cwd=PROJECT_ROOT, env=env, text=True, capture_output=True,
                 )
                 self.assertEqual(result.returncode, 0, "Module help failed")
-                self.assertIn("LeftBlock (formerly Pudicus)", result.stdout)
-                self.assertIn("check", result.stdout)
-                self.assertIn("verify", result.stdout)
+                self.assertIn("usage:", result.stdout)
+                if not arguments:
+                    self.assertIn("LeftBlock", result.stdout)
+                    for command in ("install", "check", "hook", "verify", "approve"):
+                        self.assertIn(command, result.stdout)
+                elif arguments == ["check"]:
+                    self.assertIn(".leftblock.yml", result.stdout)
 
-    def test_new_module_reads_legacy_policy_without_new_signing_credentials(self):
+    def test_default_policy_check_does_not_create_signing_credentials(self):
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary)
             env = {
                 key: value
                 for key, value in os.environ.items()
-                if not key.startswith(("GIT_", "GITLEAKS_", "PUDICUS_"))
+                if not key.startswith(("GIT_", "GITLEAKS_", "LEFTBLOCK_"))
             }
             env.update({
                 "GIT_CONFIG_GLOBAL": os.devnull,
                 "GIT_CONFIG_NOSYSTEM": "1",
                 "PYTHONPATH": str(PROJECT_ROOT),
-                "PUDICUS_SECRET_PATH": str(repo / "absent-signing-secret"),
+                "LEFTBLOCK_SECRET_PATH": str(repo / "absent-signing-secret"),
             })
             init = subprocess.run(["git", "init"], cwd=repo, env=env, capture_output=True)
             self.assertEqual(init.returncode, 0, "Disposable repository setup failed")
-            (repo / ".pudicus.yml").write_text(
+            policy = repo / ".leftblock.yml"
+            policy.write_text(
                 "version: 1\ncheckers:\n"
                 "  - name: synthetic-clean\n"
                 "    type: command\n"
                 "    command: 'true'\n"
             )
+            before = policy.read_bytes()
             result = subprocess.run(
                 [sys.executable, "-m", "leftblock.cli", "check"],
                 cwd=repo, env=env, text=True, capture_output=True,
             )
-            self.assertEqual(result.returncode, 0, "LeftBlock rejected the legacy policy")
+            self.assertEqual(result.returncode, 0, "LeftBlock rejected the default policy")
             self.assertFalse((repo / "absent-signing-secret").exists())
-            self.assertFalse((repo / ".leftblock.yml").exists())
-            self.assertTrue((repo / ".pudicus.yml").exists())
+            self.assertEqual(policy.read_bytes(), before)
+            self.assertFalse((repo / ".leftblock").exists())
 
-    def test_legacy_editable_loader_resolves_adjacent_source_without_sys_path_changes(self):
-        code = """
-import importlib.util, pathlib, sys
-package = pathlib.Path(sys.argv[1]) / 'pudicus'
-before = list(sys.path)
-spec = importlib.util.spec_from_file_location('pudicus', package / '__init__.py', submodule_search_locations=[str(package)])
-module = importlib.util.module_from_spec(spec)
-sys.modules['pudicus'] = module
-spec.loader.exec_module(module)
-from pudicus import cli, core, hooks
-from leftblock import cli as new_cli, core as new_core, hooks as new_hooks
-assert cli is new_cli and core is new_core and hooks is new_hooks
-assert sys.path == before
-assert pathlib.Path(new_cli.__file__).resolve() == package.parent / 'leftblock' / 'cli.py'
-"""
-        with tempfile.TemporaryDirectory() as temporary:
-            result = subprocess.run(
-                [sys.executable, "-I", "-B", "-c", code, str(PROJECT_ROOT)],
-                cwd=temporary, text=True, capture_output=True,
-            )
-            self.assertEqual(result.returncode, 0, "Legacy editable import fallback failed")
+    def test_modules_resolve_to_the_single_implementation_package(self):
+        from leftblock import core, hooks
+        for module in (cli, core, hooks):
+            self.assertEqual(Path(module.__file__).resolve().parent, PROJECT_ROOT / "leftblock")
+            self.assertEqual(module.__package__, "leftblock")
+
+
+class ReceiptNamespaceTests(unittest.TestCase):
+    """Stored validator names are authenticated data, not a brand allowlist."""
+
+    def verify_receipt(self, signed_validator, stored_validator):
+        tree = "a" * 40
+        commit = "b" * 40
+        timestamp = "2026-01-01T00:00:00Z"
+        secret = "synthetic-receipt-test-key"
+        signature = compute_hmac(tree, signed_validator, "clean", timestamp, secret)
+        receipt = (
+            "Synthetic fixture\n\n"
+            f"Inspected-by: {stored_validator}\n"
+            f"Inspection-tree: {tree}\n"
+            "Inspection-result: clean\n"
+            f"Inspection-at: {timestamp}\n"
+            f"Inspection-sig: hmac-sha256:{signature}\n"
+        )
+
+        def git_result(command):
+            if command == ["git", "rev-parse", "HEAD"]:
+                output = commit
+            elif command == ["git", "log", "-1", commit, "--format=%B"]:
+                output = receipt
+            elif command == ["git", "log", "-1", commit, "--format=%s"]:
+                output = "Synthetic fixture"
+            else:
+                self.fail(f"Unexpected Git command: {command}")
+            return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
+
+        with mock.patch.object(cli, "get_secret", return_value=secret), \
+                mock.patch.object(cli, "get_commit_tree_hash", return_value=tree), \
+                mock.patch.object(cli, "run_cmd", side_effect=git_result), \
+                mock.patch("sys.stdout", new_callable=io.StringIO), \
+                mock.patch("sys.stderr", new_callable=io.StringIO):
+            cli.cmd_verify(argparse.Namespace(range="HEAD"))
+
+    def test_historical_and_current_validator_names_verify_unchanged(self):
+        for validator in ("historical-inspector-v0", "leftblock-v1"):
+            with self.subTest(validator=validator):
+                self.verify_receipt(validator, validator)
+
+    def test_renaming_a_stored_validator_invalidates_the_receipt(self):
+        with self.assertRaises(SystemExit) as raised:
+            self.verify_receipt("historical-inspector-v0", "leftblock-v1")
+        self.assertEqual(raised.exception.code, 1)
 
 
 @unittest.skipUnless(BUILD_TOOLS_AVAILABLE, "Offline wheel inspection needs existing setuptools and wheel")
-class DistributionCompatibilityTests(unittest.TestCase):
+class DistributionOwnershipTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temporary = tempfile.TemporaryDirectory()
@@ -126,11 +160,10 @@ class DistributionCompatibilityTests(unittest.TestCase):
         source.mkdir()
         for name in ("pyproject.toml", "README.md", "LICENSE"):
             shutil.copyfile(PROJECT_ROOT / name, source / name)
-        for package in ("pudicus", "leftblock"):
-            shutil.copytree(
-                PROJECT_ROOT / package, source / package,
-                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
-            )
+        shutil.copytree(
+            PROJECT_ROOT / "leftblock", source / "leftblock",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
         output = Path(cls.temporary.name) / "wheel"
         output.mkdir()
         result = subprocess.run(
@@ -146,39 +179,44 @@ class DistributionCompatibilityTests(unittest.TestCase):
             raise AssertionError("Offline wheel build failed; no dependency installation was attempted")
         wheels = list(output.glob("*.whl"))
         if len(wheels) != 1:
-            raise AssertionError("Expected one compatibility wheel")
-        with zipfile.ZipFile(wheels[0]) as artifact:
-            cls.wheel = wheels[0]
+            raise AssertionError("Expected one LeftBlock wheel")
+        cls.wheel = wheels[0]
+        with zipfile.ZipFile(cls.wheel) as artifact:
             cls.names = artifact.namelist()
             metadata = next(name for name in cls.names if name.endswith(".dist-info/METADATA"))
             scripts = next(name for name in cls.names if name.endswith(".dist-info/entry_points.txt"))
             cls.metadata = artifact.read(metadata).decode()
             cls.entry_points = configparser.ConfigParser()
             cls.entry_points.read_string(artifact.read(scripts).decode())
+            cls.rules = artifact.read("leftblock/data/gitleaks.toml")
+            cls.license = artifact.read(next(
+                name for name in cls.names
+                if ".dist-info/" in name and name.endswith("/LICENSE")
+            ))
 
-    def test_new_distribution_owns_only_new_command(self):
+    def test_distribution_owns_only_leftblock_command(self):
         self.assertIn("\nName: leftblock\n", "\n" + self.metadata)
         self.assertIn("\nVersion: 0.3.0\n", "\n" + self.metadata)
         self.assertIn("\nLicense-File: LICENSE\n", "\n" + self.metadata)
         self.assertEqual(dict(self.entry_points["console_scripts"]), {"leftblock": "leftblock.cli:main"})
 
-    def test_wheel_contains_implementation_and_rules_without_legacy_files(self):
+    def test_wheel_contains_only_implementation_and_distribution_metadata(self):
         for name in (
             "leftblock/__init__.py", "leftblock/cli.py", "leftblock/core.py",
             "leftblock/hooks.py", "leftblock/data/gitleaks.toml",
-            "leftblock-0.3.0.dist-info/LICENSE",
         ):
             self.assertIn(name, self.names)
-        self.assertFalse(any(name.startswith(("pudicus/", "pudicus-", "gitbouncer/")) for name in self.names))
         self.assertEqual(
-            (PROJECT_ROOT / "leftblock/data/gitleaks.toml").read_bytes(),
-            (PROJECT_ROOT / "pudicus/data/gitleaks.toml").read_bytes(),
+            {name.split("/")[0] for name in self.names},
+            {"leftblock", "leftblock-0.3.0.dist-info"},
         )
+        self.assertEqual(self.rules, (PROJECT_ROOT / "leftblock/data/gitleaks.toml").read_bytes())
+        self.assertEqual(self.license, (PROJECT_ROOT / "LICENSE").read_bytes())
 
     @unittest.skipUnless(importlib.util.find_spec("pip"), "Offline lifecycle test requires existing pip")
     def test_upgrade_and_uninstall_preserve_independent_packages(self):
-        # Synthetic prior releases exercise pip ownership without a network or
-        # registry dependency. They are test fixtures, not published releases.
+        # Generated fixtures exercise pip ownership without downloads. The
+        # companion is an independent package, not an alias shipped by us.
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             runtime = root / "runtime"
@@ -203,35 +241,39 @@ class DistributionCompatibilityTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, "Installed command failed")
                 return result.stdout
 
-            def old_snapshot():
-                return {str(path.relative_to(runtime)): hashlib.sha256(path.read_bytes()).hexdigest()
-                        for path in runtime.rglob("*")
-                        if path.is_file() and ("pudicus" in path.parts or path.name == "pudicus")
-                        and "__pycache__" not in path.parts}
+            def companion_snapshot():
+                return {
+                    str(path.relative_to(runtime)): hashlib.sha256(path.read_bytes()).hexdigest()
+                    for path in runtime.rglob("*")
+                    if path.is_file() and "__pycache__" not in path.parts
+                    and any(part == "companion_fixture" or part.startswith("companion_fixture-")
+                            for part in path.relative_to(runtime).parts)
+                }
 
-            legacy = synthetic_wheel(root, "pudicus", "0.2.0", "synthetic-legacy-pudicus")
-            previous = synthetic_wheel(root, "leftblock", "0.2.99", "synthetic-prior-leftblock")
-            pip("install", "--no-index", "--no-deps", str(legacy), str(previous))
-            self.assertIn("synthetic-legacy-pudicus", command("pudicus"))
-            before = old_snapshot()
+            companion = synthetic_wheel(root, "companion_fixture", "0.2.0", "independent fixture")
+            previous = synthetic_wheel(root, "leftblock", "0.2.99", "prior LeftBlock fixture")
+            pip("install", "--no-index", "--no-deps", str(companion), str(previous))
+            self.assertIn("independent fixture", command("companion_fixture"))
+            self.assertIn("prior LeftBlock fixture", command("leftblock"))
+            before = companion_snapshot()
             self.assertTrue(before)
             pip("install", "--no-index", "--no-deps", "--upgrade", str(self.wheel))
-            self.assertIn("LeftBlock (formerly Pudicus)", command("leftblock"))
-            self.assertEqual(old_snapshot(), before)
+            self.assertIn("LeftBlock", command("leftblock"))
+            self.assertEqual(companion_snapshot(), before)
             pip("install", "--no-index", "--no-deps", "--force-reinstall", str(self.wheel))
-            self.assertEqual(old_snapshot(), before)
+            self.assertEqual(companion_snapshot(), before)
             pip("uninstall", "--yes", "leftblock")
             self.assertFalse((runtime / "bin" / "leftblock").exists())
-            self.assertIn("synthetic-legacy-pudicus", command("pudicus"))
-            self.assertEqual(old_snapshot(), before)
+            self.assertIn("independent fixture", command("companion_fixture"))
+            self.assertEqual(companion_snapshot(), before)
             pip("install", "--no-index", "--no-deps", str(self.wheel))
-            pip("uninstall", "--yes", "pudicus")
-            self.assertFalse((runtime / "bin" / "pudicus").exists())
-            self.assertIn("LeftBlock (formerly Pudicus)", command("leftblock"))
+            pip("uninstall", "--yes", "companion_fixture")
+            self.assertFalse((runtime / "bin" / "companion_fixture").exists())
+            self.assertIn("LeftBlock", command("leftblock"))
 
 
 def synthetic_wheel(directory, name, version, marker):
-    """Make a tiny deterministic legacy distribution for offline ownership tests."""
+    """Make a tiny deterministic independent distribution for ownership tests."""
     info = f"{name}-{version}.dist-info"
     files = {
         f"{name}/__init__.py": b"",

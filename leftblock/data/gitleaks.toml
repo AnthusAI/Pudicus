@@ -1,8 +1,8 @@
-# Pudicus shipped gitleaks ruleset.
+# LeftBlock shipped gitleaks ruleset.
 #
 # Extends gitleaks' default secret rules (AWS, Google API keys, private
 # keys, generic API keys, ...) with personal-data and wallet rules so a
-# freshly installed Pudicus finds sensitive information with zero custom
+# freshly installed LeftBlock finds sensitive information with zero custom
 # configuration:
 #
 #   - personal email addresses (infrastructure identities allowlisted)
@@ -25,7 +25,7 @@
 # (placeholder usernames/actor ids, Kanbus structural id fields, the
 # 00000000-0000-4000-8000-... example UUID shape) — never whole paths.
 
-title = "Pudicus sensitive-data rules"
+title = "LeftBlock sensitive-data rules"
 
 [extend]
 useDefault = true
@@ -53,7 +53,7 @@ paths = [
 # --------------------------------------------------------------------
 
 [[rules]]
-id = "pudicus-personal-email"
+id = "leftblock-personal-email"
 description = "Personal email address"
 regex = '''[a-zA-Z0-9._%+\-']+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'''
 keywords = ["@"]
@@ -67,7 +67,7 @@ regexes = [
 ]
 
 [[rules]]
-id = "pudicus-home-path-posix"
+id = "leftblock-home-path-posix"
 description = "Home-folder path (/Users/<name> or /home/<name>)"
 # The path segment after the prefix is the secret. Requiring a
 # non-path character before /Users or /home keeps mid-path segments
@@ -82,7 +82,7 @@ regexes = [
 ]
 
 [[rules]]
-id = "pudicus-home-path-windows"
+id = "leftblock-home-path-windows"
 description = "Home-folder path (C:\\Users\\<name> or \\Users\\<name>)"
 regex = '''\\+Users\\+([a-zA-Z0-9._\-]+)'''
 keywords = ["Users"]
@@ -93,7 +93,7 @@ regexes = [
 ]
 
 [[rules]]
-id = "pudicus-session-uuid"
+id = "leftblock-session-uuid"
 description = "Bare UUID (potential session/agent identifier)"
 regex = '''\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b'''
 keywords = ["-"]
@@ -135,7 +135,7 @@ regexes = [
 ]
 
 [[rules]]
-id = "pudicus-actor-id"
+id = "leftblock-actor-id"
 description = "actor/user/author ID value"
 regex = '''"(?:actor_id|user_id|author_id)"\s*:\s*"([^"]{4,})"'''
 keywords = ["actor_id", "user_id", "author_id"]
@@ -167,13 +167,13 @@ regexes = [
 # --------------------------------------------------------------------
 
 [[rules]]
-id = "pudicus-openai-key"
+id = "leftblock-openai-key"
 description = "OpenAI API key (sk-, sk-proj-, sk-svcacct-)"
 regex = '''\bsk-(?:proj|svcacct)-[A-Za-z0-9_\-]{40,}|\bsk-[A-Za-z0-9]{20,}'''
 keywords = ["sk-"]
 
 [[rules]]
-id = "pudicus-anthropic-key"
+id = "leftblock-anthropic-key"
 description = "Anthropic API key (sk-ant-)"
 regex = '''\bsk-ant-[A-Za-z0-9_\-]{20,}'''
 keywords = ["sk-ant-"]
@@ -183,7 +183,7 @@ keywords = ["sk-ant-"]
 # --------------------------------------------------------------------
 
 [[rules]]
-id = "pudicus-eth-private-key"
+id = "leftblock-eth-private-key"
 description = "Ethereum-style private key (0x-prefixed 64 hex chars)"
 # Only the 0x-prefixed form is reported context-free: bare 64-hex
 # strings are indistinguishable from SHA-256 digests and are covered
@@ -192,13 +192,13 @@ regex = '''\b0x[0-9a-fA-F]{64}\b'''
 keywords = ["0x"]
 
 [[rules]]
-id = "pudicus-wif-key"
+id = "leftblock-wif-key"
 description = "Bitcoin WIF private key (base58check)"
 regex = '''\b[KLM][1-9A-HJ-NP-Za-km-z]{51}\b|\b5[1-9A-HJ-NP-Za-km-z]{50}\b'''
 keywords = ["K", "L", "5"]
 
 [[rules]]
-id = "pudicus-bip39-mnemonic"
+id = "leftblock-bip39-mnemonic"
 description = "BIP-39 seed phrase (12-24 lowercase words, seed/mnemonic context)"
 # Separation from prose and from SHA-256-style hex noise: the phrase
 # must follow seed/mnemonic/recovery-style context (assignment or

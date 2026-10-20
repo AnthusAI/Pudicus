@@ -1,5 +1,2 @@
-# Pre-existing finding on develop: the semantic-release-generated
-# CHANGELOG carries the maintainer's commit-metadata email. Reviewed by
-# the maintainers; regenerate the changelog or drop email trailers in
-# the release config to clear it at the source.
-CHANGELOG.md:pudicus-personal-email:22
+# No current-tree findings are allowlisted.
+# The changelog summarizes releases without personal metadata or receipt excerpts.

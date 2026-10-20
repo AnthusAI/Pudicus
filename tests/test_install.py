@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from pudicus.hooks import STATE_NAME, install_hook, validate_hook_install
+from leftblock.hooks import STATE_NAME, install_hook, validate_hook_install
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -34,7 +34,7 @@ class InstallHookTests(unittest.TestCase):
         env.update({
             "GIT_CONFIG_GLOBAL": os.devnull,
             "GIT_CONFIG_NOSYSTEM": "1",
-            "PUDICUS_SECRET_PATH": str(Path(self.temp_dir.name) / "secret"),
+            "LEFTBLOCK_SECRET_PATH": str(Path(self.temp_dir.name) / "secret"),
             "PYTHONPATH": str(PROJECT_ROOT),
         })
         self.environment = patch.dict(os.environ, env, clear=True)
@@ -53,7 +53,7 @@ class InstallHookTests(unittest.TestCase):
 
     def run_cli_install(self):
         return subprocess.run(
-            [sys.executable, "-m", "pudicus.cli", "install"], cwd=self.repo,
+            [sys.executable, "-m", "leftblock.cli", "install"], cwd=self.repo,
             input="y\n", text=True, capture_output=True,
         )
 
@@ -80,7 +80,7 @@ class InstallHookTests(unittest.TestCase):
                 self.install(self.repo)
         self.assertFalse(self.hook.exists())
         self.assertFalse(self.state.exists())
-        self.assertFalse((self.repo / ".pudicus.yml").exists())
+        self.assertFalse((self.repo / ".leftblock.yml").exists())
 
     def test_install_from_linked_worktree_uses_shared_hooks_directory(self):
         git(["commit", "--allow-empty", "-m", "initial"], self.repo)
@@ -189,11 +189,11 @@ class InstallHookTests(unittest.TestCase):
     def test_installed_hook_runs_with_minimal_runtime_path(self):
         self.install(self.repo)
         # Use a tiny local command checker; no secrets or real source are read.
-        (self.repo / ".pudicus.yml").write_text(
+        (self.repo / ".leftblock.yml").write_text(
             "version: 1\ncheckers:\n  - name: synthetic\n    type: command\n"
             "    command: /usr/bin/true\n    success_codes: [0]\n"
         )
-        Path(os.environ["PUDICUS_SECRET_PATH"]).write_text("synthetic-test-secret")
+        Path(os.environ["LEFTBLOCK_SECRET_PATH"]).write_text("synthetic-test-secret")
         message = self.repo / "message.txt"
         message.write_text("test: synthetic\n")
         with patch.dict(os.environ, {"PATH": "/usr/bin:/bin"}):
@@ -209,8 +209,8 @@ class InstallHookTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(self.hook.is_file())
         self.assertTrue(self.state.is_file())
-        self.assertTrue((self.repo / ".pudicus.yml").is_file())
-        self.assertTrue(Path(os.environ["PUDICUS_SECRET_PATH"]).is_file())
+        self.assertTrue((self.repo / ".leftblock.yml").is_file())
+        self.assertTrue(Path(os.environ["LEFTBLOCK_SECRET_PATH"]).is_file())
 
     def test_cli_refuses_foreign_hook_even_with_yes_on_stdin(self):
         self.hook.write_text("#!/bin/sh\nexit 7\n")
@@ -219,8 +219,8 @@ class InstallHookTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(self.hook.read_bytes(), before)
         self.assertFalse(self.state.exists())
-        self.assertFalse((self.repo / ".pudicus.yml").exists())
-        self.assertFalse(Path(os.environ["PUDICUS_SECRET_PATH"]).exists())
+        self.assertFalse((self.repo / ".leftblock.yml").exists())
+        self.assertFalse(Path(os.environ["LEFTBLOCK_SECRET_PATH"]).exists())
 
     def test_cli_refuses_hook_manager_without_writing_defaults(self):
         git(["config", "core.hooksPath", ".husky/_"], self.repo)
@@ -228,8 +228,8 @@ class InstallHookTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("core.hooksPath", result.stderr)
         self.assertFalse(self.hook.exists())
-        self.assertFalse((self.repo / ".pudicus.yml").exists())
-        self.assertFalse(Path(os.environ["PUDICUS_SECRET_PATH"]).exists())
+        self.assertFalse((self.repo / ".leftblock.yml").exists())
+        self.assertFalse(Path(os.environ["LEFTBLOCK_SECRET_PATH"]).exists())
 
 
 if __name__ == "__main__":

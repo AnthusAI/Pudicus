@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "leftblock"
 version = "0.3.0"
-description = "LeftBlock: a pluggable inspection gate for Git commits (formerly Pudicus)"
+description = "LeftBlock: a pluggable inspection gate for Git commits"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.8"

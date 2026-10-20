@@ -20,12 +20,12 @@ def print_warn(msg):
 def print_err(msg):
     print(f"\033[1;31m[leftblock ERROR]\033[0m {msg}", file=sys.stderr)
 
-DEFAULT_PUDICUS_YML = """\
+DEFAULT_LEFTBLOCK_YML = """\
 version: 1
 checkers:
   - name: gitleaks
     type: command
-    command: gitleaks protect --staged --config .pudicus/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
+    command: gitleaks protect --staged --config .leftblock/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
     success_codes: [0]
     finding_codes: [1]
 """
@@ -33,20 +33,20 @@ checkers:
 def write_default_configs(repo_root):
     """Install the zero-config defaults into a repo.
 
-    Writes a default .pudicus.yml (pointing at the shipped gitleaks
+    Writes a default .leftblock.yml (pointing at the shipped gitleaks
     ruleset) and copies the packaged gitleaks.toml into
-    <repo>/.pudicus/. Existing files are never overwritten.
+    <repo>/.leftblock/. Existing files are never overwritten.
     """
-    config_dir = os.path.join(repo_root, ".pudicus")
-    pudicus_yml = os.path.join(repo_root, ".pudicus.yml")
+    config_dir = os.path.join(repo_root, ".leftblock")
+    leftblock_yml = os.path.join(repo_root, ".leftblock.yml")
     ruleset_target = os.path.join(config_dir, "gitleaks.toml")
 
-    if not os.path.exists(pudicus_yml):
-        with open(pudicus_yml, "w") as f:
-            f.write(DEFAULT_PUDICUS_YML)
-        print_info(f"Wrote default checker config at {pudicus_yml}")
+    if not os.path.exists(leftblock_yml):
+        with open(leftblock_yml, "w") as f:
+            f.write(DEFAULT_LEFTBLOCK_YML)
+        print_info(f"Wrote default checker config at {leftblock_yml}")
     else:
-        print_info(f"Existing {pudicus_yml} left untouched.")
+        print_info(f"Existing {leftblock_yml} left untouched.")
 
     packaged_ruleset = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "data", "gitleaks.toml"
@@ -92,7 +92,7 @@ def cmd_install(args):
         print_err(str(exc))
         sys.exit(1)
     write_default_configs(repo_root)
-    print_info("Installed LeftBlock commit-msg hook (Pudicus-compatible).")
+    print_info("Installed LeftBlock commit-msg hook.")
 
     # Generate secret if needed
     secret_dir = os.path.dirname(SECRET_FILE_DEFAULT)
@@ -166,7 +166,7 @@ def cmd_hook(args):
             all_clean = False
             failed_checkers.append(res)
 
-    validator_str = f"pudicus-v{config.get('version', '1')}"
+    validator_str = f"leftblock-v{config.get('version', '1')}"
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     if all_clean:
@@ -245,7 +245,7 @@ def cmd_approve(args):
         print_err("Missing or invalid checker configuration. Approval blocked.")
         sys.exit(1)
 
-    validator_str = f"pudicus-v{config.get('version', '1')}"
+    validator_str = f"leftblock-v{config.get('version', '1')}"
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     trailers = []
@@ -307,7 +307,7 @@ def cmd_approve(args):
         trailers.append(f"--trailer=Inspection-sig: hmac-sha256:{hmac_sig}")
 
     # Create the approval commit
-    commit_msg = "chore: retroactive pudicus approval\n"
+    commit_msg = "chore: retroactive leftblock approval\n"
     cmd = ["git", "commit", "--allow-empty", "-F", "-"] + trailers
     proc = subprocess.run(cmd, input=commit_msg, text=True, capture_output=True, check=True)
     print_info(f"Created approval commit:\n{proc.stdout.strip()}")
@@ -367,7 +367,7 @@ def cmd_verify(args):
         print(f"\033[1;32mAll {len(commits)} commit(s) verified.\033[0m")
 
 def main():
-    parser = argparse.ArgumentParser(description="LeftBlock (formerly Pudicus) - A pluggable inspection gate for Git commits")
+    parser = argparse.ArgumentParser(description="LeftBlock - A pluggable inspection gate for Git commits")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     install_p = subparsers.add_parser("install", help="Install the commit-msg hook and setup secrets")
@@ -376,7 +376,7 @@ def main():
     install_p.add_argument("--gitleaks", help="Existing Gitleaks executable for a local check-only installation")
 
     check_p = subparsers.add_parser("check", help="Inspect staged changes without signing or allowing overrides")
-    check_p.add_argument("--config", help="Explicit local checker policy; defaults to .pudicus.yml")
+    check_p.add_argument("--config", help="Explicit local checker policy; defaults to .leftblock.yml")
 
     hook_p = subparsers.add_parser("hook", help="Run checkers (used internally by git hook)")
     hook_p.add_argument("commit_msg_file", help="Path to the commit message file")

@@ -1,1 +1,1 @@
-"""LeftBlock: local inspection gates for Git commits, formerly Pudicus."""
+"""LeftBlock: local inspection gates for Git commits."""

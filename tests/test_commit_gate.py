@@ -14,8 +14,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from pudicus import cli
-from pudicus.core import CheckerResult, run_command_checker, run_tactus_checker
+from leftblock import cli
+from leftblock.core import CheckerResult, run_command_checker, run_tactus_checker
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -40,13 +40,13 @@ class RepositoryFixture(unittest.TestCase):
         self.env = {
             key: value
             for key, value in os.environ.items()
-            if not key.startswith(("GIT_", "GITLEAKS_", "PUDICUS_"))
+            if not key.startswith(("GIT_", "GITLEAKS_", "LEFTBLOCK_"))
         }
         self.env.update({
             "GIT_CONFIG_GLOBAL": os.devnull,
             "GIT_CONFIG_SYSTEM": os.devnull,
             "GIT_CONFIG_NOSYSTEM": "1",
-            "PUDICUS_SECRET_PATH": str(self.secret),
+            "LEFTBLOCK_SECRET_PATH": str(self.secret),
             "PYTHONPATH": str(PROJECT_ROOT),
         })
         self.git("init", check=True)
@@ -68,9 +68,9 @@ class RepositoryFixture(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, "Disposable Git setup failed")
         return proc
 
-    def pudicus(self, *args):
+    def leftblock(self, *args):
         return subprocess.run(
-            [sys.executable, "-m", "pudicus.cli", *args],
+            [sys.executable, "-m", "leftblock.cli", *args],
             cwd=self.repo, env=self.env, text=True, capture_output=True,
             stdin=subprocess.DEVNULL,
         )
@@ -83,7 +83,7 @@ class RepositoryFixture(unittest.TestCase):
         checker = {"name": "synthetic-scanner", "type": "command", "command": command}
         checker.update(extra)
         # JSON is valid YAML, and avoids shell/YAML quoting ambiguity.
-        (self.repo / ".pudicus.yml").write_text(
+        (self.repo / ".leftblock.yml").write_text(
             json.dumps({"version": 1, "checkers": [checker]})
         )
 
@@ -101,8 +101,8 @@ class RepositoryFixture(unittest.TestCase):
 class GitleaksCommitGateTests(RepositoryFixture):
     def setUp(self):
         super().setUp()
-        proc = self.pudicus("install")
-        self.assertEqual(proc.returncode, 0, "Pudicus hook installation failed")
+        proc = self.leftblock("install")
+        self.assertEqual(proc.returncode, 0, "LeftBlock hook installation failed")
 
     def test_clean_commit_passes_and_has_receipt(self):
         self.stage("A harmless staged fixture.\n")
@@ -117,7 +117,7 @@ class GitleaksCommitGateTests(RepositoryFixture):
         self.stage('api_key = "' + value + '"\n')
         proc = self.git("commit", "-m", "test: rejected fixture")
         self.assertNotEqual(proc.returncode, 0, "Synthetic sensitive fixture was accepted")
-        self.assertIn("pudicus-openai-key", proc.stderr)
+        self.assertIn("leftblock-openai-key", proc.stderr)
         self.assertTrue(value not in proc.stdout + proc.stderr, "Sensitive fixture leaked to output")
         self.assert_not_committed()
 
@@ -140,7 +140,7 @@ class GitleaksCommitGateTests(RepositoryFixture):
         self.stage("Clean staged content.\n")
         self.secret.unlink()
         original_message = self.msg.read_bytes()
-        proc = self.pudicus("check")
+        proc = self.leftblock("check")
         self.assertEqual(proc.returncode, 0, "Scan-only unexpectedly needed a signing secret")
         self.assertFalse(self.secret.exists())
         self.assertEqual(self.msg.read_bytes(), original_message)
@@ -148,7 +148,7 @@ class GitleaksCommitGateTests(RepositoryFixture):
 
     def test_scan_only_blocks_sensitive_index(self):
         self.stage('api_key = "' + synthetic_key() + '"\n')
-        proc = self.pudicus("check")
+        proc = self.leftblock("check")
         self.assertNotEqual(proc.returncode, 0, "Scan-only accepted sensitive staged content")
         self.assert_not_committed()
 
@@ -163,13 +163,13 @@ class FailClosedGateTests(RepositoryFixture):
     def assert_blocked(self):
         for args in (("check",), ("hook", str(self.msg))):
             with self.subTest(command=args[0]):
-                proc = self.pudicus(*args)
+                proc = self.leftblock(*args)
                 self.assertNotEqual(proc.returncode, 0, "Invalid inspection was allowed")
                 self.assertNotIn("Inspection-sig:", self.msg.read_text())
         self.assert_not_committed()
 
     def test_missing_empty_and_malformed_policy_block(self):
-        config = self.repo / ".pudicus.yml"
+        config = self.repo / ".leftblock.yml"
         for content in (None, "", "version: 1\ncheckers: []\n", "checkers: [", "[]"):
             with self.subTest(policy=content):
                 if content is None:
@@ -188,7 +188,7 @@ class FailClosedGateTests(RepositoryFixture):
         )
         for checker in cases:
             with self.subTest(checker=checker):
-                (self.repo / ".pudicus.yml").write_text(json.dumps({"checkers": [checker]}))
+                (self.repo / ".leftblock.yml").write_text(json.dumps({"checkers": [checker]}))
                 self.assert_blocked()
 
     def test_missing_scanner_blocks(self):
@@ -200,7 +200,7 @@ class FailClosedGateTests(RepositoryFixture):
         self.policy(command, success_codes=[0, 3], finding_codes=[1])
         for args in (("check",), ("hook", str(self.msg))):
             with self.subTest(command=args[0]):
-                proc = self.pudicus(*args)
+                proc = self.leftblock(*args)
                 self.assertEqual(proc.returncode, 0, "Configured success code was rejected")
         self.assertIn("Inspection-result: clean", self.msg.read_text())
         self.assert_not_committed()
@@ -225,7 +225,7 @@ class FailClosedGateTests(RepositoryFixture):
         )
         self.policy(command)
         self.assert_blocked()
-        proc = self.pudicus("check")
+        proc = self.leftblock("check")
         self.assertTrue(sentinel not in proc.stdout + proc.stderr, "Raw scanner logs were exposed")
 
     def test_invalid_report_blocks_and_suppresses_logs(self):
@@ -238,7 +238,7 @@ class FailClosedGateTests(RepositoryFixture):
         ) + " {report_file}"
         self.policy(command)
         self.assert_blocked()
-        proc = self.pudicus("check")
+        proc = self.leftblock("check")
         self.assertTrue(sentinel not in proc.stdout + proc.stderr, "Invalid report contents were exposed")
 
     def test_report_prints_only_file_and_rule_id(self):
@@ -255,7 +255,7 @@ class FailClosedGateTests(RepositoryFixture):
             "sys.exit(1)\n"
         ) + " {report_file}"
         self.policy(command)
-        proc = self.pudicus("check")
+        proc = self.leftblock("check")
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("fixture.txt", proc.stderr)
         self.assertIn("synthetic-rule", proc.stderr)
@@ -271,7 +271,7 @@ class FailClosedGateTests(RepositoryFixture):
         for args in (("check",), ("hook", str(self.msg))):
             with self.subTest(command=args[0]):
                 self.stage("Original staged content.\n")
-                proc = self.pudicus(*args)
+                proc = self.leftblock(*args)
                 self.assertNotEqual(proc.returncode, 0, "Changed staged tree passed inspection")
                 self.assertNotIn("Inspection-sig:", self.msg.read_text())
                 self.assert_not_committed()
@@ -279,7 +279,7 @@ class FailClosedGateTests(RepositoryFixture):
     def test_tactus_operational_error_is_not_an_approval_finding(self):
         # Exercise the existing adapter contract without invoking Tactus.
         proc = subprocess.CompletedProcess([], 2, stdout="synthetic-log", stderr="synthetic-log")
-        with mock.patch("pudicus.core.run_cmd", return_value=proc):
+        with mock.patch("leftblock.core.run_cmd", return_value=proc):
             result = run_tactus_checker({"name": "synthetic", "procedure": "fixture"})
         self.assertFalse(result.clean)
         self.assertTrue(result.error)

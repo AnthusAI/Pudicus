@@ -55,8 +55,7 @@ jobs:
         gitleaks version
 
     - name: Scan the LeftBlock tree with its own shipped ruleset
-      # .gitleaksignore holds one reviewed pre-existing finding: the
-      # semantic-release-generated CHANGELOG carries commit-metadata
-      # email. Everything else must be clean.
+      # Scan the complete checkout. Current changelog summaries omit
+      # personal metadata, so no changelog finding is allowlisted.
       run: |
         gitleaks dir . --config leftblock/data/gitleaks.toml --no-banner --redact

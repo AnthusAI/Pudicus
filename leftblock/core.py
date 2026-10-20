@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Tuple
 import tempfile
 import yaml
 
-SECRET_FILE_DEFAULT = os.environ.get("PUDICUS_SECRET_PATH", os.path.expanduser("~/.config/pudicus/secret"))
+SECRET_FILE_DEFAULT = os.environ.get("LEFTBLOCK_SECRET_PATH", os.path.expanduser("~/.config/leftblock/secret"))
 
 def get_secret(secret_path: str = SECRET_FILE_DEFAULT) -> str:
     if not os.path.exists(secret_path):
@@ -38,7 +38,7 @@ def get_commit_tree_hash(commit_sha: str) -> str:
 
 def load_config(repo_root: str, config_path: str = None) -> Dict[str, Any]:
     if config_path is None:
-        config_path = os.path.join(repo_root, ".pudicus.yml")
+        config_path = os.path.join(repo_root, ".leftblock.yml")
     if not os.path.exists(config_path):
         return {}
     with open(config_path, 'r') as f:
