@@ -111,8 +111,10 @@ regexes = [
   '''11111111-1111-4111-8111-1111111111''',
   # Kanbus board cache index: issue files as JSON object keys.
   '''[a-zA-Z]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json''',
-  # Board issue ids are <project-key>-<uuid> for any Kanbus project key; the
-  # structural-field pattern above accepts them only in those fields.
+  # Board issue ids are <project-key>-<uuid> for any Kanbus project key and
+  # appear in docs, comments and commit text. A UUID directly preceded by a
+  # project-key prefix is allowed anywhere; a bare UUID is still reported.
+  '''\b[A-Za-z][A-Za-z0-9_]{0,15}-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b''',
 ]
 
 [[rules]]

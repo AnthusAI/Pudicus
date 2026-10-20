@@ -48,9 +48,19 @@ class KanbusIdTests(unittest.TestCase):
                          ["pudicus-session-uuid"])
         self.assertEqual(scan_and_rule_ids({"a.json": '{"session_id": "%s"}\n' % u}),
                          ["pudicus-session-uuid"])
-        # A prefixed uuid outside the structural fields is no longer waved through.
-        self.assertEqual(scan_and_rule_ids({"b.md": "see kbs-%s\n" % u}),
-                         ["pudicus-session-uuid"])
+
+    def test_prefixed_ids_in_prose_are_allowed(self):
+        rng = _rng()
+        files = {
+            "doc%d.md" % i: "see %s-%s for details\n" % (p, _uuid(rng))
+            for i, p in enumerate(("kbs", "PPY", "kanbus", "BOTSPY"))
+        }
+        self.assertEqual(scan_and_rule_ids(files), [])
+
+    def test_bare_uuid_in_prose_is_flagged_next_to_nothing_prefixed(self):
+        self.assertEqual(
+            scan_and_rule_ids({"c.md": "id %s\n" % _uuid(_rng())}),
+            ["pudicus-session-uuid"])
 
 
 @unittest.skipIf(GITLEAKS is None, "gitleaks binary not installed")
