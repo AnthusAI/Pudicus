@@ -196,19 +196,19 @@ class DistributionOwnershipTests(unittest.TestCase):
 
     def test_distribution_owns_only_leftblock_command(self):
         self.assertIn("\nName: leftblock\n", "\n" + self.metadata)
-        self.assertIn("\nVersion: 0.3.0\n", "\n" + self.metadata)
+        self.assertIn("\nVersion: 0.3.2\n", "\n" + self.metadata)
         self.assertIn("\nLicense-File: LICENSE\n", "\n" + self.metadata)
         self.assertEqual(dict(self.entry_points["console_scripts"]), {"leftblock": "leftblock.cli:main"})
 
     def test_wheel_contains_only_implementation_and_distribution_metadata(self):
         for name in (
             "leftblock/__init__.py", "leftblock/cli.py", "leftblock/core.py",
-            "leftblock/hooks.py", "leftblock/data/gitleaks.toml",
+            "leftblock/hooks.py", "leftblock/merge.py", "leftblock/data/gitleaks.toml",
         ):
             self.assertIn(name, self.names)
         self.assertEqual(
             {name.split("/")[0] for name in self.names},
-            {"leftblock", "leftblock-0.3.0.dist-info"},
+            {"leftblock", "leftblock-0.3.2.dist-info"},
         )
         self.assertEqual(self.rules, (PROJECT_ROOT / "leftblock/data/gitleaks.toml").read_bytes())
         self.assertEqual(self.license, (PROJECT_ROOT / "LICENSE").read_bytes())

@@ -77,7 +77,16 @@ class CheckerResult:
         self.error = error
 
 
-def run_command_checker(checker: Dict[str, Any], cwd: str = None) -> CheckerResult:
+def index_environment(env=None):
+    """Resolve a caller-relative alternate index before changing checker cwd."""
+    source = os.environ if env is None else env
+    index = source.get("GIT_INDEX_FILE")
+    if index and not os.path.isabs(index):
+        return dict(source, GIT_INDEX_FILE=os.path.abspath(index))
+    return env
+
+
+def run_command_checker(checker: Dict[str, Any], cwd: str = None, env: Dict[str, str] = None) -> CheckerResult:
     name = checker.get('name', 'unknown')
     cmd = checker.get('command', '')
     success_codes = checker.get('success_codes', [0])
@@ -90,7 +99,7 @@ def run_command_checker(checker: Dict[str, Any], cwd: str = None) -> CheckerResu
             fd, report_file = tempfile.mkstemp(suffix=".json")
             os.close(fd)
             argv = [arg.replace("{report_file}", report_file) for arg in argv]
-        proc = run_cmd(argv, check=False, capture_output=True, cwd=cwd)
+        proc = run_cmd(argv, check=False, capture_output=True, cwd=cwd, env=index_environment(env))
         if proc.returncode in success_codes:
             return CheckerResult(name, True)
         if proc.returncode not in finding_codes:
@@ -124,7 +133,10 @@ def run_tactus_checker(checker: Dict[str, Any], cwd: str = None) -> CheckerResul
     if not procedure:
         return CheckerResult(name, False, "No procedure specified for tactus checker", error=True)
     try:
-        proc = run_cmd(["tactus", "run", procedure], check=False, capture_output=True, cwd=cwd)
+        proc = run_cmd(
+            ["tactus", "run", procedure], check=False, capture_output=True,
+            cwd=cwd, env=index_environment(),
+        )
     except OSError:
         return CheckerResult(name, False, "Tactus could not run; check its installation.", error=True)
     is_clean = proc.returncode == 0
@@ -134,12 +146,12 @@ def run_tactus_checker(checker: Dict[str, Any], cwd: str = None) -> CheckerResul
         error=proc.returncode not in (0, 1),
     )
 
-def execute_checkers(checkers: List[Dict[str, Any]], cwd: str = None) -> List[CheckerResult]:
+def execute_checkers(checkers: List[Dict[str, Any]], cwd: str = None, env: Dict[str, str] = None) -> List[CheckerResult]:
     results = []
     for checker in checkers:
         ctype = checker.get('type', 'command')
         if ctype == 'command':
-            results.append(run_command_checker(checker, cwd=cwd))
+            results.append(run_command_checker(checker, cwd=cwd, env=env))
         elif ctype == 'tactus':
             results.append(run_tactus_checker(checker, cwd=cwd))
         else:

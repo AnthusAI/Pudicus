@@ -6,9 +6,13 @@ import subprocess
 import getpass
 import yaml
 from datetime import datetime, timezone
+from leftblock.merge import (
+    MergeScopeError, build_scoped_index, checker_environment, index_entries, merge_state,
+)
 from leftblock.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
-    load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT
+    load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT,
+    CheckerResult,
 )
 
 def print_info(msg):
@@ -113,7 +117,43 @@ def configured_checks(repo_root, config_path=None):
     except (OSError, ValueError, yaml.YAMLError):
         print_err("Missing or invalid checker configuration. Inspection blocked; review the selected policy.")
         sys.exit(1)
-    return config, execute_checkers(checkers, cwd=repo_root)
+    # Inherited whole files at the same path can be omitted during a merge.
+    # Changed/resolved files and renamed paths keep their full staged diff.
+    # Any failure to scope falls back to the full staged scan (stricter).
+    scoped_index = None
+    try:
+        base_env = checker_environment()
+    except (MergeScopeError, ValueError):
+        return config, [CheckerResult(
+            "git-environment", False, "Invalid Git checker environment.", error=True,
+        )]
+    try:
+        state = merge_state(repo_root)
+        if state:
+            scoped_index = build_scoped_index(repo_root, state[1], head=state[0])
+            entries = index_entries(repo_root, scoped_index)
+            env = checker_environment(scoped_index)
+    except (MergeScopeError, OSError, ValueError):
+        if scoped_index and os.path.exists(scoped_index):
+            os.remove(scoped_index)
+        scoped_index = None
+    try:
+        results = execute_checkers(checkers, cwd=repo_root, env=env if scoped_index else base_env)
+        if scoped_index:
+            try:
+                stable = merge_state(repo_root) == state and index_entries(repo_root, scoped_index) == entries
+            except (MergeScopeError, OSError, ValueError):
+                stable = False
+            if not stable:
+                results.append(CheckerResult(
+                    "merge-scope", False,
+                    "Merge state or inspected index changed during inspection. Retry the check.",
+                    error=True,
+                ))
+        return config, results
+    finally:
+        if scoped_index and os.path.exists(scoped_index):
+            os.remove(scoped_index)
 
 
 def print_failures(failures):

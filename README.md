@@ -36,7 +36,7 @@ LeftBlock has been donated to **Data Parade (`DataParade-io`)**, alongside
 BotSpy. Its repository is
 [DataParade-io/LeftBlock](https://github.com/DataParade-io/LeftBlock).
 
-**LeftBlock 0.3.0 is unreleased.** The current source uses `leftblock` as its
+**LeftBlock 0.3.2 is unreleased.** The current source uses `leftblock` as its
 distribution, Python package, and CLI name. It includes no earlier package
 aliases or command shims. The CLI is also available as
 `python -m leftblock.cli`.
@@ -88,7 +88,7 @@ configures the integration; it does not install scanner binaries.
 
 **1. Install the CLI:**
 
-While 0.3.0 is unreleased, install only a reviewed local checkout containing
+While 0.3.2 is unreleased, install only a reviewed local checkout containing
 these changes. From that checkout, in the intended Python environment:
 
 ```bash
@@ -105,7 +105,7 @@ After the release is published and its distribution identity is verified,
 the versioned package installation will be:
 
 ```bash
-python -m pip install leftblock==0.3.0
+python -m pip install leftblock==0.3.2
 ```
 
 **2. Enable local staged protection:**
@@ -144,6 +144,14 @@ it never offers an override. Before adopting a hook in another project,
 verify that a synthetic sensitive fixture is blocked and a clean fixture
 passes in a throwaway repository. Keep private policy files in local Git
 metadata or another private location.
+
+During an in-progress merge, command checkers skip only regular files whose
+complete blob and mode already exist at the same path in a parent. Changed
+resolutions and renamed destinations retain their full staged diff, so
+inherited material in a modified file can still block. If merge scoping
+fails, the full staged check runs. Tactus uses the original index.
+This does not rescan parent history or eliminate staged-diff limitations,
+including sensitive context assembled only by deleting lines.
 
 **3. Optionally enable inspection receipts:**
 
@@ -220,13 +228,26 @@ PEM private keys, and other standard secret formats.
 | `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com` and `@example.*` placeholders are allowlisted) |
 | `leftblock-home-path-posix` | Home-folder paths `/Users/<name>`, `/home/<name>` |
 | `leftblock-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
-| `leftblock-session-uuid` | Bare UUIDs outside structural id fields (Kanbus `id`-style fields are allowlisted; a UUID in `session_id`-style fields or free text is reported) |
+| `leftblock-session-uuid` | Potential session UUIDs, with narrow exceptions for canonical Kanbus structural fields and example values |
 | `leftblock-actor-id` | `actor_id` / `user_id` / `author_id` JSON values |
 | `leftblock-openai-key` | `sk-`, `sk-proj-`, `sk-svcacct-` OpenAI keys |
 | `leftblock-anthropic-key` | `sk-ant-` Anthropic keys |
 | `leftblock-eth-private-key` | Ethereum-style private keys (`0x` + 64 hex) |
 | `leftblock-wif-key` | Bitcoin WIF private keys (compressed `K/L/M…`, uncompressed `5…`) |
 | `leftblock-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
+
+Kanbus exceptions apply to complete identifier property lines in
+`project/issues/*.json` and `project/events/*.json`. Event actor attribution
+must occupy a root property line in the canonical two-space format.
+Coordination claim references must occupy the canonical payload depth.
+The legacy `project/.cache/index.json` allows only canonical issue ID/parent
+lines and issue-filename keys with numeric modification times; cached
+descriptions and comments still receive the normal checks.
+Provider session fields, nested actor values, prose and arbitrary arrays
+remain scanned. A project prefix alone grants no exception, and a second
+value on the same line cannot inherit one. These checks recognize syntax;
+they do not validate a full JSON schema or prove an identifier is public.
+Other secret rules still apply to values in the accepted fields.
 
 ### Crypto wallet material: what is and is not flagged
 

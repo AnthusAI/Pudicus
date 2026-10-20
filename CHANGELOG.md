@@ -1,6 +1,6 @@
 # CHANGELOG
 
-These are historical release summaries. The 0.3.0 release is still in
+These are historical release summaries. The 0.3.2 release is still in
 preparation; earlier release numbers refer to the earlier distribution,
 not published versions of the current `leftblock` package. Summaries use
 current terminology where helpful. Original commits, receipts, and releases
