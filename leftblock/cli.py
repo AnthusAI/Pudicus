@@ -6,6 +6,7 @@ import subprocess
 import getpass
 import yaml
 from datetime import datetime, timezone
+from leftblock.merge import MergeScopeError, build_scoped_index, merge_parents
 from leftblock.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
     load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT
@@ -113,7 +114,21 @@ def configured_checks(repo_root, config_path=None):
     except (OSError, ValueError, yaml.YAMLError):
         print_err("Missing or invalid checker configuration. Inspection blocked; review the selected policy.")
         sys.exit(1)
-    return config, execute_checkers(checkers, cwd=repo_root)
+    # A merge commit scans only content new relative to every parent. Any
+    # failure to scope falls back to the full staged scan (stricter).
+    scoped_index = None
+    try:
+        parents = merge_parents(repo_root)
+        if parents:
+            scoped_index = build_scoped_index(repo_root, parents)
+    except (MergeScopeError, OSError, ValueError):
+        scoped_index = None
+    try:
+        env = dict(os.environ, GIT_INDEX_FILE=scoped_index) if scoped_index else None
+        return config, execute_checkers(checkers, cwd=repo_root, env=env)
+    finally:
+        if scoped_index and os.path.exists(scoped_index):
+            os.remove(scoped_index)
 
 
 def print_failures(failures):
