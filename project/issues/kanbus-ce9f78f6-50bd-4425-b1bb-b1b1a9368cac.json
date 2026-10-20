@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-ce9f78f6-50bd-4425-b1bb-b1b1a9368cac",
+  "title": "Install and verify LeftBlock across active projects",
+  "description": "Actual local installation and validation are complete for all 137 eligible Git repositories with empty hook locations, covering 260 present checkouts: one pilot, 115 in the initial batch, one refreshed coordinated installation, and 20 coordinated installations. All 137 distinct repositories preserved project state, accepted clean synthetic commits and blocked sensitive fixtures without changing the temporary test HEAD on rejection. An initial state-drift skip was safely replanned and subsequently passed. Three repositories using hook managers need 17 checkout-specific adapters that preserve configured hook paths and existing hooks; the current installer cannot safely compose them unchanged. Required project issue/branch workflows, unavailable project-tracker tooling and active-owner coordination remain prerequisites. No manager hook changes were attempted or denied. Forty-four generated/vendor/upstream repositories were excluded and eleven dangling Git pointers remain unresolved. These aggregates describe completed versus pending scope; private inventory and policy remain local. Public package release is separately pending and does not invalidate the verified local installations.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": "Codex",
+  "creator": null,
+  "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:36.322169Z",
+  "updated_at": "2026-10-20T13:14:30.921515Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

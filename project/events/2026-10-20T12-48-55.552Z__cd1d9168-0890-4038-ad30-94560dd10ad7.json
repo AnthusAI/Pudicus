@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "event_id": "cd1d9168-0890-4038-ad30-94560dd10ad7",
+  "issue_id": "kanbus-b460700d-9ff5-45d6-99cd-c26a267cfab1",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T12:48:55.552Z",
+  "actor_id": "AI",
+  "payload": {
+    "title": "Authorize and configure LeftBlock PyPI trusted publishing",
+    "description": "The new LeftBlock PyPI publication is explicitly authorized, but no new publisher grant or credentials may be created without exact approval. Proposed trusted publisher: PyPI project leftblock; repository owner DataParade-io; repository LeftBlock; workflow release.yml; environment left blank. No authenticated PyPI management session is available, so the grant remains pending. Obtain the exact approved management action through the proper account, then verify the publisher before running the release. Keep existing pudicus releases and access intact, use no secret values in tracker records, and never widen credential or team permissions to work around this prerequisite.",
+    "issue_type": "sub-task",
+    "status": "open",
+    "priority": 2,
+    "assignee": "Codex",
+    "parent": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+    "labels": [],
+    "agent": {
+      "platform": "codex",
+      "model": "unspecified",
+      "name": "Codex"
+    }
+  }
+}

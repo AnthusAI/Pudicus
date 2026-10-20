@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "74d2a640-00f0-4fa8-98c1-aac61cf5e88d",
+  "issue_id": "kanbus-aec7e885-dd07-48f5-ad4a-e8c805fda98e",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:53.967Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Rename repository and transfer to verified Data Parade organization",
+        "to": "Rename and transfer repository to DataParade-io/LeftBlock"
+      },
+      "description": {
+        "from": "External rename/transfer is explicitly PAUSED pending this project's owner's naming decision after reviewing https://github.com/achrafash/gitbouncer, an existing tool for private-repository share links. Its purpose differs, but the Git/privacy branding overlap is material. Verified target is DataParade-io through existing BotSpy ownership; authenticated account has source admin and destination repository-creation permission. Source access currently includes a team grant that cannot be assumed to survive cross-organization transfer. Preserve access without expanding team or credential permissions. No external rename, transfer or access change has occurred. Codex owns the technical preparation; the project owner must resolve branding before external action resumes.",
+        "to": "Completed and verified: https://github.com/DataParade-io/LeftBlock is the same public repository with unchanged repository ID 1352673840, history and branches; the former AnthusAI/Pudicus URL redirects. Existing access roles were preserved through equivalent repository grants without adding people, teams or credential scope. Repository rename/transfer is technically complete. Canonical package migration, PyPI publishing, logo and rollout remain separate tasks and are not implied complete by this transfer."
+      }
+    }
+  }
+}

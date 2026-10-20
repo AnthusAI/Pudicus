@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "3d8b909b-2e9d-4326-a467-6b96a748935c",
+  "issue_id": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:17:34.722Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "",
+        "to": "README shift-left changes are implemented locally and rendered successfully. Current documentation work now includes GitBouncer branding and safe legacy migration guidance, plus Data Parade positioning. Publishing the source/docs remains pending; do not mistake local evidence for a released package."
+      },
+      "assignee": {
+        "from": null,
+        "to": "Codex"
+      }
+    }
+  }
+}

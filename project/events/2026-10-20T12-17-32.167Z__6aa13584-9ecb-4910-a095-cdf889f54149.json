@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "6aa13584-9ecb-4910-a095-cdf889f54149",
+  "issue_id": "kanbus-01bf6b8b-0770-492f-92e4-ed9a91a22272",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:17:32.167Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "",
+        "to": "Reverified 2026-10-20 using the exact existing installed hook in a disposable repository: clean fixture commits with receipt; a generated synthetic sensitive fixture is rejected, leaves HEAD unchanged, and does not expose its value. Both partial-staging directions are covered. Current staged changes also passed inspection through temporary index/object storage, preserving the real index/history. Acceptance evidence is complete locally; new product source remains unpublished. Existing closed status is retained."
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "169314fd-f6e2-44c4-8e08-fa2bf036827d",
+  "issue_id": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:12:49.898Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "Local Gitleaks dogfood hardening is complete: packaged privacy rules, noninteractive staged check, fail-closed policy and scanner errors, sanitized diagnostics, index-stability detection, and preservation of other hooks. Evidence: 46 unit tests passed with one optional external-tree test skipped, and nine behavior scenarios passed. The installed-hook synthetic sensitive fixture was blocked before HEAD changed; clean content passed. Canonical LeftBlock packaging, release validation and actual cross-project installation are now in progress under their linked tasks. Do not treat prior local evidence as proof that the new package or every project is installed.",
+        "to": "Local Gitleaks hardening and synthetic acceptance are complete. Source checkpoint e3934c90bedec7fbaa137f62c6e0503ba708ed9b passed the source hook scan and receipt verification. Actual installation is now verified in 137 distinct eligible repositories with empty hook locations; every installation preserved project state and passed clean-commit acceptance plus sensitive-fixture rejection without changing the temporary test HEAD on rejection. Tests used synthetic content; no real findings are published. Three managed-hook repositories need 17 checkout-specific adapters and coordinated project workflow before integration can proceed. Canonical public package release remains pending under the release task. This evidence supports the tested local runtime and completed installation scope, not perfect detection or completion of every project."
+      }
+    }
+  }
+}

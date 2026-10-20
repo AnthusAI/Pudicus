@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "event_id": "bdf3c3f5-18bb-4bde-b95b-da97e13ee58d",
+  "issue_id": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T12:17:35.819Z",
+  "actor_id": "AI",
+  "payload": {
+    "title": "Publish reviewed scanner hardening and GitBouncer compatibility",
+    "description": "Local scanner hardening and evidence are ready. Prepare a source-only review that preserves unrelated owner changes, complete compatibility checks and decide the distribution transition before a release. Tracker-only publication is authorized separately and must not accidentally publish unrelated code. Package upload/release credentials and PyPI naming transition require verification. No production deployment or package release has occurred.",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-339b17b7-f9ff-4f5b-aafd-1978ee73eba8",
+    "labels": [],
+    "agent": {
+      "platform": "codex",
+      "model": "unspecified",
+      "name": "Codex"
+    }
+  }
+}

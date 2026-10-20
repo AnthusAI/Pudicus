@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "7f38f61d-5fb6-47dc-98d6-3518443dda57",
+  "issue_id": "kanbus-60463398-6c20-4d76-86bb-23ce44962b37",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:17:33.205Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "",
+        "to": "Local installer hardening completed and tested: keep foreign/legacy/edited/disabled hooks intact, reject configured core.hooksPath rather than replacing hook managers, verify managed-hook content hashes before refresh, support linked worktrees and minimal PATH. Fourteen installer regressions pass. Existing config files remain preserved. Source publication and adoption in other projects are tracked separately; original implementation acceptance remains closed."
+      }
+    }
+  }
+}

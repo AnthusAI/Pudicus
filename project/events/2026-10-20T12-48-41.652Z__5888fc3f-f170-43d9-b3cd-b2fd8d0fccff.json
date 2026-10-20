@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "5888fc3f-f170-43d9-b3cd-b2fd8d0fccff",
+  "issue_id": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:41.652Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Docs, CI wiring and dogfood notes",
+        "to": "LeftBlock documentation, CI, and dogfood evidence"
+      },
+      "description": {
+        "from": "README shift-left changes are implemented locally and rendered successfully. Current documentation work now includes GitBouncer branding and safe legacy migration guidance, plus Data Parade positioning. Publishing the source/docs remains pending; do not mistake local evidence for a released package.",
+        "to": "The shift-left README diagrams and explanation are implemented locally and rendered. Current work adopts the final LeftBlock name, Data Parade repository location, canonical package instructions and safe Pudicus compatibility guidance while preserving the documented scanner limitations and receipt trust boundary. Ryan owns the logo asset. Later factual Papyrus site and Anth.us material is a review-only draft task; no public content publication is authorized by that drafting scope."
+      }
+    }
+  }
+}

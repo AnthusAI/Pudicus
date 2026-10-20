@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "74bfae35-d570-43dc-ac7b-f372e8441a51",
+  "issue_id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:17:35.297Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "README: sensitive-data detection section and scanner matrix",
+        "to": "README: shift-left diagram, detection evidence, and GitBouncer migration"
+      },
+      "description": {
+        "from": "",
+        "to": "Local README now shows working/staged changes -> inspection before commit -> local history -> push/remote -> downstream clones/pulls. It distinguishes detected material blocked before commit from later checks after history exists, actual commit-msg timing, staged-diff limits, bypasses, overrides, HMAC trust and layered defenses. Both Mermaid diagrams parsed and rendered offline. GitBouncer branding and Data Parade positioning are being reconciled with the explicit naming decision; source publication remains pending."
+      },
+      "assignee": {
+        "from": null,
+        "to": "Codex"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "0e627bec-b308-4f7b-85d7-fc35792046f3",
+  "issue_id": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:51.915Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Introduce GitBouncer branding and CLI with Pudicus compatibility",
+        "to": "Make LeftBlock the canonical package and CLI with Pudicus compatibility"
+      },
+      "description": {
+        "from": "Local compatibility preparation is complete in a separate small review copy: GitBouncer alias package and CLI entry point, legacy Pudicus command/imports retained, distribution name still pudicus, and original configuration paths/secret path/receipt identifiers/rules preserved. Five compatibility tests pass, including offline wheel inspection using existing build tools. Actual hook runtime passed three runtime tests; packaging checks ran in the existing packaging environment. No dependency installation, metadata refresh, package publication or rename-source push occurred. External branding is paused for https://github.com/achrafash/gitbouncer overlap resolution; keep local work reviewable and preserve the working Pudicus integration. New bare launcher requires a reviewed metadata refresh after the decision.",
+        "to": "The final canonical product and distribution name is LeftBlock; the old GitBouncer branding block is cleared. Implement and validate the new leftblock 0.3.0 package and command while retaining the required legacy Pudicus command/import compatibility, configuration filenames, secret path, hook runtime, receipt identifiers and rules. Preserve the existing pudicus project and releases. Prior local alias-prototype tests are evidence only for that prototype; rerun canonical wheel, runtime and installation checks for LeftBlock before release. The build is in progress and a new package upload is not yet verified."
+      }
+    }
+  }
+}
