@@ -21,9 +21,9 @@ PROJECT_ROOT = os.path.abspath(
 HEX = "0123456789abcdef"
 
 
-def _git(args, cwd):
+def _git(args, cwd, env=None):
     return subprocess.run(
-        ["git", *args], cwd=cwd, text=True, capture_output=True
+        ["git", *args], cwd=cwd, text=True, capture_output=True, env=env
     )
 
 
@@ -106,8 +106,10 @@ def step_impl(context):
 
 @when("I commit the staged files")
 def step_impl(context):
+    # The env carries PUDICUS_SECRET_PATH so the hook process (and the
+    # gitleaks PATH captured by install) see the test's own secret.
     context.result = _git(
-        ["commit", "-F", context.msg_file], context.repo_dir
+        ["commit", "-F", context.msg_file], context.repo_dir, env=context.env
     )
 
 

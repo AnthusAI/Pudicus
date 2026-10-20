@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  workflow_call:
+  workflow_dispatch:
   push:
     branches: [ main, develop ]
   pull_request:
@@ -52,9 +54,9 @@ jobs:
         sudo install gitleaks /usr/local/bin/gitleaks
         gitleaks version
 
-    - name: Scan the Pudicus tree with its own shipped ruleset (dogfood)
+    - name: Scan the LeftBlock tree with its own shipped ruleset
       # .gitleaksignore holds one reviewed pre-existing finding: the
       # semantic-release-generated CHANGELOG carries commit-metadata
       # email. Everything else must be clean.
       run: |
-        gitleaks dir . --config pudicus/data/gitleaks.toml --no-banner --redact
+        gitleaks dir . --config leftblock/data/gitleaks.toml --no-banner --redact
