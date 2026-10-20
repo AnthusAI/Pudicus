@@ -36,7 +36,7 @@ LeftBlock has been donated to **Data Parade (`DataParade-io`)**, alongside
 BotSpy. Its repository is
 [DataParade-io/LeftBlock](https://github.com/DataParade-io/LeftBlock).
 
-**LeftBlock 0.3.2 is unreleased.** The current source uses `leftblock` as its
+LeftBlock is published on PyPI as `leftblock`. The current source uses `leftblock` as its
 distribution, Python package, and CLI name. It includes no earlier package
 aliases or command shims. The CLI is also available as
 `python -m leftblock.cli`.
@@ -88,25 +88,14 @@ configures the integration; it does not install scanner binaries.
 
 **1. Install the CLI:**
 
-While 0.3.2 is unreleased, install only a reviewed local checkout containing
-these changes. From that checkout, in the intended Python environment:
+In the intended Python environment:
 
 ```bash
-python -m pip install .
+python -m pip install leftblock==0.3.3
 python -m leftblock.cli --help
 ```
 
-The installation is from local source, not a published release. Confirm the
-checkout's commit and validation results before installing; do not assume
-`main` or an earlier feature-branch commit contains this implementation.
 Follow the migration checklist above before replacing an earlier setup.
-
-After the release is published and its distribution identity is verified,
-the versioned package installation will be:
-
-```bash
-python -m pip install leftblock==0.3.2
-```
 
 **2. Enable local staged protection:**
 
