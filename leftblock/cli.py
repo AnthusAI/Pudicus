@@ -126,7 +126,12 @@ def configured_checks(repo_root, config_path=None, overrides=True):
             "Invalid .leftblock-allow.yml; inspection blocked.", error=True,
         ))
         return config, results
+    shown = set()
     for finding, reason in allowlist.apply_allowlist(results, entries):
+        # Several matches on one line share an id; report each override once.
+        if finding["id"] in shown:
+            continue
+        shown.add(finding["id"])
         print_info(
             "Override applied: file " + json.dumps(finding["File"], ensure_ascii=True)
             + ", rule " + json.dumps(finding["RuleID"], ensure_ascii=True)
