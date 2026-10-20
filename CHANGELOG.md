@@ -6,6 +6,16 @@ earlier distribution. Summaries use
 current terminology where helpful. Original commits, receipts, and releases
 remain unchanged; commit links retain their original hashes.
 
+## v0.3.5 (2026-10-20)
+
+### Fix
+
+- Printed override commands are safe to paste. They use `leftblock` when that
+  name on PATH runs the same installation (for example a `~/.local/bin/leftblock`
+  link to the current runtime). Otherwise they show the interpreter with the
+  home directory as `~`, so the advice never trips the home-path rule.
+- Finding lines read `file: rule [id ...]` instead of raw JSON.
+
 ## v0.3.4 (2026-10-20)
 
 ### Feature
