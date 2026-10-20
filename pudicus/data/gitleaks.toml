@@ -98,7 +98,7 @@ description = "Bare UUID (potential session/agent identifier)"
 regex = '''\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b'''
 keywords = ["-"]
 
-[rules.allowlist]
+[[rules.allowlists]]
 regexTarget = "line"
 regexes = [
   # Structural id fields only (Kanbus issue/event bookkeeping: ids of
@@ -117,16 +117,47 @@ regexes = [
   '''kanbus-[0-9a-f]{8}-[0-9a-f]{4}''',
 ]
 
+# Kanbus board files: every board uses its own issue-id prefix (PPY-, LIM-,
+# blbs-, chatticus-, decision-flywheel-, ...), so in board issue/event JSON a
+# <prefix>-<uuid> in a structural id field is bookkeeping, not a session id.
+# Scoped to project/issues and project/events by path AND line, so the same
+# shape anywhere else (code, docs, free text) is still reported.
+[[rules.allowlists]]
+description = "Kanbus board structural ids with any issue-key prefix"
+condition = "AND"
+paths = [
+  '''(^|/)project/(issues|events)/[^/]+\.json$''',
+]
+regexTarget = "line"
+regexes = [
+  '''"(id|comment_id|event_id|issue_id|parent_id|parent|target|target_id|from|to)"\s*:\s*"(?:[A-Za-z][A-Za-z0-9_]*-)+[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"''',
+  '''^\s*"(?:[A-Za-z][A-Za-z0-9_]*-)+[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",?\s*$''',
+]
+
 [[rules]]
 id = "pudicus-actor-id"
 description = "actor/user/author ID value"
 regex = '''"(?:actor_id|user_id|author_id)"\s*:\s*"([^"]{4,})"'''
 keywords = ["actor_id", "user_id", "author_id"]
 
-[rules.allowlist]
+[[rules.allowlists]]
 regexes = [
   # Anonymized placeholder ids, not real ones.
   '''^example[-_a-z0-9]*$''',
+]
+
+# Kanbus event files record the local actor that made each board change
+# ("actor_id"). That is the board's attribution design, not a leaked user
+# id; scoped to project/events by path AND line so it passes nowhere else.
+[[rules.allowlists]]
+description = "Kanbus board event actor attribution"
+condition = "AND"
+paths = [
+  '''(^|/)project/events/[^/]+\.json$''',
+]
+regexTarget = "line"
+regexes = [
+  '''^\s*"actor_id"\s*:\s*"[^"]+",?\s*$''',
 ]
 
 # --------------------------------------------------------------------

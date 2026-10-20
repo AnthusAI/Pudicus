@@ -324,3 +324,38 @@ class DogfoodTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+def _uuid(rng):
+    h = rand_hex(rng, 32)
+    return f"{h[:8]}-{h[8:12]}-4{h[13:16]}-8{h[17:20]}-{h[20:32]}"
+
+
+@unittest.skipUnless(GITLEAKS, "gitleaks not installed")
+class KanbusBoardAllowlistTests(unittest.TestCase):
+    """Kanbus board bookkeeping passes; the same shapes elsewhere still fail."""
+
+    def setUp(self):
+        self.rng = _rng()
+
+    def test_prefixed_issue_ids_in_board_issue_files_pass(self):
+        for prefix in ("PPY", "LIM", "blbs", "chatticus", "decision-flywheel"):
+            iid = f"{prefix}-{_uuid(self.rng)}"
+            doc = json.dumps({"id": iid, "parent": f"{prefix}-{_uuid(self.rng)}",
+                              "comments": [{"id": _uuid(self.rng), "text": "done"}]}, indent=2)
+            self.assertEqual(scan_and_rule_ids({f"project/issues/{iid}.json": doc}), [], prefix)
+
+    def test_event_actor_id_passes_only_in_board_events(self):
+        event = json.dumps({"event_id": _uuid(self.rng), "issue_id": f"LIM-{_uuid(self.rng)}",
+                            "event_type": "issue_created", "actor" + "_id": "local" + "user"}, indent=2)
+        self.assertEqual(scan_and_rule_ids({"project/events/2026-10-20T00-00-00.000Z__x.json": event}), [])
+        self.assertIn("pudicus-actor-id", scan_and_rule_ids({"src/telemetry.json": event}))
+        self.assertIn("pudicus-actor-id", scan_and_rule_ids({"project/issues/x.json": event}))
+
+    def test_prefixed_ids_outside_board_files_still_flagged(self):
+        doc = json.dumps({"id": f"LIM-{_uuid(self.rng)}"}, indent=2)
+        self.assertIn("pudicus-session-uuid", scan_and_rule_ids({"src/state.json": doc}))
+
+    def test_bare_uuid_in_board_free_text_still_flagged(self):
+        doc = json.dumps({"id": f"PPY-{_uuid(self.rng)}",
+                          "description": f"session {_uuid(self.rng)} reproduced it"}, indent=2)
+        self.assertIn("pudicus-session-uuid", scan_and_rule_ids({"project/issues/PPY-x.json": doc}))
