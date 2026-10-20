@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "a15702cf-0683-459d-b328-ee3954537ce2",
+  "issue_id": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:12:59.943Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "The user explicitly authorized publication of the new LeftBlock project on PyPI. The canonical leftblock 0.3.0 build is in progress; existing pudicus 0.2.0 and the old project/releases must remain available and unchanged. Complete canonical packaging and runtime checks, prepare the release workflow for DataParade-io/LeftBlock, and verify the published artifact and clean installation after release. A new trusted-publisher grant or credentials still require exact approval and an authenticated management action; package publication is not yet complete. Tracker publication and source/release publication remain distinct scopes.",
+        "to": "The new LeftBlock PyPI publication is explicitly authorized but has not occurred. Canonical source is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b; source hook scanning and receipt verification passed, and the local runtime has been installed and tested in 137 eligible repositories. Existing pudicus 0.2.0 and its project/releases remain preserved. A new trusted-publisher grant still requires exact approval and authenticated PyPI management access. The proposed grant and blocked prerequisite are tracked in the linked authorization task. Complete and verify the release artifact and clean published-package installation only after that prerequisite is met. Local source/installation evidence is not evidence of a published package."
+      }
+    }
+  }
+}

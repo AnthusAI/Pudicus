@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "event_id": "7efbeb1f-f1b7-46d0-88bb-0d21d191c0bf",
+  "issue_id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
+  "event_type": "coordination.claim",
+  "occurred_at": "2026-10-20T12:14:17.855Z",
+  "actor_id": "AI",
+  "payload": {
+    "owner": "AI",
+    "claim_id": "gitbouncer-tracker-kanbus-ce865271-2f48-4312-9601-57d833245b18",
+    "lease_expires_at": "2026-10-20T12:19:17.855Z",
+    "contention_window_s": 5,
+    "ttl_s": 300,
+    "revision": 1,
+    "operation_sequence": 1
+  }
+}

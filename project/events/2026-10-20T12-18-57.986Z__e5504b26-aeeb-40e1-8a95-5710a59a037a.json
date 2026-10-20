@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "event_id": "e5504b26-aeeb-40e1-8a95-5710a59a037a",
+  "issue_id": "kanbus-01bf6b8b-0770-492f-92e4-ed9a91a22272",
+  "event_type": "coordination.release",
+  "occurred_at": "2026-10-20T12:18:57.986Z",
+  "actor_id": "AI",
+  "payload": {
+    "owner": "AI",
+    "claim_id": "gitbouncer-tracker-kanbus-01bf6b8b-0770-492f-92e4-ed9a91a22272",
+    "operation_sequence": 2
+  }
+}

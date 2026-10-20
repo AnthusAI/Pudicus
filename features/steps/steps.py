@@ -8,7 +8,7 @@ from textwrap import dedent
 def run_cmd(cmd, cwd=None, **kwargs):
     return subprocess.run(cmd, shell=True, cwd=cwd, text=True, capture_output=True, **kwargs)
 
-@given('a configured pudicus installation with a mock {scanner_type} scanner')
+@given('a configured leftblock installation with a mock {scanner_type} scanner')
 def step_impl(context, scanner_type):
     # Setup a temporary git repository for testing
     context.temp_dir = tempfile.mkdtemp()
@@ -21,8 +21,8 @@ def step_impl(context, scanner_type):
     run_cmd('git config user.name "Test User"', cwd=context.repo_dir)
     run_cmd('git commit --allow-empty -m "initial commit"', cwd=context.repo_dir)
     
-    # Create pudicus config
-    config_path = os.path.join(context.repo_dir, ".pudicus.yml")
+    # Create leftblock config
+    config_path = os.path.join(context.repo_dir, ".leftblock.yml")
     if scanner_type == "successful":
         exit_code = 0
     else:
@@ -39,15 +39,15 @@ checkers:
     with open(config_path, 'w') as f:
         f.write(config_yaml)
         
-    # Setup pudicus secret
-    context.secret_dir = os.path.join(context.temp_dir, ".config", "pudicus")
+    # Setup leftblock secret
+    context.secret_dir = os.path.join(context.temp_dir, ".config", "leftblock")
     os.makedirs(context.secret_dir, exist_ok=True)
     context.secret_path = os.path.join(context.secret_dir, "secret")
     with open(context.secret_path, 'w') as f:
         f.write("mock-secret-12345")
         
     context.env = os.environ.copy()
-    context.env["PUDICUS_SECRET_PATH"] = context.secret_path
+    context.env["LEFTBLOCK_SECRET_PATH"] = context.secret_path
     context.env["PYTHONPATH"] = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 @given('a staged file containing {content_type}')
@@ -60,23 +60,23 @@ def step_impl(context, content_type):
             f.write("AWS_KEY=AKIAIOSFODNN7EXAMPLE\n")
             
     run_cmd("git add testfile.txt", cwd=context.repo_dir)
-    run_cmd("git add .pudicus.yml", cwd=context.repo_dir)
+    run_cmd("git add .leftblock.yml", cwd=context.repo_dir)
     
     context.msg_file = os.path.join(context.repo_dir, "commit_msg.txt")
     with open(context.msg_file, 'w') as f:
         f.write("test: initial commit\n")
 
-@when('I run the pudicus hook')
+@when('I run the leftblock hook')
 def step_impl(context):
-    cmd = f"python3 -m pudicus.cli hook {context.msg_file}"
+    cmd = f"python3 -m leftblock.cli hook {context.msg_file}"
     context.result = subprocess.run(
         cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
     )
 
-@when('I run the pudicus hook without a TTY')
+@when('I run the leftblock hook without a TTY')
 def step_impl(context):
     # Running without a pty will automatically act as without a TTY
-    cmd = f"python3 -m pudicus.cli hook {context.msg_file}"
+    cmd = f"python3 -m leftblock.cli hook {context.msg_file}"
     context.result = subprocess.run(
         cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
     )
@@ -105,18 +105,18 @@ def step_impl(context, trailer):
 def step_impl(context):
     # Same setup as a successful commit
     context.execute_steps('''
-        Given a configured pudicus installation with a mock successful scanner
+        Given a configured leftblock installation with a mock successful scanner
         And a staged file containing safe content
-        When I run the pudicus hook
+        When I run the leftblock hook
     ''')
     # Actually create the commit with the modified message file
     run_cmd(f"git commit -F {context.msg_file}", cwd=context.repo_dir)
     context.commit_sha = run_cmd("git rev-parse HEAD", cwd=context.repo_dir).stdout.strip()
 
-@given('a commit with no pudicus trailers')
+@given('a commit with no leftblock trailers')
 def step_impl(context):
     context.execute_steps('''
-        Given a configured pudicus installation with a mock successful scanner
+        Given a configured leftblock installation with a mock successful scanner
     ''')
     file_path = os.path.join(context.repo_dir, "testfile.txt")
     with open(file_path, 'w') as f:
@@ -125,9 +125,9 @@ def step_impl(context):
     run_cmd('git commit -m "no trailers"', cwd=context.repo_dir)
     context.commit_sha = run_cmd("git rev-parse HEAD", cwd=context.repo_dir).stdout.strip()
 
-@when('I run the pudicus verify command on the commit')
+@when('I run the leftblock verify command on the commit')
 def step_impl(context):
-    cmd = f"python3 -m pudicus.cli verify {context.commit_sha}"
+    cmd = f"python3 -m leftblock.cli verify {context.commit_sha}"
     context.result = subprocess.run(
         cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
     )
@@ -179,16 +179,16 @@ def step_impl(context):
     run_cmd('git commit -m "unsigned commit with secret"', cwd=context.repo_dir)
     context.commit_range = "HEAD~1..HEAD"
 
-@when('I run the pudicus approve command for those commits')
+@when('I run the leftblock approve command for those commits')
 def step_impl(context):
-    cmd = f"python3 -m pudicus.cli approve {context.commit_range}"
+    cmd = f"python3 -m leftblock.cli approve {context.commit_range}"
     context.result = subprocess.run(
         cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
     )
 
-@when('I run the pudicus approve command for that commit without a TTY')
+@when('I run the leftblock approve command for that commit without a TTY')
 def step_impl(context):
-    cmd = f"python3 -m pudicus.cli approve {context.commit_range}"
+    cmd = f"python3 -m leftblock.cli approve {context.commit_range}"
     context.result = subprocess.run(
         cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
     )
@@ -205,7 +205,7 @@ def step_impl(context):
 
 @then('the verification should pass for the entire range')
 def step_impl(context):
-    cmd = f"python3 -m pudicus.cli verify HEAD~3..HEAD" # covers the 2 commits + 1 approval commit
+    cmd = f"python3 -m leftblock.cli verify HEAD~3..HEAD" # covers the 2 commits + 1 approval commit
     res = subprocess.run(
         cmd, shell=True, cwd=context.repo_dir, text=True, capture_output=True, env=context.env
     )

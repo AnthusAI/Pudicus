@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "event_id": "ddff8609-ed30-478f-8d4a-6815359d7516",
+  "issue_id": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T12:17:37.832Z",
+  "actor_id": "AI",
+  "payload": {
+    "title": "Introduce GitBouncer branding and CLI with Pudicus compatibility",
+    "description": "Codex owns the local migration: add GitBouncer command/module and README positioning while retaining Pudicus command/import compatibility, existing configuration filenames, secret path, hook runtime and receipt validators. Check distribution-name availability and release behavior before changing the PyPI distribution. Add offline tests; record local versus published state explicitly.",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": "Codex",
+    "parent": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+    "labels": [],
+    "agent": {
+      "platform": "codex",
+      "model": "unspecified",
+      "name": "Codex"
+    }
+  }
+}

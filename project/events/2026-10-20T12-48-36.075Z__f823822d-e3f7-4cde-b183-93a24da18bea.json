@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "f823822d-e3f7-4cde-b183-93a24da18bea",
+  "issue_id": "kanbus-01bf6b8b-0770-492f-92e4-ed9a91a22272",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:36.075Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Confirm hook blocks a staged synthetic bad commit and allows clean commits (existing hook, default config)",
+        "to": "Verify staged sensitive blocking and clean commits for LeftBlock/Pudicus"
+      },
+      "description": {
+        "from": "Reverified 2026-10-20 using the exact existing installed hook in a disposable repository: clean fixture commits with receipt; a generated synthetic sensitive fixture is rejected, leaves HEAD unchanged, and does not expose its value. Both partial-staging directions are covered. Current staged changes also passed inspection through temporary index/object storage, preserving the real index/history. Acceptance evidence is complete locally; new product source remains unpublished. Existing closed status is retained.",
+        "to": "Local acceptance remains complete: the exact existing Pudicus hook in a disposable repository accepted clean content with a receipt and rejected a generated sensitive fixture without changing HEAD or exposing its value. Both partial-staging directions are covered. The original staged changes were checked through temporary index/object storage. Preserve this evidence for LeftBlock compatibility; canonical package and per-project runtime tests are tracked separately and must not be inferred from this completed test."
+      }
+    }
+  }
+}

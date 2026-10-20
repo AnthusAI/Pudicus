@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "472247d5-442d-4156-a413-313946519b51",
+  "issue_id": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:13:06.975Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "LeftBlock is the final name; the previous GitBouncer naming hold is resolved by the new choice. Repository rename and donation are complete and verified at https://github.com/DataParade-io/LeftBlock. The same public repository identity, history and branches remain, the prior URL redirects, and existing access roles were preserved without new people, teams or credential scope. Remaining identity work is canonical package/CLI migration, release instructions and the Ryan-owned logo. External release authorization is tracked separately.",
+        "to": "LeftBlock is the final name. Repository rename and donation are complete and verified at https://github.com/DataParade-io/LeftBlock with the original public repository identity/history, redirects and existing access preserved. Canonical source is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b with legacy Pudicus compatibility retained; local installation and verification are complete across 137 eligible repositories. Remaining identity/launch work includes the Ryan-owned logo and separately authorized PyPI publication. The new PyPI release is not published, and managed-hook integration remains pending under rollout."
+      }
+    }
+  }
+}

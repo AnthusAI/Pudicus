@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "event_id": "4cb54392-235f-4a2a-b570-056c4414c199",
+  "issue_id": "kanbus-5e2231db-7bc9-44e8-9923-edb9096aab0c",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:45.986Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Publish reviewed scanner hardening and GitBouncer compatibility",
+        "to": "Publish LeftBlock 0.3.0 while preserving existing Pudicus releases"
+      },
+      "description": {
+        "from": "Local scanner hardening and evidence are ready. Prepare a source-only review that preserves unrelated owner changes, complete compatibility checks and decide the distribution transition before a release. Tracker-only publication is authorized separately and must not accidentally publish unrelated code. Package upload/release credentials and PyPI naming transition require verification. No production deployment or package release has occurred.",
+        "to": "The user explicitly authorized publication of the new LeftBlock project on PyPI. The canonical leftblock 0.3.0 build is in progress; existing pudicus 0.2.0 and the old project/releases must remain available and unchanged. Complete canonical packaging and runtime checks, prepare the release workflow for DataParade-io/LeftBlock, and verify the published artifact and clean installation after release. A new trusted-publisher grant or credentials still require exact approval and an authenticated management action; package publication is not yet complete. Tracker publication and source/release publication remain distinct scopes."
+      },
+      "assignee": {
+        "from": null,
+        "to": "Codex"
+      }
+    }
+  }
+}

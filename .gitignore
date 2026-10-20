@@ -1,3 +1,7 @@
 project/.overlay/
+project/.cache/
 __pycache__/
-*.pycproject/.cache/
+*.pyc
+*.egg-info/
+build/
+dist/

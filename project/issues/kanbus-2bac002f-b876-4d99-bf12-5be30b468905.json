@@ -1,28 +1,28 @@
 {
   "id": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
-  "title": "Docs, CI wiring and dogfood notes",
-  "description": "",
+  "title": "LeftBlock documentation, CI, and dogfood evidence",
+  "description": "The LeftBlock README shift-left Mermaid diagram and explanatory flow are verified, covering staged changes, inspection before commit, local Git history, push/remote, and downstream copies. Source checkpoint e3934c90bedec7fbaa137f62c6e0503ba708ed9b includes the current documentation and passed source hook scanning and receipt verification. Local dogfood coverage is verified for 137 eligible installations with preserved project state and synthetic clean/sensitive tests. Managed-hook integrations and PyPI publication remain pending and must not be described as complete. Ryan owns the pending logo asset. Later factual Papyrus site and Anth.us material remains a review-only drafting task; no content publication is claimed.",
   "type": "epic",
-  "status": "closed",
+  "status": "in_progress",
   "priority": 2,
-  "assignee": null,
+  "assignee": "Codex",
   "creator": null,
   "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
   "labels": [],
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:53:01.557338Z",
-  "updated_at": "2026-10-03T16:16:22.094018Z",
-  "closed_at": "2026-10-03T16:16:22.093984Z",
-  "agent": {
-    "platform": "cursor",
-    "model": "GLM 5.3 Flash",
-    "name": "Cloud Agent on BlackbookM1"
-  },
+  "updated_at": "2026-10-20T13:12:55.048546Z",
+  "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {
     "project_label": "kanbus",
     "source": "shared"
+  },
+  "agent": {
+    "platform": "cursor",
+    "model": "GLM 5.3 Flash",
+    "name": "Cloud Agent on BlackbookM1"
   }
 }

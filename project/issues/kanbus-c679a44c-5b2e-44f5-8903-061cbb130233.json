@@ -1,0 +1,25 @@
+{
+  "id": "kanbus-c679a44c-5b2e-44f5-8903-061cbb130233",
+  "title": "Create the LeftBlock logo for documentation and launch assets",
+  "description": "Ryan owns the LeftBlock logo. Supply the approved asset and usage guidance for README and later factual launch materials. Codex should integrate the delivered asset without duplicating or taking over logo design. Track delivery here; no completed logo or publication is claimed.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": "Ryan",
+  "creator": null,
+  "parent": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T12:48:56.881044Z",
+  "updated_at": "2026-10-20T12:48:56.881301Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "event_id": "4436d94b-090f-4501-b776-81ef92f5cb53",
+  "issue_id": "kanbus-aec7e885-dd07-48f5-ad4a-e8c805fda98e",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-20T12:17:38.883Z",
+  "actor_id": "AI",
+  "payload": {
+    "title": "Rename repository and transfer to verified Data Parade organization",
+    "description": "Explicitly authorized by the user. Verify the destination using the existing BotSpy donation and authenticated organization/repository permissions. Check GitBouncer namespace collisions, preserve visibility/history/issues, perform supported GitHub rename/transfer and verify stable repository identity plus new owner/URL afterward. Currently paused pending resolution of the achrafash/gitbouncer branding overlap. Existing source access is team-based; do not expand teams or credential permissions to preserve access. Record a reviewed preservation approach before any transfer.",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": "Codex",
+    "parent": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+    "labels": [],
+    "agent": {
+      "platform": "codex",
+      "model": "unspecified",
+      "name": "Codex"
+    }
+  }
+}

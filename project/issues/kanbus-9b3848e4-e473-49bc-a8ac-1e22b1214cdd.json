@@ -1,0 +1,28 @@
+{
+  "id": "kanbus-9b3848e4-e473-49bc-a8ac-1e22b1214cdd",
+  "title": "LeftBlock identity and Data Parade donation",
+  "description": "LeftBlock is the final name. Repository rename and donation are complete and verified at https://github.com/DataParade-io/LeftBlock with the original public repository identity/history, redirects and existing access preserved. Canonical source is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b with legacy Pudicus compatibility retained; local installation and verification are complete across 137 eligible repositories. Remaining identity/launch work includes the Ryan-owned logo and separately authorized PyPI publication. The new PyPI release is not published, and managed-hook integration remains pending under rollout.",
+  "type": "epic",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": "Codex",
+  "creator": null,
+  "parent": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-20T12:17:36.812225Z",
+  "updated_at": "2026-10-20T13:13:06.978067Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "unspecified",
+    "name": "Codex"
+  }
+}

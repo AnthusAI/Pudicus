@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "188740bc-17f6-4dcd-a518-deb46530e96b",
+  "issue_id": "kanbus-ce865271-2f48-4312-9601-57d833245b18",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:14:34.201Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "The LeftBlock README text and Mermaid shift-left diagram are implemented and verified at local source checkpoint e3934c90bedec7fbaa137f62c6e0503ba708ed9b. The explanation distinguishes early interception from detection after local history or downstream copies already contain material, including actual hook timing, staged-diff limits, misses, bypasses, overrides, receipt trust boundaries and layered defenses. Core documentation and diagram acceptance are complete. This row remains active for integration of the Ryan-owned logo and any resulting verification; the logo dependency is preserved. New PyPI publication and managed-hook rollout remain pending; no perfect-protection or universal-rollout claim is made.",
+        "to": "The LeftBlock README text and Mermaid shift-left diagram are implemented and verified at local source checkpoint e3934c90bedec7fbaa137f62c6e0503ba708ed9b. The explanation distinguishes early interception from detection after local history or downstream copies already contain material, including actual hook timing, staged-diff limits, misses, bypasses, overrides, receipt trust boundaries and layered defenses. Core documentation and diagram acceptance are complete. This row remains active for integration of the Ryan-owned logo and any resulting verification; the logo dependency is preserved. New PyPI publication and managed-hook rollout remain pending; no perfect-protection or universal-rollout claim is made. The README pinned-reference follow-up is committed locally at 4ec816d956c98cfe4a2409ca17c6d718b012e55c and also passed source hook scanning and receipt verification. Release integration remains pending; neither a main-branch release nor PyPI publication is claimed."
+      }
+    }
+  }
+}

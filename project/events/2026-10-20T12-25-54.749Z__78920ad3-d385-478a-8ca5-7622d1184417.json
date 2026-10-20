@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "78920ad3-d385-478a-8ca5-7622d1184417",
+  "issue_id": "kanbus-aec7e885-dd07-48f5-ad4a-e8c805fda98e",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:25:54.749Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "External rename/transfer is explicitly PAUSED pending resolution with the project owner of https://github.com/achrafash/gitbouncer, an existing tool for private-repository share links. Its purpose differs, but the Git/privacy branding overlap is material. Verified target is DataParade-io through existing BotSpy ownership; authenticated account has source admin and destination repository-creation permission. Source access currently includes a team grant that cannot be assumed to survive cross-organization transfer. Preserve access without expanding team or credential permissions. No external rename, transfer or access change has occurred. Codex owns the technical preparation; the project owner must resolve branding before external action resumes.",
+        "to": "External rename/transfer is explicitly PAUSED pending this project's owner's naming decision after reviewing https://github.com/achrafash/gitbouncer, an existing tool for private-repository share links. Its purpose differs, but the Git/privacy branding overlap is material. Verified target is DataParade-io through existing BotSpy ownership; authenticated account has source admin and destination repository-creation permission. Source access currently includes a team grant that cannot be assumed to survive cross-organization transfer. Preserve access without expanding team or credential permissions. No external rename, transfer or access change has occurred. Codex owns the technical preparation; the project owner must resolve branding before external action resumes."
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "event_id": "b7fe1e00-9e82-4464-81fc-e7155615e044",
+  "issue_id": "kanbus-60463398-6c20-4d76-86bb-23ce44962b37",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T12:48:39.737Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "title": {
+        "from": "Wire default .pudicus.yml and install to write the config into target repos",
+        "to": "Preserve hook managers and legacy Pudicus config in LeftBlock setup"
+      },
+      "description": {
+        "from": "Local installer hardening completed and tested: keep foreign/legacy/edited/disabled hooks intact, reject configured core.hooksPath rather than replacing hook managers, verify managed-hook content hashes before refresh, support linked worktrees and minimal PATH. Fourteen installer regressions pass. Existing config files remain preserved. Source publication and adoption in other projects are tracked separately; original implementation acceptance remains closed.",
+        "to": "The local installer preservation work is complete and fourteen installer regressions passed: foreign, legacy, edited and disabled hooks remain intact; configured core.hooksPath is respected by refusing replacement; managed hooks require matching content hashes; linked worktrees and minimal PATH are covered. Existing configuration stays preserved. This completed acceptance applies to the tested integration. Canonical LeftBlock installation and wider adoption are tracked separately and require their own validation."
+      }
+    }
+  }
+}

@@ -31,7 +31,7 @@ def _gitleaks_available():
     return shutil.which("gitleaks") is not None
 
 
-@given("a repository installed with pudicus defaults")
+@given("a repository installed with leftblock defaults")
 def step_impl(context):
     context.scenario_root = tempfile.mkdtemp()
     context.repo_dir = os.path.join(context.scenario_root, "repo")
@@ -50,11 +50,11 @@ def step_impl(context):
 
     context.secret_path = os.path.join(context.scenario_root, "secret")
     context.env = os.environ.copy()
-    context.env["PUDICUS_SECRET_PATH"] = context.secret_path
+    context.env["LEFTBLOCK_SECRET_PATH"] = context.secret_path
     context.env["PYTHONPATH"] = PROJECT_ROOT
 
     subprocess.run(
-        [sys.executable, "-m", "pudicus.cli", "install"],
+        [sys.executable, "-m", "leftblock.cli", "install"],
         cwd=context.repo_dir, input="y\n", text=True,
         capture_output=True, env=context.env,
     )
@@ -64,8 +64,8 @@ def _write_and_stage(context, filename, content):
     path = os.path.join(context.repo_dir, filename)
     with open(path, "w") as f:
         f.write(content)
-    _git(["add", ".pudicus.yml"], context.repo_dir)
-    _git(["add", ".pudicus"], context.repo_dir)
+    _git(["add", ".leftblock.yml"], context.repo_dir)
+    _git(["add", ".leftblock"], context.repo_dir)
     _git(["add", filename], context.repo_dir)
 
     context.msg_file = os.path.join(context.repo_dir, "commit_msg.txt")
@@ -106,7 +106,7 @@ def step_impl(context):
 
 @when("I commit the staged files")
 def step_impl(context):
-    # The env carries PUDICUS_SECRET_PATH so the hook process (and the
+    # The env carries LEFTBLOCK_SECRET_PATH so the hook process (and the
     # gitleaks PATH captured by install) see the test's own secret.
     context.result = _git(
         ["commit", "-F", context.msg_file], context.repo_dir, env=context.env

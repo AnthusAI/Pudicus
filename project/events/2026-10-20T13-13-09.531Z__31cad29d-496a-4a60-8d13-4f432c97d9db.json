@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "31cad29d-496a-4a60-8d13-4f432c97d9db",
+  "issue_id": "kanbus-3d81305a-0407-45f9-b08f-f5580c276ba0",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:13:09.531Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "The final canonical product and distribution name is LeftBlock; the old GitBouncer branding block is cleared. Implement and validate the new leftblock 0.3.0 package and command while retaining the required legacy Pudicus command/import compatibility, configuration filenames, secret path, hook runtime, receipt identifiers and rules. Preserve the existing pudicus project and releases. Prior local alias-prototype tests are evidence only for that prototype; rerun canonical wheel, runtime and installation checks for LeftBlock before release. The build is in progress and a new package upload is not yet verified.",
+        "to": "The canonical product, distribution and command are LeftBlock. Source migration is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b with legacy Pudicus compatibility preserved, and source hook scanning and receipt verification passed. The local runtime has been installed and verified across 137 eligible repositories, preserving project state and passing synthetic clean/sensitive tests. Preserve the existing pudicus project/releases and compatibility requirements for commands/imports, configuration, hook runtime and receipts. Final canonical release-artifact and published-install verification remain tracked with publication; PyPI upload has not occurred. Do not infer a public release or completed managed-hook integrations from the local source checkpoint."
+      }
+    }
+  }
+}

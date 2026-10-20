@@ -1,25 +1,28 @@
 {
   "id": "kanbus-f66623f4-4914-4425-a8b8-d9a15e9a9979",
-  "title": "Pudicus: out-of-the-box sensitive-data detection",
-  "description": "",
+  "title": "LeftBlock: shift-left sensitive-data protection",
+  "description": "LeftBlock is the final product name and the repository transfer to https://github.com/DataParade-io/LeftBlock is complete. Source is checkpointed locally at e3934c90bedec7fbaa137f62c6e0503ba708ed9b with hook scanning and receipt verification. The README shift-left Mermaid diagram is verified. Actual local installation and synthetic validation are complete for all 137 eligible repositories with empty hook locations: clean commits passed, sensitive fixtures were blocked, and project state was preserved. Three repositories using hook managers still need 17 checkout-specific adapters, owner coordination and required project workflows; this is pending integration work, not a scanner failure. Generated/vendor/upstream exclusions and unresolved Git pointers remain outside completed coverage. The new LeftBlock PyPI release is not published: exact trusted-publisher approval and authenticated management access are pending. Existing pudicus releases are preserved. Ryan owns the logo; later factual publicity remains review-only.",
   "type": "initiative",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
-  "assignee": null,
+  "assignee": "Codex",
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-03T15:52:50.917270Z",
-  "updated_at": "2026-10-03T15:52:59.194940Z",
+  "updated_at": "2026-10-20T13:12:47.866736Z",
   "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "source": "shared",
+    "project_label": "kanbus"
+  },
   "agent": {
     "platform": "cursor",
     "model": "GLM 5.3 Flash",
     "name": "Cloud Agent on BlackbookM1"
-  },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {}
+  }
 }

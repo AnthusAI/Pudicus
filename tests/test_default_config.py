@@ -1,5 +1,5 @@
-"""Tests that `pudicus install` wires up the zero-config defaults:
-a default .pudicus.yml and the packaged gitleaks ruleset, both
+"""Tests that `leftblock install` wires up the zero-config defaults:
+a default .leftblock.yml and the packaged gitleaks ruleset, both
 non-destructive to pre-existing files."""
 
 import os
@@ -11,15 +11,15 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-PACKAGED_RULESET = PROJECT_ROOT / "pudicus" / "data" / "gitleaks.toml"
+PACKAGED_RULESET = PROJECT_ROOT / "leftblock" / "data" / "gitleaks.toml"
 
 
 def run_install(repo, answer="y\n"):
     env = os.environ.copy()
-    env["PUDICUS_SECRET_PATH"] = os.path.join(repo.parent, "secret")
+    env["LEFTBLOCK_SECRET_PATH"] = os.path.join(repo.parent, "secret")
     env["PYTHONPATH"] = str(PROJECT_ROOT)
     return subprocess.run(
-        [sys.executable, "-m", "pudicus.cli", "install"],
+        [sys.executable, "-m", "leftblock.cli", "install"],
         cwd=repo, input=answer, text=True, capture_output=True, env=env,
     )
 
@@ -43,25 +43,25 @@ class InstallDefaultConfigTests(unittest.TestCase):
         proc = run_install(self.repo)
         self.assertEqual(proc.returncode, 0, proc.stderr)
 
-        yml = self.repo / ".pudicus.yml"
+        yml = self.repo / ".leftblock.yml"
         self.assertTrue(yml.exists(), proc.stdout)
         yml_text = yml.read_text()
         self.assertIn("gitleaks protect --staged", yml_text)
-        self.assertIn(".pudicus/gitleaks.toml", yml_text)
+        self.assertIn(".leftblock/gitleaks.toml", yml_text)
         self.assertIn("finding_codes: [1]", yml_text)
 
-        ruleset = self.repo / ".pudicus" / "gitleaks.toml"
+        ruleset = self.repo / ".leftblock" / "gitleaks.toml"
         self.assertTrue(ruleset.exists())
         self.assertEqual(
             ruleset.read_bytes(), PACKAGED_RULESET.read_bytes()
         )
 
     def test_install_preserves_existing_configs(self):
-        yml = self.repo / ".pudicus.yml"
+        yml = self.repo / ".leftblock.yml"
         yml.write_text("version: 1\ncheckers: []\n")
-        pudicus_dir = self.repo / ".pudicus"
-        pudicus_dir.mkdir()
-        ruleset = pudicus_dir / "gitleaks.toml"
+        leftblock_dir = self.repo / ".leftblock"
+        leftblock_dir.mkdir()
+        ruleset = leftblock_dir / "gitleaks.toml"
         ruleset.write_text("# user-customized ruleset\n")
 
         proc = run_install(self.repo)
@@ -76,7 +76,7 @@ class InstallDefaultConfigTests(unittest.TestCase):
 
         sys.path.insert(0, str(PROJECT_ROOT))
         try:
-            from pudicus.core import load_config
+            from leftblock.core import load_config
             config = load_config(str(self.repo))
             self.assertIn("checkers", config)
             self.assertEqual(config["checkers"][0]["name"], "gitleaks")

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "event_id": "cb3c0b2d-891a-4c3f-a7ef-9cf14426598b",
+  "issue_id": "kanbus-2bac002f-b876-4d99-bf12-5be30b468905",
+  "event_type": "field_updated",
+  "occurred_at": "2026-10-20T13:12:55.046Z",
+  "actor_id": "AI",
+  "payload": {
+    "changes": {
+      "description": {
+        "from": "The shift-left README diagrams and explanation are implemented locally and rendered. Current work adopts the final LeftBlock name, Data Parade repository location, canonical package instructions and safe Pudicus compatibility guidance while preserving the documented scanner limitations and receipt trust boundary. Ryan owns the logo asset. Later factual Papyrus site and Anth.us material is a review-only draft task; no public content publication is authorized by that drafting scope.",
+        "to": "The LeftBlock README shift-left Mermaid diagram and explanatory flow are verified, covering staged changes, inspection before commit, local Git history, push/remote, and downstream copies. Source checkpoint e3934c90bedec7fbaa137f62c6e0503ba708ed9b includes the current documentation and passed source hook scanning and receipt verification. Local dogfood coverage is verified for 137 eligible installations with preserved project state and synthetic clean/sensitive tests. Managed-hook integrations and PyPI publication remain pending and must not be described as complete. Ryan owns the pending logo asset. Later factual Papyrus site and Anth.us material remains a review-only drafting task; no content publication is claimed."
+      }
+    }
+  }
+}

@@ -1,12 +1,13 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pudicus"
-version = "0.2.0"
-description = "A pluggable inspection gate for Git commits"
+name = "leftblock"
+version = "0.3.2"
+description = "LeftBlock: a pluggable inspection gate for Git commits"
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.8"
 dependencies = [
     "PyYAML",
@@ -14,17 +15,10 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["pudicus"]
+packages = ["leftblock"]
 
 [tool.setuptools.package-data]
-pudicus = ["data/*.toml"]
+leftblock = ["data/*.toml"]
 
 [project.scripts]
-pudicus = "pudicus.cli:main"
-
-[tool.semantic_release]
-version_toml = ["pyproject.toml:project.version"]
-branch = "main"
-upload_to_pypi = true
-upload_to_release = true
-build_command = "python -m pip install build && python -m build"
+leftblock = "leftblock.cli:main"
