@@ -1,6 +1,7 @@
 import argparse
 import sys
 import os
+import re
 import json
 import subprocess
 import getpass
@@ -310,17 +311,51 @@ def shell_path(path):
     return shlex.quote(path)
 
 
+_REMOVE_AND_ROTATE = "Remove it AND rotate the key: it may already be exposed."
+_HOME_PATH = "Use a relative path, $HOME or ~ instead."
+_DESCRIBE_ID = "Drop the identifier or describe it instead."
+RULE_HINTS = {
+    "leftblock-personal-email": "Use a role or placeholder address, or describe it instead.",
+    "leftblock-home-path-posix": _HOME_PATH,
+    "leftblock-home-path-windows": _HOME_PATH,
+    "leftblock-session-uuid": _DESCRIBE_ID,
+    "leftblock-actor-id": _DESCRIBE_ID,
+    "leftblock-openai-key": _REMOVE_AND_ROTATE,
+    "leftblock-anthropic-key": _REMOVE_AND_ROTATE,
+    "leftblock-eth-private-key": _REMOVE_AND_ROTATE,
+    "leftblock-wif-key": _REMOVE_AND_ROTATE,
+    "leftblock-bip39-mnemonic": _REMOVE_AND_ROTATE,
+}
+KANBUS_HINT = (
+    "This file is written by Kanbus; fix the content through kbs "
+    "(e.g. kbs update or comment), don't hand-edit it."
+)
+KANBUS_DATA = re.compile(r"(^|/)project/(issues|events)/[^/]+\.json$")
+
+
 def print_failures(failures):
     for result in failures:
         print_warn(f"Checker {json.dumps(str(result.name))} did not pass.")
         if isinstance(result.findings, list):
+            by_rule = {}
             for finding in result.findings:
-                line = f"{location(finding)}: {_plain(finding.get('RuleID', 'finding'))}"
-                if finding.get("id"):
-                    line += f" [id {finding['id']}]"
-                if describe(finding):
-                    line += f" ({describe(finding)})"
-                print("      " + line, file=sys.stderr)
+                by_rule.setdefault(finding.get("RuleID", "finding"), []).append(finding)
+            kanbus_files = []
+            for rule, group in by_rule.items():
+                for finding in group:
+                    line = f"{location(finding)}: {_plain(rule)}"
+                    if finding.get("id"):
+                        line += f" [id {finding['id']}]"
+                    if describe(finding):
+                        line += f" ({describe(finding)})"
+                    print("      " + line, file=sys.stderr)
+                    name = finding.get("File")
+                    if isinstance(name, str) and KANBUS_DATA.search(name) and name not in kanbus_files:
+                        kanbus_files.append(name)
+                if rule in RULE_HINTS:
+                    print("      Hint: " + RULE_HINTS[rule], file=sys.stderr)
+            for name in kanbus_files:
+                print(f"      {_plain(name)}: {KANBUS_HINT}", file=sys.stderr)
         else:
             print_warn(str(result.findings))
 

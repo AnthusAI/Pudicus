@@ -345,6 +345,15 @@ PEM private keys, and other standard secret formats.
 | `leftblock-wif-key` | Bitcoin WIF private keys (compressed `K/L/M…`, uncompressed `5…`) |
 | `leftblock-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
 
+A blocked check prints a one-line hint after each rule's findings (once per
+rule): use a role or placeholder address for personal emails; a relative path,
+`$HOME` or `~` for home paths; drop or describe session and actor identifiers;
+and for API, private and wallet keys, remove the value **and rotate the key**,
+since it may already be exposed. Findings in Kanbus board data
+(`project/issues/*.json`, `project/events/*.json`) also say that Kanbus writes
+those files and that the content should be fixed through `kbs` (for example
+`kbs update` or `kbs comment`) rather than by hand.
+
 Kanbus exceptions apply to complete identifier property lines in
 `project/issues/*.json` and `project/events/*.json`. Event actor attribution
 must occupy a root property line in the canonical two-space format.

@@ -98,9 +98,10 @@ class RecordedOverrideTests(RepositoryFixture):
         ident = self.blocked_id()
         proc = self.check()
         detail = [l for l in proc.stderr.splitlines() if l.startswith("      ")]
-        self.assertEqual(
-            detail, [f"      {PAGE}:2: leftblock-personal-email [id {ident}] (Personal email address)"],
-        )
+        self.assertEqual(detail, [
+            f"      {PAGE}:2: leftblock-personal-email [id {ident}] (Personal email address)",
+            "      Hint: Use a role or placeholder address, or describe it instead.",
+        ])
         self.assertIn(f"leftblock-personal-email in {PAGE}:2 [id {ident}]", proc.stderr.splitlines()[-1])
         self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
         self.assertEqual(self.allow(ident).returncode, 0)
