@@ -161,8 +161,9 @@ metadata or another private location.
 
 A block stays the default. If a finding is a false alarm (for example a
 public role address in a privacy notice), record a reviewed override. The
-blocked check prints an `id` for each finding, never the matched value, and
-the exact command to run:
+blocked check prints each finding as `file:LINE: rule [id …] (description)`,
+where the description is the rule's own text from the ruleset, never the
+matched value, source line or secret, and then the exact command to run:
 
 ```bash
 leftblock allow ID [ID ...] --reason "Why this is not sensitive"
@@ -179,10 +180,14 @@ allow:
   - id: "3f2a9c1e7b4d5a60"
     rule: "leftblock-personal-email"
     file: "apps/web/privacy/page.tsx"
+    kind: "Personal email address"
     reason: "Public role address required in the privacy notice."
     added: 2026-10-20
 ```
 
+- **Category for reviewers.** `kind` is the rule's description, written so a
+  reviewer of the pull request sees what kind of finding was approved. It is
+  informational: it is not part of matching and may be omitted.
 - **Scoped to line content.** The id hashes the rule, the file, and the exact
   staged content of the flagged lines. Editing that line, or adding another
   finding anywhere, blocks again.

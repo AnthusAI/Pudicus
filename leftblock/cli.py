@@ -204,6 +204,25 @@ def _plain(text):
     return json.dumps(text, ensure_ascii=True)
 
 
+DESCRIPTION_LIMIT = 80
+
+
+def describe(finding):
+    """The rule's own description (ruleset text, never matched data), safe to print."""
+    text = finding.get("description")
+    if not isinstance(text, str):
+        return ""
+    return _plain(" ".join(text.split())[:DESCRIPTION_LIMIT])
+
+
+def location(finding):
+    """`file` or `file:LINE`, safe to print."""
+    where = _plain(finding.get("File", "unknown file"))
+    if type(finding.get("line")) is int:
+        where += f":{finding['line']}"
+    return where
+
+
 def command_prefix():
     """How to invoke this LeftBlock in printed advice, without leaking a home path.
 
@@ -231,9 +250,11 @@ def print_failures(failures):
         print_warn(f"Checker {json.dumps(str(result.name))} did not pass.")
         if isinstance(result.findings, list):
             for finding in result.findings:
-                line = f"{_plain(finding.get('File', 'unknown file'))}: {_plain(finding.get('RuleID', 'finding'))}"
+                line = f"{location(finding)}: {_plain(finding.get('RuleID', 'finding'))}"
                 if finding.get("id"):
                     line += f" [id {finding['id']}]"
+                if describe(finding):
+                    line += f" ({describe(finding)})"
                 print("      " + line, file=sys.stderr)
         else:
             print_warn(str(result.findings))
@@ -255,7 +276,7 @@ def finding_summary(findings):
     """One-line list of rule, file and id, for callers that show only the last line."""
     parts = []
     for f in findings:
-        part = f"{f.get('RuleID', 'finding')} in {f.get('File', 'unknown file')}"
+        part = f"{_plain(f.get('RuleID', 'finding'))} in {location(f)}"
         if f.get("id"):
             part += f" [id {f['id']}]"
         if part not in parts:
@@ -323,10 +344,11 @@ def cmd_allow(args):
         print_err("Not a current finding id: " + ", ".join(json.dumps(i) for i in unknown))
         sys.exit(1)
     snapshot = allowlist.snapshot(repo_root)
+    chosen = [current[i] for i in dict.fromkeys(args.ids)]
+    for finding in chosen:
+        finding["kind"] = describe(finding)
     try:
-        added = allowlist.record_overrides(
-            repo_root, [current[i] for i in dict.fromkeys(args.ids)], reason,
-        )
+        added = allowlist.record_overrides(repo_root, chosen, reason)
     except (OSError, allowlist.AllowError):
         print_err(f"Existing {allowlist.ALLOW_FILE} is unreadable or invalid; fix it first.")
         sys.exit(1)

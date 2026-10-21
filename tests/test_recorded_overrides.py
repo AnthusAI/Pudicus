@@ -32,7 +32,7 @@ class RecordedOverrideTests(RepositoryFixture):
 
     def ids(self, proc):
         # Per-finding detail lines (the final summary line repeats the ids).
-        return re.findall(r"^      .*\[id ([0-9a-f]{16})\]$", proc.stderr, re.MULTILINE)
+        return re.findall(r"^      .*\[id ([0-9a-f]{16})\](?: \(.*\))?$", proc.stderr, re.MULTILINE)
 
     def blocked_id(self, text=None):
         self.write_stage(text or f"a\nContact: {EMAIL}\n")
@@ -61,7 +61,7 @@ class RecordedOverrideTests(RepositoryFixture):
         ident = self.blocked_id()
         last = self.check().stderr.strip().splitlines()[-1]
         self.assertIn("Inspection blocked", last)
-        self.assertIn(f"leftblock-personal-email in {PAGE} [id {ident}]", last)
+        self.assertIn(f"leftblock-personal-email in {PAGE}:2 [id {ident}]", last)
         self.assertIn("Remove the flagged content", last)
         self.assertIn(f"allow {ident}", last)
         self.assertNotIn("\033[", last)  # captured output carries no colour codes
@@ -86,6 +86,27 @@ class RecordedOverrideTests(RepositoryFixture):
         self.assertIn(REASON, check.stderr)
         # Overrides stay visible on every run, and the commit goes through.
         self.assertEqual(self.git("commit", "-m", "test: allowed").returncode, 0)
+
+    def test_findings_show_line_and_category_and_allow_records_kind(self):
+        ident = self.blocked_id()
+        proc = self.check()
+        detail = [l for l in proc.stderr.splitlines() if l.startswith("      ")]
+        self.assertEqual(
+            detail, [f"      {PAGE}:2: leftblock-personal-email [id {ident}] (Personal email address)"],
+        )
+        self.assertIn(f"leftblock-personal-email in {PAGE}:2 [id {ident}]", proc.stderr.splitlines()[-1])
+        self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
+        self.assertEqual(self.allow(ident).returncode, 0)
+        text = (self.repo / ".leftblock-allow.yml").read_text()
+        self.assertIn('kind: "Personal email address"', text)
+        entry = yaml.safe_load(text)["allow"][0]
+        self.assertEqual(entry["kind"], "Personal email address")
+        # kind is informational: an entry without it still matches.
+        (self.repo / ".leftblock-allow.yml").write_text(
+            "\n".join(l for l in text.splitlines() if not l.strip().startswith("kind:")) + "\n"
+        )
+        self.git("add", ".leftblock-allow.yml", check=True)
+        self.assertEqual(self.check().returncode, 0)
 
     def test_allow_file_itself_is_not_flagged_and_dedupes(self):
         ident = self.blocked_id()
