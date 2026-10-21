@@ -121,6 +121,73 @@ with the existing hook manager instead of replacing it. An earlier hook
 without the current ownership record requires a reviewed migration even
 if it is still functional.
 
+#### Upgrades and the stable runtime link
+
+When `install --local --check-only` runs from a virtualenv, it also keeps two
+symlinks pointing at that environment:
+
+- `$LEFTBLOCK_HOME/current` (default `~/.local/share/leftblock/current`) points
+  at the virtualenv, and every managed hook runs `current/bin/python` instead
+  of a versioned interpreter path.
+- `~/.local/bin/leftblock` points at `current/bin/leftblock`. It is replaced
+  only if it is absent or already a symlink; a regular file is left alone.
+
+To upgrade, install the new version into a new virtualenv and run
+`leftblock install --local --check-only` once, in any repository. That
+repoints `current`, so every repository's hook uses the new runtime. The
+per-repository rules copy (in `.git/leftblock/`) is refreshed only when
+you re-run the install in that repository.
+
+If the runtime link is broken, the hook fails closed: it prints
+`LeftBlock is not installed at <path>` with the reinstall steps and exits 1.
+Outside a virtualenv, the hook keeps using the installing interpreter and no
+links are made.
+
+`leftblock --version` prints the installed version. A blocked check starts
+with `leftblock <version>, ruleset <id>`, where the ruleset id is the first 12
+hex characters of the SHA-256 of the gitleaks config file the checker names
+with `--config` (`unknown` when there is none), so a report can say exactly
+which rules ran.
+
+#### Dry run
+
+`leftblock check` is a dry run of the next commit: it inspects the staged
+changes with the same policy the hook uses and changes nothing. Without
+`--config` it uses the local install policy when one exists, otherwise
+`.leftblock.yml`. A blocked run ends by printing `Re-run this check:
+leftblock check` and the final summary line.
+
+#### Exit codes and JSON output
+
+`leftblock check` exits with:
+
+| Code | Meaning |
+|---|---|
+| 0 | Passed (overrides may have been applied) |
+| 1 | Blocked by findings |
+| 2 | A checker or the configuration could not complete, including an invalid `.leftblock-allow.yml`; this wins over 1 when both occur |
+
+`leftblock check --format json` also prints one JSON object on stdout and
+leaves the human-readable stderr output unchanged:
+
+```json
+{
+  "version": "0.3.5",
+  "result": "blocked",
+  "findings": [{"file": "page.tsx", "line": 2, "rule": "leftblock-personal-email",
+                "id": "3f2a9c1e7b4d5a60", "description": "Personal email address"}],
+  "overrides_applied": [{"file": "a.md", "rule": "leftblock-home-path-posix",
+                         "id": "0123456789abcdef", "reason": "Documented example path"}],
+  "errors": [],
+  "override_command": "leftblock allow 3f2a9c1e7b4d5a60 --reason \"<why this is not sensitive>\""
+}
+```
+
+`result` is `passed`, `blocked` or `error`; `errors` is `[{checker, message}]`;
+`override_command` is `null` when nothing can be overridden. Like the text
+output, it never contains matched values or source lines. The git hooks only
+need a nonzero status, so they are unaffected.
+
 To run a noninteractive staged check with an explicit policy:
 
 ```bash
@@ -139,8 +206,9 @@ metadata or another private location.
 
 A block stays the default. If a finding is a false alarm (for example a
 public role address in a privacy notice), record a reviewed override. The
-blocked check prints an `id` for each finding, never the matched value, and
-the exact command to run:
+blocked check prints each finding as `file:LINE: rule [id …] (description)`,
+where the description is the rule's own text from the ruleset, never the
+matched value, source line or secret, and then the exact command to run:
 
 ```bash
 leftblock allow ID [ID ...] --reason "Why this is not sensitive"
@@ -157,10 +225,14 @@ allow:
   - id: "3f2a9c1e7b4d5a60"
     rule: "leftblock-personal-email"
     file: "apps/web/privacy/page.tsx"
+    kind: "Personal email address"
     reason: "Public role address required in the privacy notice."
     added: 2026-10-20
 ```
 
+- **Category for reviewers.** `kind` is the rule's description, written so a
+  reviewer of the pull request sees what kind of finding was approved. It is
+  informational: it is not part of matching and may be omitted.
 - **Scoped to line content.** The id hashes the rule, the file, and the exact
   staged content of the flagged lines. Editing that line, or adding another
   finding anywhere, blocks again.
@@ -177,10 +249,34 @@ allow:
   policy when present, otherwise `.leftblock.yml`; pass the same `--config`
   you use for `check` if it differs.
 
-This mechanism is separate from Gitleaks' own suppressions: inline
-`gitleaks:allow` markers and a root `.gitleaksignore` are still honoured by
-Gitleaks itself, and they are outside this mechanism's reason, scope, and
-review trail.
+#### Gitleaks' own suppressions
+
+Gitleaks skips a line carrying its inline allow comment and any entry in a
+`.gitleaksignore` file, with no recorded reason. LeftBlock closes the silent
+paths it can see: it reports, as ordinary findings that carry an id and can be
+overridden only through a recorded reason as above,
+
+- `leftblock-gitleaks-allow-marker`: any staged added line containing the
+  Gitleaks allow comment (the word `gitleaks`, a colon, then `allow`); and
+- `leftblock-gitleaksignore-change`: any staged addition or edit of a
+  `.gitleaksignore` file at any path (removing one is not a finding).
+
+Both are read from the staged diff (the merge-scoped index during a merge).
+Removing a suppression is the fix, not a finding.
+
+**Residual risk.** Tested with Gitleaks 8.30: a `.gitleaksignore` in the
+repository root that already exists, committed or only in the working tree, is
+still honoured by `protect --staged`, and no option turns that off. Passing
+`--gitleaks-ignore-path` with an empty file or directory adds to the sources it
+reads; it does not replace the root file. Ignore files in subdirectories and
+ones that exist only in the index are not read. LeftBlock therefore cannot
+stop an ignore file that was already there before the check ran, but every
+`leftblock check` warns when a root `.gitleaksignore` exists, so its skips are
+never silent. Review it (`git ls-files '*.gitleaksignore'`), and treat a file
+that is untracked or edited outside the index as outside this check. The
+installed policy passes `--ignore-gitleaks-allow`, so Gitleaks still scans
+lines that carry the inline comment: a real finding on such a line is reported
+alongside the marker finding.
 
 During an in-progress merge, command checkers skip only regular files whose
 complete blob and mode already exist at the same path in a parent. Changed
@@ -223,6 +319,12 @@ Python environment or Gitleaks executable. For manual composition, run
 `leftblock check --config PATH` in the existing `pre-commit` flow and
 `leftblock hook "$1"` in the `commit-msg` flow when receipts are needed.
 Preserve existing behavior and propagate any failure's exit status.
+
+A receipt records `Inspection-result: clean` when nothing was found, and
+`Inspection-result: allowed:N` when every finding was covered by `N` staged,
+reasoned overrides (see [Overriding a false alarm](#overriding-a-false-alarm)).
+Neither needs a passphrase. An interactive passphrase override of unrecorded
+findings is still recorded as `override:N-checkers`.
 
 Receipts use HMAC trailers, not Git GPG/SSH signatures; they do not appear
 in `git log --show-signature`. Every machine running `leftblock verify`
@@ -272,6 +374,15 @@ PEM private keys, and other standard secret formats.
 | `leftblock-eth-private-key` | Ethereum-style private keys (`0x` + 64 hex) |
 | `leftblock-wif-key` | Bitcoin WIF private keys (compressed `K/L/M…`, uncompressed `5…`) |
 | `leftblock-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
+
+A blocked check prints a one-line hint after each rule's findings (once per
+rule): use a role or placeholder address for personal emails; a relative path,
+`$HOME` or `~` for home paths; drop or describe session and actor identifiers;
+and for API, private and wallet keys, remove the value **and rotate the key**,
+since it may already be exposed. Findings in Kanbus board data
+(`project/issues/*.json`, `project/events/*.json`) also say that Kanbus writes
+those files and that the content should be fixed through `kbs` (for example
+`kbs update` or `kbs comment`) rather than by hand.
 
 Kanbus exceptions apply to complete identifier property lines in
 `project/issues/*.json` and `project/events/*.json`. Event actor attribution

@@ -1,7 +1,10 @@
 """Recorded per-finding overrides, using synthetic data and disposable repos."""
 
+import hashlib
+import json
 import re
 import unittest
+from importlib.metadata import version
 
 import yaml
 
@@ -30,9 +33,13 @@ class RecordedOverrideTests(RepositoryFixture):
         policy = self.repo / ".git" / "leftblock" / "policy.json"
         return self.leftblock("check", "--config", str(policy))
 
+    def plain_check(self, *extra):
+        # No --config: `check` must pick up the local install policy by itself.
+        return self.leftblock("check", *extra)
+
     def ids(self, proc):
         # Per-finding detail lines (the final summary line repeats the ids).
-        return re.findall(r"^      .*\[id ([0-9a-f]{16})\]$", proc.stderr, re.MULTILINE)
+        return re.findall(r"^      .*\[id ([0-9a-f]{16})\](?: \(.*\))?$", proc.stderr, re.MULTILINE)
 
     def blocked_id(self, text=None):
         self.write_stage(text or f"a\nContact: {EMAIL}\n")
@@ -61,7 +68,7 @@ class RecordedOverrideTests(RepositoryFixture):
         ident = self.blocked_id()
         last = self.check().stderr.strip().splitlines()[-1]
         self.assertIn("Inspection blocked", last)
-        self.assertIn(f"leftblock-personal-email in {PAGE} [id {ident}]", last)
+        self.assertIn(f"leftblock-personal-email in {PAGE}:2 [id {ident}]", last)
         self.assertIn("Remove the flagged content", last)
         self.assertIn(f"allow {ident}", last)
         self.assertNotIn("\033[", last)  # captured output carries no colour codes
@@ -86,6 +93,128 @@ class RecordedOverrideTests(RepositoryFixture):
         self.assertIn(REASON, check.stderr)
         # Overrides stay visible on every run, and the commit goes through.
         self.assertEqual(self.git("commit", "-m", "test: allowed").returncode, 0)
+
+    def test_findings_show_line_and_category_and_allow_records_kind(self):
+        ident = self.blocked_id()
+        proc = self.check()
+        detail = [l for l in proc.stderr.splitlines() if l.startswith("      ")]
+        self.assertEqual(detail, [
+            f"      {PAGE}:2: leftblock-personal-email [id {ident}] (Personal email address)",
+            "      Hint: Use a role or placeholder address, or describe it instead.",
+        ])
+        self.assertIn(f"leftblock-personal-email in {PAGE}:2 [id {ident}]", proc.stderr.splitlines()[-1])
+        self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
+        self.assertEqual(self.allow(ident).returncode, 0)
+        text = (self.repo / ".leftblock-allow.yml").read_text()
+        self.assertIn('kind: "Personal email address"', text)
+        entry = yaml.safe_load(text)["allow"][0]
+        self.assertEqual(entry["kind"], "Personal email address")
+        # kind is informational: an entry without it still matches.
+        (self.repo / ".leftblock-allow.yml").write_text(
+            "\n".join(l for l in text.splitlines() if not l.strip().startswith("kind:")) + "\n"
+        )
+        self.git("add", ".leftblock-allow.yml", check=True)
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_version_flag_prints_the_installed_version(self):
+        proc = self.leftblock("--version")
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.stdout.strip(), "leftblock " + version("leftblock"))
+
+    def test_blocked_output_starts_with_version_and_ruleset_hash(self):
+        ident = self.blocked_id()
+        rules = (self.repo / ".git" / "leftblock" / "gitleaks.toml").read_bytes()
+        first = self.check().stderr.splitlines()[0]
+        self.assertTrue(
+            first.endswith(f"leftblock {version('leftblock')}, ruleset {hashlib.sha256(rules).hexdigest()[:12]}"),
+            first,
+        )
+        # Still first when an override is also applied.
+        self.assertEqual(self.allow(ident).returncode, 0)
+        self.write_stage(f"a\nContact: {EMAIL}\nOther: {OTHER_EMAIL}\n")
+        lines = self.check().stderr.splitlines()
+        self.assertIn("ruleset", lines[0])
+        self.assertIn("Override applied", lines[1])
+
+    def test_ruleset_is_unknown_without_a_gitleaks_config_argument(self):
+        from leftblock import cli
+        self.assertEqual(cli.ruleset_id({"checkers": [{"command": "scanner --fast"}]}, str(self.repo)), "unknown")
+        self.assertEqual(cli.ruleset_id({"checkers": [{"command": "scanner --config nope.toml"}]}, str(self.repo)), "unknown")
+        self.assertEqual(cli.ruleset_id({}, str(self.repo)), "unknown")
+
+    def test_check_defaults_to_the_local_policy_and_is_a_dry_run(self):
+        self.write_stage(f"a\nContact: {EMAIL}\n")
+        before = self.git("write-tree", check=True).stdout
+        proc = self.plain_check()
+        self.assertEqual(proc.returncode, 1, proc.stderr)
+        self.assertIn("leftblock-personal-email", proc.stderr)
+        self.assertRegex(proc.stderr, r"Re-run this check: .*leftblock.* check\n")
+        self.assertNotIn("check --config", proc.stderr)  # the default policy needs no flag
+        self.assertEqual(before, self.git("write-tree", check=True).stdout)
+        self.assertEqual(self.git("rev-parse", "HEAD").stdout.strip(), self.baseline)
+        self.assertEqual(self.git("diff", "--cached", "--name-only").stdout.strip(), PAGE)
+
+    def test_local_policy_wins_over_a_root_policy_by_default(self):
+        (self.repo / ".leftblock.yml").write_text(
+            "version: 1\ncheckers:\n  - type: command\n    command: /usr/bin/true\n"
+        )
+        self.write_stage(f"a\nContact: {EMAIL}\n")
+        self.assertEqual(self.plain_check().returncode, 1)
+
+    def test_json_passed_exit_0(self):
+        self.write_stage("nothing sensitive here\n")
+        proc = self.plain_check("--format", "json")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        report = json.loads(proc.stdout)
+        self.assertEqual(report, {
+            "version": version("leftblock"), "result": "passed", "findings": [],
+            "overrides_applied": [], "errors": [], "override_command": None,
+        })
+        self.assertIn("All configured checks passed", proc.stderr)
+
+    def test_json_blocked_exit_1_and_text_mode_keeps_stdout_empty(self):
+        ident = self.blocked_id()
+        proc = self.plain_check("--format", "json")
+        self.assertEqual(proc.returncode, 1)
+        report = json.loads(proc.stdout)
+        self.assertEqual(report["result"], "blocked")
+        self.assertEqual(report["findings"], [{
+            "file": PAGE, "line": 2, "rule": "leftblock-personal-email", "id": ident,
+            "description": "Personal email address",
+        }])
+        self.assertEqual(report["errors"], [])
+        self.assertIn(f"allow {ident}", report["override_command"])
+        self.assertIn("--reason", report["override_command"])
+        self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
+        self.assertIn("Inspection blocked", proc.stderr.splitlines()[-1])
+        text = self.plain_check()
+        self.assertEqual((text.returncode, text.stdout), (1, ""))
+
+    def test_json_lists_applied_overrides(self):
+        ident = self.blocked_id()
+        self.assertEqual(self.allow(ident).returncode, 0)
+        report = json.loads(self.plain_check("--format", "json").stdout)
+        self.assertEqual(report["result"], "passed")
+        self.assertEqual(report["overrides_applied"], [{
+            "file": PAGE, "rule": "leftblock-personal-email", "id": ident, "reason": REASON,
+        }])
+
+    def test_json_error_exit_2_for_invalid_allow_file_and_bad_config(self):
+        self.write_stage("nothing sensitive here\n")
+        (self.repo / ".leftblock-allow.yml").write_text("version: 2\nallow: []\n")
+        self.git("add", ".leftblock-allow.yml", check=True)
+        for args in (("--format", "json"), ()):
+            proc = self.plain_check(*args)
+            self.assertEqual(proc.returncode, 2, proc.stderr)
+        report = json.loads(self.plain_check("--format", "json").stdout)
+        self.assertEqual(report["result"], "error")
+        self.assertEqual([e["checker"] for e in report["errors"]], ["leftblock-allow"])
+        self.assertIn("Invalid .leftblock-allow.yml", report["errors"][0]["message"])
+        missing = self.leftblock("check", "--config", str(self.repo / "missing.json"), "--format", "json")
+        self.assertEqual(missing.returncode, 2)
+        report = json.loads(missing.stdout)
+        self.assertEqual((report["result"], report["errors"][0]["checker"]), ("error", "configuration"))
+        self.assertEqual(self.leftblock("check", "--config", str(self.repo / "missing.json")).returncode, 2)
 
     def test_allow_file_itself_is_not_flagged_and_dedupes(self):
         ident = self.blocked_id()
