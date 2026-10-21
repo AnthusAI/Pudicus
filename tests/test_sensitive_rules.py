@@ -353,6 +353,7 @@ class KanbusBoardAllowlistTests(unittest.TestCase):
     BOARD_PATHS = (
         "project/issues/PPY-x.json",
         "project/events/2026-10-20T00-00-00.000Z__x.json",
+        "project/events/llm_usage.jsonl",
         "project/.cache/index.json",
         "sub/dir/project/issues/PPY-x.json",
         "sub/dir/project/events/e.json",
@@ -365,6 +366,7 @@ class KanbusBoardAllowlistTests(unittest.TestCase):
         "project/events/sub/x.json",
         "project/events.json",
         "project/issues/x.json.bak",
+        "project/issues/x.jsonl",
         "src/project/issues-like/x.json",
         "myproject/issues/x.json",
         "project/.cache/other.json",

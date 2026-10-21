@@ -118,6 +118,8 @@ regexes = [
 description = "Kanbus board data identifiers"
 paths = [
   '''(^|/)project/(issues|events)/[^/]+\.json$''',
+  # Kanbus's LLM usage log (one JSON record per line).
+  '''(^|/)project/events/[^/]+\.jsonl$''',
   '''(^|/)project/\.cache/index\.json$''',
 ]
 
@@ -156,6 +158,8 @@ regexes = [
 description = "Kanbus board data identifiers"
 paths = [
   '''(^|/)project/(issues|events)/[^/]+\.json$''',
+  # Kanbus's LLM usage log (one JSON record per line).
+  '''(^|/)project/events/[^/]+\.jsonl$''',
   '''(^|/)project/\.cache/index\.json$''',
 ]
 

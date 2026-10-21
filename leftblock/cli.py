@@ -359,7 +359,7 @@ KANBUS_EVENT_HINT = (
     "isn't committed yet, run kbs delete <issue id> and recreate it without the "
     "content; otherwise ask the board owner."
 )
-KANBUS_DATA = re.compile(r"(^|/)project/(issues|events)/[^/]+\.json$")
+KANBUS_DATA = re.compile(r"(^|/)project/(issues|events)/[^/]+\.jsonl?$")
 
 
 def print_failures(failures):
