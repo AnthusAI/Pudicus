@@ -3,17 +3,25 @@
   "title": "Per-rule remediation hints, including generated paths such as Kanbus files",
   "description": "Give per-rule advice (e.g. home path: use a relative path or $HOME). Let policy mark generated paths with a tool hint (project/events is written by Kanbus; fix it via kbs). Add a Kanbus integration regression test. (Biblicus #2 and #6, Babulus #5)",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b1d3c270-fa4e-41a4-9edf-ac372a9d35cf",
+      "author": "home",
+      "text": "Shipped in LeftBlock 0.4.0 (PR #19).",
+      "created_at": "2026-10-21T00:55:35.179733Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-20T23:43:17.141959Z",
-  "updated_at": "2026-10-20T23:43:17.141987Z",
-  "closed_at": null,
+  "updated_at": "2026-10-21T00:55:35.198657Z",
+  "closed_at": "2026-10-21T00:55:35.198623Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

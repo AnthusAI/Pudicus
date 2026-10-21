@@ -62,6 +62,8 @@ keywords = ["@"]
 regexes = [
   # Infrastructure and placeholder identities, not personal ones.
   '''@users\.noreply\.github\.com''',
+  # No-reply addresses (e.g. commit Co-Authored-By trailers) are not personal.
+  '''(^|[^a-zA-Z0-9._%+\-'])no-?reply@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}''',
   '''git@github\.com''',
   '''@(example|github)\.(com|org|net|io|ai)''',
 ]

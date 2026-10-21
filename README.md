@@ -364,7 +364,7 @@ PEM private keys, and other standard secret formats.
 
 | Rule | What it catches |
 |---|---|
-| `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com` and `@example.*` placeholders are allowlisted) |
+| `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com`, no-reply addresses and `@example.*` placeholders are allowlisted) |
 | `leftblock-home-path-posix` | Home-folder paths `/Users/<name>`, `/home/<name>` |
 | `leftblock-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
 | `leftblock-session-uuid` | Potential session UUIDs, with narrow exceptions for canonical Kanbus structural fields and example values |

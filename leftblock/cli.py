@@ -348,9 +348,16 @@ RULE_HINTS = {
     bypass.MARKER_RULE: "Remove the marker and fix the content, or record a reasoned override.",
     bypass.IGNORE_RULE: "Don't suppress findings silently; record a reasoned override per finding.",
 }
-KANBUS_HINT = (
-    "This file is written by Kanbus; fix the content through kbs "
-    "(e.g. kbs update or comment), don't hand-edit it."
+KANBUS_ISSUE_HINT = (
+    "This issue file is written by Kanbus; fix the content with kbs update "
+    "(or kbs comment), don't hand-edit it."
+)
+# Events are append-only history: kbs update/comment add a new event and leave
+# the flagged text in place.
+KANBUS_EVENT_HINT = (
+    "This Kanbus event is append-only history and can't be edited. If the issue "
+    "isn't committed yet, run kbs delete <issue id> and recreate it without the "
+    "content; otherwise ask the board owner."
 )
 KANBUS_DATA = re.compile(r"(^|/)project/(issues|events)/[^/]+\.json$")
 
@@ -377,7 +384,8 @@ def print_failures(failures):
                 if rule in RULE_HINTS:
                     print("      Hint: " + RULE_HINTS[rule], file=sys.stderr)
             for name in kanbus_files:
-                print(f"      {_plain(name)}: {KANBUS_HINT}", file=sys.stderr)
+                hint = KANBUS_EVENT_HINT if KANBUS_DATA.search(name).group(2) == "events" else KANBUS_ISSUE_HINT
+                print(f"      {_plain(name)}: {hint}", file=sys.stderr)
         else:
             print_warn(str(result.findings))
 
