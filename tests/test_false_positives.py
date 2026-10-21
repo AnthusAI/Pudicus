@@ -73,12 +73,15 @@ class KanbusIdTests(unittest.TestCase):
             "notes.md": "see PPY-%s; session %s\n" % (_uuid(rng), _uuid(rng)),
         }))
 
-    def test_prefixed_session_value_is_not_structural_bookkeeping(self):
-        self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-            "project/events/synthetic.json": json.dumps({
-                "session_id": "PPY-" + _uuid(_rng()),
-            }, indent=2),
-        }))
+    def test_session_value_with_prefix_passes_in_board_files_only(self):
+        doc = json.dumps({"session_id": "PPY-" + _uuid(_rng())}, indent=2)
+        self.assertEqual(
+            scan_and_rule_ids({"project/events/synthetic.json": doc}), [])
+        for path in ("src/synthetic.json", "project/other.json",
+                     "project/events/sub/synthetic.json"):
+            with self.subTest(path=path):
+                self.assertIn("leftblock-session-uuid",
+                              scan_and_rule_ids({path: doc}))
 
 
 def _uuid4(rng):
