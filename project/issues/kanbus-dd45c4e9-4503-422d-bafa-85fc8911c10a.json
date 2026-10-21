@@ -3,17 +3,25 @@
   "title": "Show line number and a masked excerpt or category per finding",
   "description": "Findings show only rule, file and id, so users can't tell which line an id means. Add the line number and a masked excerpt or category (e.g. email at domain X) to the output and to allow entries for reviewers, never the raw value. (Biblicus #1, Babulus #4 and #6)",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "9176f222-3417-4ad3-b346-923675d58308",
+      "author": "home",
+      "text": "Shipped in LeftBlock 0.4.0 (PR #19).",
+      "created_at": "2026-10-21T00:55:35.069682Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-20T23:43:16.891942Z",
-  "updated_at": "2026-10-20T23:43:16.891968Z",
-  "closed_at": null,
+  "updated_at": "2026-10-21T00:55:35.087126Z",
+  "closed_at": "2026-10-21T00:55:35.087084Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

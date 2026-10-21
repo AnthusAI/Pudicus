@@ -10,9 +10,17 @@
   "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "84962a73-fe95-4bce-a17e-df6b7daa2e88",
+      "author": "home",
+      "text": "0.4.0 (PR #19) shipped: inline-marker and .gitleaksignore-change findings, --ignore-gitleaks-allow, root .gitleaksignore warning, allowed:N receipts. Still open: repo-level allow patterns and a baseline scan of existing history.",
+      "created_at": "2026-10-21T00:55:35.216949Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-20T23:43:17.230084Z",
-  "updated_at": "2026-10-20T23:43:17.230112Z",
+  "updated_at": "2026-10-21T00:55:35.216971Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
