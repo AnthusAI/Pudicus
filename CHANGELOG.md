@@ -8,6 +8,59 @@ remain unchanged; commit links retain their original hashes.
 
 <!-- version list -->
 
+## v0.4.0 (2026-10-21)
+
+### Bug Fixes
+
+- Block silent Gitleaks bypasses and record staged overrides as allowed in receipts
+  ([`660b8db`](https://github.com/DataParade-io/LeftBlock/commit/660b8db62a6e419d9eb22b68126928b141e199af))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+- Scan lines with inline allow comments and warn about a root .gitleaksignore
+  ([`465874f`](https://github.com/DataParade-io/LeftBlock/commit/465874f22141e09296d685f476043e9f827bcd74))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Continuous Integration
+
+- Release with python-semantic-release on every push to main
+  ([`5f7dc37`](https://github.com/DataParade-io/LeftBlock/commit/5f7dc373f0abd00ab6a200ca975403573199c103))
+
+Restores semantic-release: versions come from conventional commits, and the workflow tags, updates
+  CHANGELOG/README, publishes to PyPI via trusted publishing, creates the GitHub release and merges
+  back into develop. Tests read the version from pyproject.toml instead of hard-coding it.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+- Add --version, name the ruleset in blocked output, and make check a documented dry run
+  ([`0f68708`](https://github.com/DataParade-io/LeftBlock/commit/0f6870814a97b25e6fcd62e4629c359ba880d4bd))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+- Add check --format json and distinct exit codes for blocked and error
+  ([`ba85888`](https://github.com/DataParade-io/LeftBlock/commit/ba85888e4c065ce409425aae616a19c11ccafa6d))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+- Keep a stable runtime link so upgrades reach every repository's hook
+  ([`82b2cd9`](https://github.com/DataParade-io/LeftBlock/commit/82b2cd9b8c1a7f391cb5f00a2c16422902640346))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+- Print advice for each rule and point Kanbus board findings at kbs
+  ([`7ce1dac`](https://github.com/DataParade-io/LeftBlock/commit/7ce1dace7169b0770ef606a92c2e6e35db2a36a2))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+- Print line numbers and rule descriptions for findings
+  ([`3f8b1ef`](https://github.com/DataParade-io/LeftBlock/commit/3f8b1ef897a528623d899a87126e49059198c191))
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+
 ## v0.3.5 (2026-10-20)
 
 ### Fix
