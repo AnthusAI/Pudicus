@@ -289,6 +289,9 @@ def _local_bundle(paths, gitleaks=None):
     rules = (Path(__file__).resolve().parent / "data" / "gitleaks.toml").read_bytes()
     command = [
         binary, "protect", "--staged", "--config", str(paths["rules"]),
+        # Scan lines carrying the inline allow comment too; LeftBlock reports
+        # the marker itself so the exception needs a recorded override.
+        "--ignore-gitleaks-allow",
         "--redact", "--no-banner", "--report-format", "json",
         "--report-path", "{report_file}",
     ]

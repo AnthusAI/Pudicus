@@ -270,13 +270,13 @@ still honoured by `protect --staged`, and no option turns that off. Passing
 `--gitleaks-ignore-path` with an empty file or directory adds to the sources it
 reads; it does not replace the root file. Ignore files in subdirectories and
 ones that exist only in the index are not read. LeftBlock therefore cannot
-stop an ignore file that was already there before the check ran. Review any
-existing root `.gitleaksignore` (`git ls-files '*.gitleaksignore'`), and
-treat a file that is untracked or edited outside the index as outside this
-check. The related `--ignore-gitleaks-allow` option does make Gitleaks scan
-lines that carry the inline comment; LeftBlock does not pass it, so a real
-finding on a line with the comment is hidden from Gitleaks even though the
-comment itself is reported.
+stop an ignore file that was already there before the check ran, but every
+`leftblock check` warns when a root `.gitleaksignore` exists, so its skips are
+never silent. Review it (`git ls-files '*.gitleaksignore'`), and treat a file
+that is untracked or edited outside the index as outside this check. The
+installed policy passes `--ignore-gitleaks-allow`, so Gitleaks still scans
+lines that carry the inline comment: a real finding on such a line is reported
+alongside the marker finding.
 
 During an in-progress merge, command checkers skip only regular files whose
 complete blob and mode already exist at the same path in a parent. Changed

@@ -97,7 +97,17 @@ class BypassTests(RepositoryFixture):
         proc = self.leftblock("check")
         self.assertEqual(proc.returncode, 1)
         self.assertIn("leftblock-gitleaks-allow-marker", proc.stderr)
+        # The installed policy passes --ignore-gitleaks-allow, so the email on the
+        # marked line is still reported by Gitleaks itself.
+        self.assertIn("leftblock-personal-email", proc.stderr)
         self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
+
+    def test_root_gitleaksignore_is_announced_on_every_check(self):
+        self.write_stage("notes.md", "plain text\n")
+        self.assertNotIn(".gitleaksignore", self.leftblock("check").stderr)
+        (self.repo / ".gitleaksignore").write_text("# no entries\n")
+        proc = self.leftblock("check")
+        self.assertIn("root .gitleaksignore", proc.stderr)
 
     # (b) .gitleaksignore changes
 

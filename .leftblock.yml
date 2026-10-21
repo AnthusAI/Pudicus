@@ -2,6 +2,6 @@ version: 1
 checkers:
   - name: gitleaks
     type: command
-    command: gitleaks protect --staged --config leftblock/data/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
+    command: gitleaks protect --staged --ignore-gitleaks-allow --config leftblock/data/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
     success_codes: [0]
     finding_codes: [1]

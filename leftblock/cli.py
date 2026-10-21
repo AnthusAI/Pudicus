@@ -41,7 +41,7 @@ version: 1
 checkers:
   - name: gitleaks
     type: command
-    command: gitleaks protect --staged --config .leftblock/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
+    command: gitleaks protect --staged --ignore-gitleaks-allow --config .leftblock/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
     success_codes: [0]
     finding_codes: [1]
 """
@@ -170,6 +170,15 @@ def print_applied(applied):
             + ", rule " + json.dumps(finding["RuleID"], ensure_ascii=True)
             + ", id " + finding["id"]
             + ", reason " + json.dumps(reason, ensure_ascii=True)
+        )
+
+
+def warn_root_gitleaksignore(repo_root):
+    """Gitleaks always honours a root .gitleaksignore; say so on every run."""
+    if os.path.isfile(os.path.join(repo_root, ".gitleaksignore")):
+        print_warn(
+            "This repository has a root .gitleaksignore. Gitleaks skips its entries "
+            "with no recorded reason; prefer leftblock allow for new exceptions."
         )
 
 
@@ -542,6 +551,7 @@ def cmd_check(args):
 
     tree_hash = get_tree_hash()
     try:
+        warn_root_gitleaksignore(repo_root)
         config, results, applied = run_checks(repo_root, config_path)
     except ConfigError:
         print_err(CONFIG_ERROR)
@@ -588,6 +598,7 @@ def cmd_hook(args):
     tree_hash = get_tree_hash()
     print_info(f"Scanning tree {tree_hash}...")
 
+    warn_root_gitleaksignore(repo_root)
     config, results, applied = run_checks(repo_root)
     print_applied(applied)
     if get_tree_hash() != tree_hash:
