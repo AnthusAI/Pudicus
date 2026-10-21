@@ -109,7 +109,7 @@ class SensitiveFixtureTests(unittest.TestCase):
         # Synthetic personal values are assembled at test time so this
         # test source is itself clean under the shipped ruleset.
         user = "jd" + "oe"
-        email = "jane." + "doe@" + "example-corp." + "t" + "est"
+        email = "jane." + "doe@" + "example-corp" + ".co"
         findings = scan_and_rule_ids({
             "issues/one.json": (
                 '{"assignee_email": "%s", "session_id": "%s",'
@@ -225,13 +225,30 @@ class NegativeTests(unittest.TestCase):
     def test_no_reply_addresses_pass_but_lookalikes_still_flag(self):
         at = "@"
         self.assertEqual(scan_and_rule_ids({"CHANGELOG.md": "\n".join([
-            "Co-Authored-By: Bot <noreply" + at + "vendor.test>",
-            "From: no-reply" + at + "vendor.test",
+            "Co-Authored-By: Bot <noreply" + at + "vendor" + ".co" + ">",
+            "From: no-reply" + at + "vendor" + ".co",
         ]) + "\n"}), [])
-        self.assertEqual(scan_and_rule_ids({"notes.md": "mail jo" + at + "vendor.test\n"}),
+        self.assertEqual(scan_and_rule_ids({"notes.md": "mail jo" + at + "vendor" + ".co\n"}),
                          ["leftblock-personal-email"])
-        self.assertEqual(scan_and_rule_ids({"notes.md": "mail notnoreply" + at + "vendor.test\n"}),
+        self.assertEqual(scan_and_rule_ids({"notes.md": "mail notnoreply" + at + "vendor" + ".co\n"}),
                          ["leftblock-personal-email"])
+
+    def test_reserved_placeholder_domains_pass_but_lookalikes_still_flag(self):
+        at = "@"
+        passing = [
+            "person" + at + "example.invalid",
+            "a" + at + "mail.acme.test",
+            "b" + at + "deep.sub.host.example",
+            "c" + at + "app.localhost",
+            "d" + at + "example.edu",
+            "e" + at + "x.test",
+        ]
+        self.assertEqual(scan_and_rule_ids({"notes.md": "\n".join("mail " + a for a in passing) + "\n"}), [])
+        for domain in ["test" + ".com", "invalid" + ".org", "example.test" + ".co", "mytest" + ".dev",
+                       "example" + ".edu.co", "notexample" + ".edu"]:
+            with self.subTest(domain=domain):
+                self.assertEqual(scan_and_rule_ids({"notes.md": "mail jo" + at + domain + "\n"}),
+                                 ["leftblock-personal-email"])
 
     def test_public_wallet_addresses_and_hashes_not_flagged(self):
         rng = _rng()
@@ -466,7 +483,7 @@ class KanbusBoardAllowlistTests(unittest.TestCase):
                                   scan_and_rule_ids({path: content}))
 
     def test_personal_email_home_path_and_key_still_flagged_in_board_files(self):
-        email = "jane." + "doe@" + "example-corp." + "t" + "est"
+        email = "jane." + "doe@" + "example-corp" + ".co"
         user = "jd" + "oe"
         cases = {
             "leftblock-personal-email": json.dumps(

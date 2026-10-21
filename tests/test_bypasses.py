@@ -10,7 +10,7 @@ from leftblock import bypass
 from test_commit_gate import GITLEAKS, RepositoryFixture
 
 MARKER = "gitleaks" + ":allow"
-EMAIL = "info" + "@" + "public-role.test"
+EMAIL = "info" + "@" + "public-role" + ".co"
 REASON = "Reviewed: documentation example, not a real finding"
 
 

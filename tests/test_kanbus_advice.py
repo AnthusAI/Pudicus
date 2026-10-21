@@ -24,7 +24,7 @@ class RuleHintTests(unittest.TestCase):
         for rule in ("openai-key", "anthropic-key", "eth-private-key", "wif-key", "bip39-mnemonic"):
             self.assertIn("rotate", cli.RULE_HINTS["leftblock-" + rule])
         self.assertIn("relative path", cli.RULE_HINTS["leftblock-home-path-posix"])
-        self.assertIn("role or placeholder", cli.RULE_HINTS["leftblock-personal-email"])
+        self.assertIn("reserved placeholder", cli.RULE_HINTS["leftblock-personal-email"])
 
 
 @unittest.skipUnless(GITLEAKS, "Gitleaks must be installed for actual scanner tests")
