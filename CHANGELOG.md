@@ -8,6 +8,19 @@ remain unchanged; commit links retain their original hashes.
 
 <!-- version list -->
 
+## v0.4.3 (2026-10-21)
+
+### Bug Fixes
+
+- Accept RFC-reserved placeholder email domains and name them in the hint
+  ([`631b786`](https://github.com/DataParade-io/LeftBlock/commit/631b7865a5af13471c3ec9e971aba1cf4281a17b))
+
+### Chores
+
+- **kanbus**: Track CI-side scan and role-address allowance
+  ([`24a5ac3`](https://github.com/DataParade-io/LeftBlock/commit/24a5ac3d01d25719d1a7bec91ddb14729828d312))
+
+
 ## v0.4.2 (2026-10-21)
 
 ### Bug Fixes
