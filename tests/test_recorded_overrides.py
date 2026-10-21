@@ -12,8 +12,8 @@ from test_commit_gate import GITLEAKS, RepositoryFixture
 
 # Flagged by the shipped personal-email rule; the rule allowlists only
 # example.* and GitHub identities.
-EMAIL = "info" + "@" + "public-role.test"
-OTHER_EMAIL = "help" + "@" + "public-role.test"
+EMAIL = "info" + "@" + "public-role" + ".co"
+OTHER_EMAIL = "help" + "@" + "public-role" + ".co"
 PAGE = "page.tsx"
 REASON = "Public role address for the site"
 
@@ -100,7 +100,7 @@ class RecordedOverrideTests(RepositoryFixture):
         detail = [l for l in proc.stderr.splitlines() if l.startswith("      ")]
         self.assertEqual(detail, [
             f"      {PAGE}:2: leftblock-personal-email [id {ident}] (Personal email address)",
-            "      Hint: Use a role or placeholder address, or describe it instead.",
+            "      Hint: Use a role address or a reserved placeholder (example.com/.org/.net, or any .test, .example or .invalid domain), or describe it instead.",
         ])
         self.assertIn(f"leftblock-personal-email in {PAGE}:2 [id {ident}]", proc.stderr.splitlines()[-1])
         self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
