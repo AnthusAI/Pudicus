@@ -27,14 +27,14 @@ leftblock = "leftblock.cli:main"
 version_toml = ["pyproject.toml:project.version"]
 commit_message = "chore(release): {version}"
 tag_format = "v{version}"
-# Keep the README install pin on the released version; NEW_VERSION is set by
-# semantic-release, and README.md is committed with the release.
+# scripts/release_prepare.py keeps the README pin on NEW_VERSION and drops
+# commit trailers from the generated changelog; both files are committed.
 build_command = """
-sed -i "s/leftblock==[0-9][0-9.]*/leftblock==$NEW_VERSION/" README.md
+python scripts/release_prepare.py
 python -m pip install build
 python -m build
 """
-assets = ["README.md"]
+assets = ["README.md", "CHANGELOG.md"]
 
 [tool.semantic_release.branches.main]
 match = "main"

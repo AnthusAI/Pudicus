@@ -79,10 +79,18 @@ class KanbusBoardTests(RepositoryFixture):
         self.assertIn("leftblock-home-path-posix", proc.stderr)
         self.assertIn("Hint: Use a relative path, $HOME or ~ instead.", proc.stderr)
         self.assertEqual(
-            proc.stderr.count("This file is written by Kanbus; fix the content through kbs "
-                              "(e.g. kbs update or comment), don't hand-edit it."), 1,
+            proc.stderr.count("This issue file is written by Kanbus; fix the content with kbs update"), 1,
         )
         self.assertNotIn(home_path, proc.stdout + proc.stderr)
+
+    def test_event_file_hint_says_delete_and_recreate_not_update(self):
+        self.write("project/events/2026-10-20T10-00-00.000Z__x.json",
+                   '{\n  "note": "see /' + 'Users/someone/notes"\n}\n')
+        proc = self.leftblock("check")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("append-only history", proc.stderr)
+        self.assertIn("kbs delete <issue id>", proc.stderr)
+        self.assertNotIn("kbs update", proc.stderr)
 
     def test_hint_is_printed_once_per_rule(self):
         self.write("notes.md", "a /" + "Users/one/x\nb /" + "Users/two/y\n")

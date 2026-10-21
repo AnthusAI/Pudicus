@@ -222,6 +222,17 @@ class SensitiveFixtureTests(unittest.TestCase):
 class NegativeTests(unittest.TestCase):
     """Public wallet addresses and hash-like hex must NOT be flagged."""
 
+    def test_no_reply_addresses_pass_but_lookalikes_still_flag(self):
+        at = "@"
+        self.assertEqual(scan_and_rule_ids({"CHANGELOG.md": "\n".join([
+            "Co-Authored-By: Bot <noreply" + at + "vendor.test>",
+            "From: no-reply" + at + "vendor.test",
+        ]) + "\n"}), [])
+        self.assertEqual(scan_and_rule_ids({"notes.md": "mail jo" + at + "vendor.test\n"}),
+                         ["leftblock-personal-email"])
+        self.assertEqual(scan_and_rule_ids({"notes.md": "mail notnoreply" + at + "vendor.test\n"}),
+                         ["leftblock-personal-email"])
+
     def test_public_wallet_addresses_and_hashes_not_flagged(self):
         rng = _rng()
         findings = scan_and_rule_ids({
