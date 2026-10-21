@@ -364,7 +364,7 @@ PEM private keys, and other standard secret formats.
 
 | Rule | What it catches |
 |---|---|
-| `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com`, no-reply addresses and `@example.*` placeholders are allowlisted) |
+| `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com`, no-reply addresses, `@example.*` placeholders, `@example.edu` and any address on a `.test`, `.example`, `.invalid` or `.localhost` domain are allowlisted) |
 | `leftblock-home-path-posix` | Home-folder paths `/Users/<name>`, `/home/<name>` |
 | `leftblock-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
 | `leftblock-session-uuid` | Potential session UUIDs (not flagged in Kanbus board data; example values and the `.kanbus.yml` `project_id` line are also allowed) |
@@ -376,7 +376,7 @@ PEM private keys, and other standard secret formats.
 | `leftblock-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
 
 A blocked check prints a one-line hint after each rule's findings (once per
-rule): use a role or placeholder address for personal emails; a relative path,
+rule): use a role address or a reserved placeholder for personal emails; a relative path,
 `$HOME` or `~` for home paths; drop or describe session and actor identifiers;
 and for API, private and wallet keys, remove the value **and rotate the key**,
 since it may already be exposed. Findings in Kanbus board data

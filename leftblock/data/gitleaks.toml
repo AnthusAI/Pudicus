@@ -67,6 +67,12 @@ regexes = [
   '''(^|[^a-zA-Z0-9._%+\-'])no-?reply@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}''',
   '''git@github\.com''',
   '''@(example|github)\.(com|org|net|io|ai)''',
+  # Domains reserved for documentation and testing: the TLDs .test, .example,
+  # .invalid and .localhost (RFC 2606 section 2, RFC 6761 section 6) at any
+  # subdomain depth, and example.edu (RFC 2606 section 3). Anchored on the end
+  # of the address so look-alikes such as test.com or example.test.co still flag.
+  '''@(?:[a-zA-Z0-9\-]+\.)*(?:test|example|invalid|localhost)$''',
+  '''@example\.edu$''',
 ]
 
 [[rules]]

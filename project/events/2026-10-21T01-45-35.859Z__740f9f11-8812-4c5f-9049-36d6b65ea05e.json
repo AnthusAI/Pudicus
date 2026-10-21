@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "event_id": "740f9f11-8812-4c5f-9049-36d6b65ea05e",
+  "issue_id": "kanbus-300531dc-00ba-4086-b872-c97073aa8278",
+  "event_type": "issue_created",
+  "occurred_at": "2026-10-21T01:45:35.859Z",
+  "actor_id": "home",
+  "payload": {
+    "title": "CI-side LeftBlock scan for commits made without the hook",
+    "description": "Local hooks don't cover commits made with --no-verify, in clones where the hook was never installed, or before install (Prospectus #54 added a real address on 2026-10-20). Ship a reusable GitHub Action or workflow snippet that runs the shipped ruleset over a PR's commits (gitleaks git --log-opts base..head) with the same allow file and overrides, so repos get a server-side backstop. (Prospectus feedback, 2026-10-21)",
+    "issue_type": "task",
+    "status": "open",
+    "priority": 2,
+    "assignee": null,
+    "parent": "kanbus-00328ba2-5ba8-4280-b784-d3f2e9426ef1",
+    "labels": []
+  }
+}
