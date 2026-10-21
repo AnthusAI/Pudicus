@@ -367,8 +367,8 @@ PEM private keys, and other standard secret formats.
 | `leftblock-personal-email` | Personal email addresses (infrastructure identities like `git@github.com`, `@users.noreply.github.com`, no-reply addresses and `@example.*` placeholders are allowlisted) |
 | `leftblock-home-path-posix` | Home-folder paths `/Users/<name>`, `/home/<name>` |
 | `leftblock-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
-| `leftblock-session-uuid` | Potential session UUIDs, with narrow exceptions for canonical Kanbus structural fields and example values |
-| `leftblock-actor-id` | `actor_id` / `user_id` / `author_id` JSON values |
+| `leftblock-session-uuid` | Potential session UUIDs (not flagged in Kanbus board data; example values and the `.kanbus.yml` `project_id` line are also allowed) |
+| `leftblock-actor-id` | `actor_id` / `user_id` / `author_id` JSON values (not flagged in Kanbus board data) |
 | `leftblock-openai-key` | `sk-`, `sk-proj-`, `sk-svcacct-` OpenAI keys |
 | `leftblock-anthropic-key` | `sk-ant-` Anthropic keys |
 | `leftblock-eth-private-key` | Ethereum-style private keys (`0x` + 64 hex) |
@@ -384,18 +384,13 @@ since it may already be exposed. Findings in Kanbus board data
 those files and that the content should be fixed through `kbs` (for example
 `kbs update` or `kbs comment`) rather than by hand.
 
-Kanbus exceptions apply to complete identifier property lines in
-`project/issues/*.json` and `project/events/*.json`. Event actor attribution
-must occupy a root property line in the canonical two-space format.
-Coordination claim references must occupy the canonical payload depth.
-The legacy `project/.cache/index.json` allows only canonical issue ID/parent
-lines and issue-filename keys with numeric modification times; cached
-descriptions and comments still receive the normal checks.
-Provider session fields, nested actor values, prose and arbitrary arrays
-remain scanned. A project prefix alone grants no exception, and a second
-value on the same line cannot inherit one. These checks recognize syntax;
-they do not validate a full JSON schema or prove an identifier is public.
-Other secret rules still apply to values in the accepted fields.
+Kanbus is the mandated task tracker, so identifiers in its board data (actor
+ids, session UUIDs, and UUIDs in any field or prose) are not sensitive and never
+block a `kbs` write. Board data means `project/issues/*.json`,
+`project/events/*.json` and `project/.cache/index.json`; the exception is
+limited to the session-UUID and actor-id rules, so personal emails, home paths
+and API or wallet keys in those files are still detected, and the same content
+in any other path is still flagged.
 
 ### Crypto wallet material: what is and is not flagged
 
