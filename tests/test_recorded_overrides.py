@@ -31,7 +31,8 @@ class RecordedOverrideTests(RepositoryFixture):
         return self.leftblock("check", "--config", str(policy))
 
     def ids(self, proc):
-        return re.findall(r'"id": "([0-9a-f]{16})"', proc.stderr)
+        # Per-finding detail lines (the final summary line repeats the ids).
+        return re.findall(r"^      .*\[id ([0-9a-f]{16})\]$", proc.stderr, re.MULTILINE)
 
     def blocked_id(self, text=None):
         self.write_stage(text or f"a\nContact: {EMAIL}\n")
@@ -251,3 +252,12 @@ class OverrideNeverCoversErrorsTests(RepositoryFixture):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CommandPrefixTests(unittest.TestCase):
+    def test_printed_command_never_contains_the_home_directory(self):
+        import os
+        from leftblock import cli
+        home = os.path.expanduser("~")
+        for prefix in (cli.command_prefix(), cli.shell_path(os.path.join(home, "x", "policy.json"))):
+            self.assertNotIn(home + os.sep, prefix)
