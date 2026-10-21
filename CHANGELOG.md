@@ -8,6 +8,20 @@ remain unchanged; commit links retain their original hashes.
 
 <!-- version list -->
 
+## v0.4.2 (2026-10-21)
+
+### Bug Fixes
+
+- Include Kanbus's LLM usage log in board data
+  ([`4a85eef`](https://github.com/DataParade-io/LeftBlock/commit/4a85eefc6e7c2e9db155933ebf0d4a27df1b6831))
+
+- Treat Kanbus board identifiers as non-sensitive so kbs writes never block
+  ([`619c6a9`](https://github.com/DataParade-io/LeftBlock/commit/619c6a906965e833026d87420ece98c696daff51))
+
+- **ci**: Let a rerun publish a tagged release whose upload failed
+  ([`ced9575`](https://github.com/DataParade-io/LeftBlock/commit/ced9575879e754e26a7bca85cd814bb36f8d1ca9))
+
+
 ## v0.4.1 (2026-10-21)
 
 ### Bug Fixes
