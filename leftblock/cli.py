@@ -14,6 +14,7 @@ from leftblock.merge import (
     MergeScopeError, build_scoped_index, checker_environment, index_entries, merge_state,
 )
 from leftblock import allow as allowlist
+from leftblock import bypass
 from leftblock.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
     load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT,
@@ -211,6 +212,16 @@ def _run_configured_checks(repo_root, config_path=None):
         scoped_index = None
     try:
         results = execute_checkers(checkers, cwd=repo_root, env=env if scoped_index else base_env)
+        # Gitleaks skips lines with its inline allow comment and .gitleaksignore entries with no
+        # recorded reason; report staged additions of either as findings.
+        try:
+            skips = bypass.bypass_findings(repo_root, env if scoped_index else base_env)
+            if skips:
+                results.append(CheckerResult("leftblock-bypass", False, skips))
+        except bypass.BypassScanError:
+            results.append(CheckerResult(
+                "leftblock-bypass", False, "Could not read the staged diff.", error=True,
+            ))
         if scoped_index:
             try:
                 stable = merge_state(repo_root) == state and index_entries(repo_root, scoped_index) == entries
@@ -325,6 +336,8 @@ RULE_HINTS = {
     "leftblock-eth-private-key": _REMOVE_AND_ROTATE,
     "leftblock-wif-key": _REMOVE_AND_ROTATE,
     "leftblock-bip39-mnemonic": _REMOVE_AND_ROTATE,
+    bypass.MARKER_RULE: "Remove the marker and fix the content, or record a reasoned override.",
+    bypass.IGNORE_RULE: "Don't suppress findings silently; record a reasoned override per finding.",
 }
 KANBUS_HINT = (
     "This file is written by Kanbus; fix the content through kbs "
@@ -575,7 +588,8 @@ def cmd_hook(args):
     tree_hash = get_tree_hash()
     print_info(f"Scanning tree {tree_hash}...")
 
-    config, results = configured_checks(repo_root)
+    config, results, applied = run_checks(repo_root)
+    print_applied(applied)
     if get_tree_hash() != tree_hash:
         print_err("Staged tree changed during inspection. Commit blocked; run the checks again.")
         sys.exit(1)
@@ -591,8 +605,9 @@ def cmd_hook(args):
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     if all_clean:
-        result_str = "clean"
-        print_info("✓ All checks passed.")
+        # Staged, reasoned overrides need no passphrase but are not a clean pass.
+        result_str = f"allowed:{len(applied)}" if applied else "clean"
+        print_info("✓ All checks passed." if not applied else f"✓ All checks passed with {len(applied)} recorded override(s).")
     else:
         print_warn(f"✗ Found issues in {len(failed_checkers)} checker(s):")
         print_failures(failed_checkers)

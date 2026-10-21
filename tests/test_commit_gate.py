@@ -304,7 +304,7 @@ class FailClosedGateTests(RepositoryFixture):
         with mock.patch.object(cli, "run_cmd") as git_cmd, \
                 mock.patch.object(cli, "get_secret", return_value="synthetic-secret"), \
                 mock.patch.object(cli, "get_tree_hash", return_value="same-tree"), \
-                mock.patch.object(cli, "configured_checks", return_value=({}, [failed])), \
+                mock.patch.object(cli, "run_checks", return_value=({}, [failed], [])), \
                 mock.patch.object(cli.sys.stdin, "isatty", return_value=True), \
                 mock.patch.object(cli.getpass, "getpass") as prompt:
             git_cmd.return_value.stdout = str(self.repo)

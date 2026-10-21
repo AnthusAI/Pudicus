@@ -19,7 +19,8 @@ class RuleHintTests(unittest.TestCase):
         import re
         rules = (Path(cli.__file__).parent / "data" / "gitleaks.toml").read_text()
         shipped = set(re.findall(r'^id = "(leftblock-[a-z0-9-]+)"', rules, re.MULTILINE))
-        self.assertEqual(shipped, set(cli.RULE_HINTS))
+        from leftblock import bypass
+        self.assertEqual(shipped | {bypass.MARKER_RULE, bypass.IGNORE_RULE}, set(cli.RULE_HINTS))
         for rule in ("openai-key", "anthropic-key", "eth-private-key", "wif-key", "bip39-mnemonic"):
             self.assertIn("rotate", cli.RULE_HINTS["leftblock-" + rule])
         self.assertIn("relative path", cli.RULE_HINTS["leftblock-home-path-posix"])

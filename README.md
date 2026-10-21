@@ -249,10 +249,34 @@ allow:
   policy when present, otherwise `.leftblock.yml`; pass the same `--config`
   you use for `check` if it differs.
 
-This mechanism is separate from Gitleaks' own suppressions: inline
-`gitleaks:allow` markers and a root `.gitleaksignore` are still honoured by
-Gitleaks itself, and they are outside this mechanism's reason, scope, and
-review trail.
+#### Gitleaks' own suppressions
+
+Gitleaks skips a line carrying its inline allow comment and any entry in a
+`.gitleaksignore` file, with no recorded reason. LeftBlock closes the silent
+paths it can see: it reports, as ordinary findings that carry an id and can be
+overridden only through a recorded reason as above,
+
+- `leftblock-gitleaks-allow-marker`: any staged added line containing the
+  Gitleaks allow comment (the word `gitleaks`, a colon, then `allow`); and
+- `leftblock-gitleaksignore-change`: any staged addition or edit of a
+  `.gitleaksignore` file at any path (removing one is not a finding).
+
+Both are read from the staged diff (the merge-scoped index during a merge).
+Removing a suppression is the fix, not a finding.
+
+**Residual risk.** Tested with Gitleaks 8.30: a `.gitleaksignore` in the
+repository root that already exists, committed or only in the working tree, is
+still honoured by `protect --staged`, and no option turns that off. Passing
+`--gitleaks-ignore-path` with an empty file or directory adds to the sources it
+reads; it does not replace the root file. Ignore files in subdirectories and
+ones that exist only in the index are not read. LeftBlock therefore cannot
+stop an ignore file that was already there before the check ran. Review any
+existing root `.gitleaksignore` (`git ls-files '*.gitleaksignore'`), and
+treat a file that is untracked or edited outside the index as outside this
+check. The related `--ignore-gitleaks-allow` option does make Gitleaks scan
+lines that carry the inline comment; LeftBlock does not pass it, so a real
+finding on a line with the comment is hidden from Gitleaks even though the
+comment itself is reported.
 
 During an in-progress merge, command checkers skip only regular files whose
 complete blob and mode already exist at the same path in a parent. Changed
@@ -295,6 +319,12 @@ Python environment or Gitleaks executable. For manual composition, run
 `leftblock check --config PATH` in the existing `pre-commit` flow and
 `leftblock hook "$1"` in the `commit-msg` flow when receipts are needed.
 Preserve existing behavior and propagate any failure's exit status.
+
+A receipt records `Inspection-result: clean` when nothing was found, and
+`Inspection-result: allowed:N` when every finding was covered by `N` staged,
+reasoned overrides (see [Overriding a false alarm](#overriding-a-false-alarm)).
+Neither needs a passphrase. An interactive passphrase override of unrecorded
+findings is still recorded as `override:N-checkers`.
 
 Receipts use HMAC trailers, not Git GPG/SSH signatures; they do not appear
 in `git log --show-signature`. Every machine running `leftblock verify`
