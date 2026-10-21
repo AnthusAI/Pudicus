@@ -8,6 +8,22 @@ remain unchanged; commit links retain their original hashes.
 
 <!-- version list -->
 
+## v0.4.1 (2026-10-21)
+
+### Bug Fixes
+
+- Give Kanbus event files delete-and-recreate advice; events are append-only
+  ([`2d18b8d`](https://github.com/DataParade-io/LeftBlock/commit/2d18b8ddef98e9a2f94147177a68efde1bd66c36))
+
+- Treat no-reply addresses as non-personal and keep commit trailers out of the changelog
+  ([`a51cda0`](https://github.com/DataParade-io/LeftBlock/commit/a51cda023ad6ca07d4066beb9c40299bbac31ee0))
+
+### Chores
+
+- **kanbus**: Close usability tasks shipped in 0.4.0
+  ([`6064839`](https://github.com/DataParade-io/LeftBlock/commit/6064839d1f6babc68f41495c9b0e283b160b1e82))
+
+
 ## v0.4.0 (2026-10-21)
 
 ### Bug Fixes
