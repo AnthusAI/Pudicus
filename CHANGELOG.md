@@ -6,6 +6,8 @@ earlier distribution. Summaries use
 current terminology where helpful. Original commits, receipts, and releases
 remain unchanged; commit links retain their original hashes.
 
+<!-- version list -->
+
 ## v0.3.5 (2026-10-20)
 
 ### Fix
