@@ -143,6 +143,20 @@ If the runtime link is broken, the hook fails closed: it prints
 Outside a virtualenv, the hook keeps using the installing interpreter and no
 links are made.
 
+`leftblock --version` prints the installed version. A blocked check starts
+with `leftblock <version>, ruleset <id>`, where the ruleset id is the first 12
+hex characters of the SHA-256 of the gitleaks config file the checker names
+with `--config` (`unknown` when there is none), so a report can say exactly
+which rules ran.
+
+#### Dry run
+
+`leftblock check` is a dry run of the next commit: it inspects the staged
+changes with the same policy the hook uses and changes nothing. Without
+`--config` it uses the local install policy when one exists, otherwise
+`.leftblock.yml`. A blocked run ends by printing `Re-run this check:
+leftblock check` and the final summary line.
+
 To run a noninteractive staged check with an explicit policy:
 
 ```bash

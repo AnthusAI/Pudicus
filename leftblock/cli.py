@@ -4,6 +4,7 @@ import os
 import json
 import subprocess
 import getpass
+import hashlib
 import shlex
 import shutil
 import yaml
@@ -121,12 +122,17 @@ def cmd_install(args):
     else:
         print_info(f"Shared secret already exists at {SECRET_FILE_DEFAULT}")
 
-def configured_checks(repo_root, config_path=None, overrides=True):
-    """Run the checkers, attach override ids and apply staged overrides."""
+def run_checks(repo_root, config_path=None, overrides=True):
+    """Run the checkers, attach override ids and apply staged overrides.
+
+    Returns (config, results, applied) where applied is [(finding, reason)] for
+    each override that took effect. Prints nothing.
+    """
     config, results = _run_configured_checks(repo_root, config_path)
     allowlist.attach_ids(repo_root, results)
+    applied = []
     if not overrides:
-        return config, results
+        return config, results, applied
     try:
         entries = allowlist.load_allowlist(repo_root)
     except allowlist.AllowError:
@@ -134,19 +140,31 @@ def configured_checks(repo_root, config_path=None, overrides=True):
             "leftblock-allow", False,
             "Invalid .leftblock-allow.yml; inspection blocked.", error=True,
         ))
-        return config, results
+        return config, results, applied
     shown = set()
     for finding, reason in allowlist.apply_allowlist(results, entries):
         # Several matches on one line share an id; report each override once.
         if finding["id"] in shown:
             continue
         shown.add(finding["id"])
+        applied.append((finding, reason))
+    return config, results, applied
+
+
+def print_applied(applied):
+    for finding, reason in applied:
         print_info(
             "Override applied: file " + json.dumps(finding["File"], ensure_ascii=True)
             + ", rule " + json.dumps(finding["RuleID"], ensure_ascii=True)
             + ", id " + finding["id"]
             + ", reason " + json.dumps(reason, ensure_ascii=True)
         )
+
+
+def configured_checks(repo_root, config_path=None, overrides=True):
+    """run_checks, announcing each applied override on stderr."""
+    config, results, applied = run_checks(repo_root, config_path, overrides)
+    print_applied(applied)
     return config, results
 
 
@@ -223,6 +241,40 @@ def location(finding):
     return where
 
 
+def leftblock_version():
+    try:
+        from importlib.metadata import version
+        return version("leftblock")
+    except Exception:
+        return "unknown"
+
+
+def ruleset_id(config, repo_root):
+    """sha256[:12] of the gitleaks config file a checker names with --config, else "unknown"."""
+    checkers = config.get("checkers") if isinstance(config, dict) else None
+    for checker in checkers if isinstance(checkers, list) else []:
+        command = checker.get("command") if isinstance(checker, dict) else None
+        if not isinstance(command, str):
+            continue
+        try:
+            argv = shlex.split(command)
+        except ValueError:
+            continue
+        for i, arg in enumerate(argv):
+            if arg == "--config" and i + 1 < len(argv):
+                path = argv[i + 1]
+            elif arg.startswith("--config="):
+                path = arg[len("--config="):]
+            else:
+                continue
+            try:
+                with open(os.path.join(repo_root, path), "rb") as f:
+                    return hashlib.sha256(f.read()).hexdigest()[:12]
+            except OSError:
+                return "unknown"
+    return "unknown"
+
+
 def command_prefix():
     """How to invoke this LeftBlock in printed advice, without leaking a home path.
 
@@ -284,6 +336,18 @@ def finding_summary(findings):
     return "; ".join(parts)
 
 
+def config_flag(repo_root, config_path):
+    """` --config PATH` when the policy differs from the one `check` picks by default."""
+    default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
+    if config_path and os.path.abspath(config_path) != os.path.abspath(default):
+        return f" --config {shell_path(config_path)}"
+    return ""
+
+
+def print_rerun(repo_root, config_path):
+    print_info(f"Re-run this check: {command_prefix()} check{config_flag(repo_root, config_path)}")
+
+
 def print_override_instructions(failures, repo_root, config_path):
     # Tools that drive `git commit` often surface only the final line, so the
     # last ERROR line names every finding and the next step on its own.
@@ -306,9 +370,7 @@ def print_override_instructions(failures, repo_root, config_path):
         steps.append("remove the flagged content")
     if ids:
         command = f"{command_prefix()} allow {' '.join(dict.fromkeys(ids))}"
-        default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
-        if config_path and os.path.abspath(config_path) != os.path.abspath(default):
-            command += f" --config {shell_path(config_path)}"
+        command += config_flag(repo_root, config_path)
         command += ' --reason "<why this is not sensitive>"'
         print_info(
             "An override adds the finding to .leftblock-allow.yml and stages it, so it "
@@ -316,6 +378,7 @@ def print_override_instructions(failures, repo_root, config_path):
         )
         steps.append("if it is a false alarm, record a reviewed override: " + command)
     advice = "; or ".join(steps)
+    print_rerun(repo_root, config_path)
     print_err(f"Inspection blocked: {finding_summary(own + findings)}. {advice[:1].upper()}{advice[1:]}.")
 
 
@@ -377,23 +440,34 @@ def cmd_allow(args):
 
 
 def cmd_check(args):
-    """Noninteractive staged inspection for existing pre-commit hook managers."""
+    """Noninteractive staged inspection for existing pre-commit hook managers.
+
+    Also the dry run of a commit: it inspects the staged changes with the same
+    policy the hook uses, and changes nothing.
+    """
     repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
+    config_path = getattr(args, "config", None)
+    if config_path is None:
+        config_path = default_local_policy(repo_root)
     tree_hash = get_tree_hash()
-    _, results = configured_checks(repo_root, getattr(args, "config", None))
+    config, results, applied = run_checks(repo_root, config_path)
+    failures = [result for result in results if not result.clean]
+    if failures:
+        print_info(f"leftblock {leftblock_version()}, ruleset {ruleset_id(config, repo_root)}")
+    print_applied(applied)
     if get_tree_hash() != tree_hash:
         print_err("Staged tree changed during inspection. Check blocked; run it again.")
         sys.exit(1)
-    failures = [result for result in results if not result.clean]
     if failures:
         print_failures(failures)
         if any(result.error for result in failures) and not any(
             isinstance(result.findings, list) for result in failures
         ):
             problems = "; ".join(f"{result.name}: {result.findings}" for result in failures if result.error)
+            print_rerun(repo_root, config_path)
             print_err(f"Inspection blocked: {problems} Fix this first; no override is available.")
         else:
-            print_override_instructions(failures, repo_root, getattr(args, "config", None))
+            print_override_instructions(failures, repo_root, config_path)
         sys.exit(1)
     print_info("All configured checks passed for staged changes.")
 
@@ -624,6 +698,7 @@ def cmd_verify(args):
 
 def main():
     parser = argparse.ArgumentParser(description="LeftBlock - A pluggable inspection gate for Git commits")
+    parser.add_argument("--version", action="version", version=f"leftblock {leftblock_version()}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     install_p = subparsers.add_parser("install", help="Install the commit-msg hook and setup secrets")
@@ -632,7 +707,7 @@ def main():
     install_p.add_argument("--gitleaks", help="Existing Gitleaks executable for a local check-only installation")
 
     check_p = subparsers.add_parser("check", help="Inspect staged changes without signing")
-    check_p.add_argument("--config", help="Explicit local checker policy; defaults to .leftblock.yml")
+    check_p.add_argument("--config", help="Checker policy; defaults to the local install policy when present, else .leftblock.yml")
 
     allow_p = subparsers.add_parser("allow", help="Record a reviewed override for current findings")
     allow_p.add_argument("ids", nargs="+", metavar="ID", help="Finding id(s) shown by the blocked check")

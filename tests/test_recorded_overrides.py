@@ -1,7 +1,9 @@
 """Recorded per-finding overrides, using synthetic data and disposable repos."""
 
+import hashlib
 import re
 import unittest
+from importlib.metadata import version
 
 import yaml
 
@@ -29,6 +31,10 @@ class RecordedOverrideTests(RepositoryFixture):
     def check(self):
         policy = self.repo / ".git" / "leftblock" / "policy.json"
         return self.leftblock("check", "--config", str(policy))
+
+    def plain_check(self, *extra):
+        # No --config: `check` must pick up the local install policy by itself.
+        return self.leftblock("check", *extra)
 
     def ids(self, proc):
         # Per-finding detail lines (the final summary line repeats the ids).
@@ -107,6 +113,51 @@ class RecordedOverrideTests(RepositoryFixture):
         )
         self.git("add", ".leftblock-allow.yml", check=True)
         self.assertEqual(self.check().returncode, 0)
+
+    def test_version_flag_prints_the_installed_version(self):
+        proc = self.leftblock("--version")
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(proc.stdout.strip(), "leftblock " + version("leftblock"))
+
+    def test_blocked_output_starts_with_version_and_ruleset_hash(self):
+        ident = self.blocked_id()
+        rules = (self.repo / ".git" / "leftblock" / "gitleaks.toml").read_bytes()
+        first = self.check().stderr.splitlines()[0]
+        self.assertTrue(
+            first.endswith(f"leftblock {version('leftblock')}, ruleset {hashlib.sha256(rules).hexdigest()[:12]}"),
+            first,
+        )
+        # Still first when an override is also applied.
+        self.assertEqual(self.allow(ident).returncode, 0)
+        self.write_stage(f"a\nContact: {EMAIL}\nOther: {OTHER_EMAIL}\n")
+        lines = self.check().stderr.splitlines()
+        self.assertIn("ruleset", lines[0])
+        self.assertIn("Override applied", lines[1])
+
+    def test_ruleset_is_unknown_without_a_gitleaks_config_argument(self):
+        from leftblock import cli
+        self.assertEqual(cli.ruleset_id({"checkers": [{"command": "scanner --fast"}]}, str(self.repo)), "unknown")
+        self.assertEqual(cli.ruleset_id({"checkers": [{"command": "scanner --config nope.toml"}]}, str(self.repo)), "unknown")
+        self.assertEqual(cli.ruleset_id({}, str(self.repo)), "unknown")
+
+    def test_check_defaults_to_the_local_policy_and_is_a_dry_run(self):
+        self.write_stage(f"a\nContact: {EMAIL}\n")
+        before = self.git("write-tree", check=True).stdout
+        proc = self.plain_check()
+        self.assertEqual(proc.returncode, 1, proc.stderr)
+        self.assertIn("leftblock-personal-email", proc.stderr)
+        self.assertRegex(proc.stderr, r"Re-run this check: .*leftblock.* check\n")
+        self.assertNotIn("check --config", proc.stderr)  # the default policy needs no flag
+        self.assertEqual(before, self.git("write-tree", check=True).stdout)
+        self.assertEqual(self.git("rev-parse", "HEAD").stdout.strip(), self.baseline)
+        self.assertEqual(self.git("diff", "--cached", "--name-only").stdout.strip(), PAGE)
+
+    def test_local_policy_wins_over_a_root_policy_by_default(self):
+        (self.repo / ".leftblock.yml").write_text(
+            "version: 1\ncheckers:\n  - type: command\n    command: /usr/bin/true\n"
+        )
+        self.write_stage(f"a\nContact: {EMAIL}\n")
+        self.assertEqual(self.plain_check().returncode, 1)
 
     def test_allow_file_itself_is_not_flagged_and_dedupes(self):
         ident = self.blocked_id()
