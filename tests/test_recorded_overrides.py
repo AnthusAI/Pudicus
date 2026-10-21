@@ -1,6 +1,7 @@
 """Recorded per-finding overrides, using synthetic data and disposable repos."""
 
 import hashlib
+import json
 import re
 import unittest
 from importlib.metadata import version
@@ -158,6 +159,61 @@ class RecordedOverrideTests(RepositoryFixture):
         )
         self.write_stage(f"a\nContact: {EMAIL}\n")
         self.assertEqual(self.plain_check().returncode, 1)
+
+    def test_json_passed_exit_0(self):
+        self.write_stage("nothing sensitive here\n")
+        proc = self.plain_check("--format", "json")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        report = json.loads(proc.stdout)
+        self.assertEqual(report, {
+            "version": version("leftblock"), "result": "passed", "findings": [],
+            "overrides_applied": [], "errors": [], "override_command": None,
+        })
+        self.assertIn("All configured checks passed", proc.stderr)
+
+    def test_json_blocked_exit_1_and_text_mode_keeps_stdout_empty(self):
+        ident = self.blocked_id()
+        proc = self.plain_check("--format", "json")
+        self.assertEqual(proc.returncode, 1)
+        report = json.loads(proc.stdout)
+        self.assertEqual(report["result"], "blocked")
+        self.assertEqual(report["findings"], [{
+            "file": PAGE, "line": 2, "rule": "leftblock-personal-email", "id": ident,
+            "description": "Personal email address",
+        }])
+        self.assertEqual(report["errors"], [])
+        self.assertIn(f"allow {ident}", report["override_command"])
+        self.assertIn("--reason", report["override_command"])
+        self.assertNotIn(EMAIL, proc.stdout + proc.stderr)
+        self.assertIn("Inspection blocked", proc.stderr.splitlines()[-1])
+        text = self.plain_check()
+        self.assertEqual((text.returncode, text.stdout), (1, ""))
+
+    def test_json_lists_applied_overrides(self):
+        ident = self.blocked_id()
+        self.assertEqual(self.allow(ident).returncode, 0)
+        report = json.loads(self.plain_check("--format", "json").stdout)
+        self.assertEqual(report["result"], "passed")
+        self.assertEqual(report["overrides_applied"], [{
+            "file": PAGE, "rule": "leftblock-personal-email", "id": ident, "reason": REASON,
+        }])
+
+    def test_json_error_exit_2_for_invalid_allow_file_and_bad_config(self):
+        self.write_stage("nothing sensitive here\n")
+        (self.repo / ".leftblock-allow.yml").write_text("version: 2\nallow: []\n")
+        self.git("add", ".leftblock-allow.yml", check=True)
+        for args in (("--format", "json"), ()):
+            proc = self.plain_check(*args)
+            self.assertEqual(proc.returncode, 2, proc.stderr)
+        report = json.loads(self.plain_check("--format", "json").stdout)
+        self.assertEqual(report["result"], "error")
+        self.assertEqual([e["checker"] for e in report["errors"]], ["leftblock-allow"])
+        self.assertIn("Invalid .leftblock-allow.yml", report["errors"][0]["message"])
+        missing = self.leftblock("check", "--config", str(self.repo / "missing.json"), "--format", "json")
+        self.assertEqual(missing.returncode, 2)
+        report = json.loads(missing.stdout)
+        self.assertEqual((report["result"], report["errors"][0]["checker"]), ("error", "configuration"))
+        self.assertEqual(self.leftblock("check", "--config", str(self.repo / "missing.json")).returncode, 2)
 
     def test_allow_file_itself_is_not_flagged_and_dedupes(self):
         ident = self.blocked_id()

@@ -122,6 +122,16 @@ def cmd_install(args):
     else:
         print_info(f"Shared secret already exists at {SECRET_FILE_DEFAULT}")
 
+CONFIG_ERROR = "Missing or invalid checker configuration. Inspection blocked; review the selected policy."
+
+# Exit codes of `check`.
+EXIT_PASSED, EXIT_BLOCKED, EXIT_ERROR = 0, 1, 2
+
+
+class ConfigError(Exception):
+    pass
+
+
 def run_checks(repo_root, config_path=None, overrides=True):
     """Run the checkers, attach override ids and apply staged overrides.
 
@@ -163,7 +173,11 @@ def print_applied(applied):
 
 def configured_checks(repo_root, config_path=None, overrides=True):
     """run_checks, announcing each applied override on stderr."""
-    config, results, applied = run_checks(repo_root, config_path, overrides)
+    try:
+        config, results, applied = run_checks(repo_root, config_path, overrides)
+    except ConfigError:
+        print_err(CONFIG_ERROR)
+        sys.exit(1)
     print_applied(applied)
     return config, results
 
@@ -173,8 +187,7 @@ def _run_configured_checks(repo_root, config_path=None):
         config = load_config(repo_root, config_path)
         checkers = validate_checkers(config)
     except (OSError, ValueError, yaml.YAMLError):
-        print_err("Missing or invalid checker configuration. Inspection blocked; review the selected policy.")
-        sys.exit(1)
+        raise ConfigError(CONFIG_ERROR)
     # Inherited whole files at the same path can be omitted during a merge.
     # Changed/resolved files and renamed paths keep their full staged diff.
     # Any failure to scope falls back to the full staged scan (stricter).
@@ -348,6 +361,12 @@ def print_rerun(repo_root, config_path):
     print_info(f"Re-run this check: {command_prefix()} check{config_flag(repo_root, config_path)}")
 
 
+def override_command(ids, repo_root, config_path):
+    command = f"{command_prefix()} allow {' '.join(dict.fromkeys(ids))}"
+    command += config_flag(repo_root, config_path)
+    return command + ' --reason "<why this is not sensitive>"'
+
+
 def print_override_instructions(failures, repo_root, config_path):
     # Tools that drive `git commit` often surface only the final line, so the
     # last ERROR line names every finding and the next step on its own.
@@ -369,9 +388,7 @@ def print_override_instructions(failures, repo_root, config_path):
     if findings:
         steps.append("remove the flagged content")
     if ids:
-        command = f"{command_prefix()} allow {' '.join(dict.fromkeys(ids))}"
-        command += config_flag(repo_root, config_path)
-        command += ' --reason "<why this is not sensitive>"'
+        command = override_command(ids, repo_root, config_path)
         print_info(
             "An override adds the finding to .leftblock-allow.yml and stages it, so it "
             "appears in the commit and its review."
@@ -439,37 +456,76 @@ def cmd_allow(args):
     print_info(f"{allowlist.ALLOW_FILE} is staged; the commit must include it.")
 
 
+def json_report(result, findings, applied, errors, command):
+    return {
+        "version": leftblock_version(),
+        "result": result,
+        "findings": [{
+            "file": f.get("File"), "line": f.get("line"), "rule": f.get("RuleID"),
+            "id": f.get("id"), "description": f.get("description"),
+        } for f in findings],
+        "overrides_applied": [
+            {"file": f["File"], "rule": f["RuleID"], "id": f["id"], "reason": reason}
+            for f, reason in applied
+        ],
+        "errors": [{"checker": checker, "message": message} for checker, message in errors],
+        "override_command": command,
+    }
+
+
 def cmd_check(args):
     """Noninteractive staged inspection for existing pre-commit hook managers.
 
     Also the dry run of a commit: it inspects the staged changes with the same
-    policy the hook uses, and changes nothing.
+    policy the hook uses and changes nothing. Exit status: 0 passed, 1 blocked
+    by findings, 2 a checker or the configuration could not complete.
     """
+    as_json = getattr(args, "format", "text") == "json"
     repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
     config_path = getattr(args, "config", None)
     if config_path is None:
         config_path = default_local_policy(repo_root)
+
+    def finish(code, result, findings=(), applied=(), errors=(), command=None):
+        if as_json:
+            print(json.dumps(json_report(result, findings, applied, errors, command), indent=2))
+        if code:
+            sys.exit(code)
+
     tree_hash = get_tree_hash()
-    config, results, applied = run_checks(repo_root, config_path)
+    try:
+        config, results, applied = run_checks(repo_root, config_path)
+    except ConfigError:
+        print_err(CONFIG_ERROR)
+        finish(EXIT_ERROR, "error", errors=[("configuration", CONFIG_ERROR)])
     failures = [result for result in results if not result.clean]
+    findings = [
+        f for result in failures if isinstance(result.findings, list) for f in result.findings
+    ]
+    errors = [(str(result.name), str(result.findings)) for result in failures if result.error]
     if failures:
         print_info(f"leftblock {leftblock_version()}, ruleset {ruleset_id(config, repo_root)}")
     print_applied(applied)
     if get_tree_hash() != tree_hash:
-        print_err("Staged tree changed during inspection. Check blocked; run it again.")
-        sys.exit(1)
+        message = "Staged tree changed during inspection. Check blocked; run it again."
+        print_err(message)
+        finish(EXIT_ERROR, "error", findings, applied, errors + [("inspection", message)])
     if failures:
         print_failures(failures)
-        if any(result.error for result in failures) and not any(
-            isinstance(result.findings, list) for result in failures
-        ):
-            problems = "; ".join(f"{result.name}: {result.findings}" for result in failures if result.error)
+        ids = [f["id"] for f in findings if f.get("id") and f.get("File") != allowlist.ALLOW_FILE]
+        command = override_command(ids, repo_root, config_path) if ids else None
+        if errors and not findings:
+            problems = "; ".join(f"{name}: {message}" for name, message in errors)
             print_rerun(repo_root, config_path)
             print_err(f"Inspection blocked: {problems} Fix this first; no override is available.")
         else:
             print_override_instructions(failures, repo_root, config_path)
-        sys.exit(1)
+        finish(
+            EXIT_ERROR if errors else EXIT_BLOCKED, "error" if errors else "blocked",
+            findings, applied, errors, command,
+        )
     print_info("All configured checks passed for staged changes.")
+    finish(EXIT_PASSED, "passed", (), applied)
 
 
 def cmd_hook(args):
@@ -707,6 +763,10 @@ def main():
     install_p.add_argument("--gitleaks", help="Existing Gitleaks executable for a local check-only installation")
 
     check_p = subparsers.add_parser("check", help="Inspect staged changes without signing")
+    check_p.add_argument(
+        "--format", choices=["text", "json"], default="text",
+        help="With json, also print one JSON result object on stdout (stderr is unchanged)",
+    )
     check_p.add_argument("--config", help="Checker policy; defaults to the local install policy when present, else .leftblock.yml")
 
     allow_p = subparsers.add_parser("allow", help="Record a reviewed override for current findings")

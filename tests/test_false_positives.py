@@ -433,7 +433,7 @@ class MergeScopeTests(unittest.TestCase):
         self.policy.write_text(json.dumps(policy))
         before = self.git("ls-files", "-s").stdout
         result = self.check()
-        self.assertEqual(result.returncode, 1, "A checker changed the inspected index undetected")
+        self.assertEqual(result.returncode, 2, "A checker changed the inspected index undetected")
         self.assertIn("merge-scope", result.stderr)
         self.assertEqual(self.git("ls-files", "-s").stdout, before)
 

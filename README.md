@@ -157,6 +157,37 @@ changes with the same policy the hook uses and changes nothing. Without
 `.leftblock.yml`. A blocked run ends by printing `Re-run this check:
 leftblock check` and the final summary line.
 
+#### Exit codes and JSON output
+
+`leftblock check` exits with:
+
+| Code | Meaning |
+|---|---|
+| 0 | Passed (overrides may have been applied) |
+| 1 | Blocked by findings |
+| 2 | A checker or the configuration could not complete, including an invalid `.leftblock-allow.yml`; this wins over 1 when both occur |
+
+`leftblock check --format json` also prints one JSON object on stdout and
+leaves the human-readable stderr output unchanged:
+
+```json
+{
+  "version": "0.3.5",
+  "result": "blocked",
+  "findings": [{"file": "page.tsx", "line": 2, "rule": "leftblock-personal-email",
+                "id": "3f2a9c1e7b4d5a60", "description": "Personal email address"}],
+  "overrides_applied": [{"file": "a.md", "rule": "leftblock-home-path-posix",
+                         "id": "0123456789abcdef", "reason": "Documented example path"}],
+  "errors": [],
+  "override_command": "leftblock allow 3f2a9c1e7b4d5a60 --reason \"<why this is not sensitive>\""
+}
+```
+
+`result` is `passed`, `blocked` or `error`; `errors` is `[{checker, message}]`;
+`override_command` is `null` when nothing can be overridden. Like the text
+output, it never contains matched values or source lines. The git hooks only
+need a nonzero status, so they are unaffected.
+
 To run a noninteractive staged check with an explicit policy:
 
 ```bash
