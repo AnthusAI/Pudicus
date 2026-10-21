@@ -8,6 +8,7 @@ import hashlib
 import io
 import importlib.util
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -23,6 +24,10 @@ from leftblock.core import compute_hmac
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+# semantic-release owns the version; read it rather than hard-coding it.
+PROJECT_VERSION = re.search(
+    r'^version = "([^"]+)"', (PROJECT_ROOT / "pyproject.toml").read_text(), re.MULTILINE,
+).group(1)
 BUILD_TOOLS_AVAILABLE = (
     importlib.util.find_spec("setuptools") is not None
     and importlib.util.find_spec("wheel") is not None
@@ -196,7 +201,7 @@ class DistributionOwnershipTests(unittest.TestCase):
 
     def test_distribution_owns_only_leftblock_command(self):
         self.assertIn("\nName: leftblock\n", "\n" + self.metadata)
-        self.assertIn("\nVersion: 0.3.5\n", "\n" + self.metadata)
+        self.assertIn(f"\nVersion: {PROJECT_VERSION}\n", "\n" + self.metadata)
         self.assertIn("\nLicense-File: LICENSE\n", "\n" + self.metadata)
         self.assertEqual(dict(self.entry_points["console_scripts"]), {"leftblock": "leftblock.cli:main"})
 
@@ -208,7 +213,7 @@ class DistributionOwnershipTests(unittest.TestCase):
             self.assertIn(name, self.names)
         self.assertEqual(
             {name.split("/")[0] for name in self.names},
-            {"leftblock", "leftblock-0.3.5.dist-info"},
+            {"leftblock", f"leftblock-{PROJECT_VERSION}.dist-info"},
         )
         self.assertEqual(self.rules, (PROJECT_ROOT / "leftblock/data/gitleaks.toml").read_bytes())
         self.assertEqual(self.license, (PROJECT_ROOT / "LICENSE").read_bytes())

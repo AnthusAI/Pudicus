@@ -22,3 +22,26 @@ leftblock = ["data/*.toml"]
 
 [project.scripts]
 leftblock = "leftblock.cli:main"
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+commit_message = "chore(release): {version}"
+tag_format = "v{version}"
+# Keep the README install pin on the released version; NEW_VERSION is set by
+# semantic-release, and README.md is committed with the release.
+build_command = """
+sed -i "s/leftblock==[0-9][0-9.]*/leftblock==$NEW_VERSION/" README.md
+python -m pip install build
+python -m build
+"""
+assets = ["README.md"]
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.changelog]
+mode = "update"
+insertion_flag = "<!-- version list -->"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
