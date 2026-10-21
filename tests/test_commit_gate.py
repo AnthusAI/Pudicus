@@ -48,6 +48,9 @@ class RepositoryFixture(unittest.TestCase):
             "GIT_CONFIG_NOSYSTEM": "1",
             "LEFTBLOCK_SECRET_PATH": str(self.secret),
             "PYTHONPATH": str(PROJECT_ROOT),
+            # Install writes runtime links under HOME; never the real ones.
+            "HOME": str(self.root / "home"),
+            "LEFTBLOCK_HOME": str(self.root / "lb-home"),
         })
         self.git("init", check=True)
         self.git("config", "user.name", "Synthetic Test", check=True)

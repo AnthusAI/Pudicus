@@ -89,10 +89,12 @@ def cmd_install(args):
             sys.exit(1)
         from leftblock.hooks import install_local_check_hook
         try:
-            install_local_check_hook(repo_root, getattr(args, "gitleaks", None))
+            notes = install_local_check_hook(repo_root, getattr(args, "gitleaks", None))
         except (ValueError, OSError) as exc:
             print_err(str(exc))
             sys.exit(1)
+        for level, note in notes or []:
+            (print_warn if level == "warn" else print_info)(note)
         print_info("Installed local LeftBlock pre-commit gate; no signing secret is needed.")
         return
     if getattr(args, "gitleaks", None):

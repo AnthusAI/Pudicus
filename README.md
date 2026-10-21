@@ -121,6 +121,28 @@ with the existing hook manager instead of replacing it. An earlier hook
 without the current ownership record requires a reviewed migration even
 if it is still functional.
 
+#### Upgrades and the stable runtime link
+
+When `install --local --check-only` runs from a virtualenv, it also keeps two
+symlinks pointing at that environment:
+
+- `$LEFTBLOCK_HOME/current` (default `~/.local/share/leftblock/current`) points
+  at the virtualenv, and every managed hook runs `current/bin/python` instead
+  of a versioned interpreter path.
+- `~/.local/bin/leftblock` points at `current/bin/leftblock`. It is replaced
+  only if it is absent or already a symlink; a regular file is left alone.
+
+To upgrade, install the new version into a new virtualenv and run
+`leftblock install --local --check-only` once, in any repository. That
+repoints `current`, so every repository's hook uses the new runtime. The
+per-repository rules copy (in `.git/leftblock/`) is refreshed only when
+you re-run the install in that repository.
+
+If the runtime link is broken, the hook fails closed: it prints
+`LeftBlock is not installed at <path>` with the reinstall steps and exits 1.
+Outside a virtualenv, the hook keeps using the installing interpreter and no
+links are made.
+
 To run a noninteractive staged check with an explicit policy:
 
 ```bash

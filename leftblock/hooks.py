@@ -154,6 +154,81 @@ LOCAL_STATE_NAME = ".leftblock-pre-commit.json"
 LOCAL_HOOK_MARKER = "# LeftBlock managed local pre-commit hook v1\n"
 
 
+def leftblock_home():
+    """Where installed runtimes are linked: $LEFTBLOCK_HOME or ~/.local/share/leftblock."""
+    configured = os.environ.get("LEFTBLOCK_HOME")
+    if configured:
+        return Path(configured)
+    return Path(os.path.expanduser("~")) / ".local" / "share" / "leftblock"
+
+
+def in_virtualenv():
+    return sys.prefix != sys.base_prefix
+
+
+def hook_interpreter():
+    """The interpreter a local hook runs: the stable runtime link from a virtualenv."""
+    if in_virtualenv():
+        return str(leftblock_home() / "current" / "bin" / "python")
+    return sys.executable
+
+
+def _point_symlink(link, target):
+    """Create or atomically repoint a symlink; True when it changed."""
+    link = Path(link)
+    if link.is_symlink() and os.readlink(link) == str(target):
+        return False
+    temporary = link.parent / (".leftblock-link-" + str(os.getpid()))
+    if os.path.lexists(temporary):
+        os.unlink(temporary)
+    os.symlink(str(target), temporary)
+    try:
+        os.replace(temporary, link)
+    finally:
+        if os.path.lexists(temporary):
+            os.unlink(temporary)
+    return True
+
+
+def shell_display(path):
+    """A path with the home directory shown as `~`."""
+    path = str(path)
+    home = os.path.expanduser("~")
+    if home and path.startswith(home + os.sep):
+        return "~/" + path[len(home) + 1:]
+    return path
+
+
+def link_runtime():
+    """Point the stable runtime link and the user's command at this virtualenv.
+
+    Returns [(level, message)] for the caller to print. Does nothing outside a
+    virtualenv. Never replaces a regular file or directory.
+    """
+    if not in_virtualenv():
+        return []
+    notes = []
+    home = leftblock_home()
+    current = home / "current"
+    if os.path.lexists(current) and not current.is_symlink():
+        raise ValueError(f"{shell_display(current)} exists and is not a symlink; no runtime link changed.")
+    home.mkdir(parents=True, exist_ok=True)
+    if _point_symlink(current, os.path.realpath(sys.prefix)):
+        notes.append(("info", f"Runtime link {shell_display(current)} now points to this environment."))
+    command = Path(os.path.expanduser("~")) / ".local" / "bin" / "leftblock"
+    if os.path.lexists(command) and not command.is_symlink():
+        notes.append((
+            "warn",
+            f"{shell_display(command)} is a regular file and was left untouched; "
+            "the hook does not depend on it.",
+        ))
+        return notes
+    command.parent.mkdir(parents=True, exist_ok=True)
+    if _point_symlink(command, current / "bin" / "leftblock"):
+        notes.append(("info", f"Linked {shell_display(command)} to the runtime."))
+    return notes
+
+
 def _local_paths(repo_root):
     hook, state = _destination(repo_root, "pre-commit", LOCAL_STATE_NAME)
     policy_dir = hook.parent.parent / "leftblock"
@@ -227,10 +302,25 @@ def _local_bundle(paths, gitleaks=None):
     }
     # -I ignores PYTHONPATH and the repository's current directory. The
     # installing Python must have LeftBlock installed in its own environment.
+    interpreter = hook_interpreter()
+    guard = ""
+    if interpreter != sys.executable:
+        # Fail closed with a clear message when the runtime link is broken.
+        guard = (
+            "PY=" + shlex.quote(interpreter) + "\n"
+            'if [ ! -x "$PY" ]; then\n'
+            '  echo "LeftBlock is not installed at $PY. Reinstall: python -m pip install '
+            "leftblock, then run 'leftblock install --local --check-only' in this "
+            'repository." >&2\n'
+            "  exit 1\n"
+            "fi\n"
+        )
+    exec_python = '"$PY"' if guard else shlex.quote(interpreter)
     hook = (
         "#!/bin/sh\n" + LOCAL_HOOK_MARKER
         + "export PATH=" + shlex.quote(os.environ.get("PATH", "")) + ":${PATH:-}\n"
-        + "exec " + shlex.quote(sys.executable)
+        + guard
+        + "exec " + exec_python
         + " -I -B -m leftblock.cli check --config " + shlex.quote(str(paths["policy"])) + "\n"
     ).encode()
     bundle = {
@@ -253,12 +343,18 @@ def install_local_check_hook(repo_root, gitleaks=None):
 
     The pre-commit slot is independent of existing commit-msg receipts. An
     existing root policy is not executed or changed by this opt-in local mode.
+    From a virtualenv this also repoints the stable runtime link; the notes to
+    print are returned as [(level, message)].
     """
     paths = validate_local_check_install(repo_root)
     previous = _local_owned_contents(paths)
     desired = _local_bundle(paths, gitleaks)
-    if previous == desired:
-        return True
+    if previous != desired:
+        _write_local_bundle(paths, previous, desired)
+    return link_runtime()
+
+
+def _write_local_bundle(paths, previous, desired):
     created_dirs = []
     written = []
     try:
@@ -283,7 +379,6 @@ def install_local_check_hook(repo_root, gitleaks=None):
             else:
                 _replace_file(path, desired[name], mode)
             written.append(name)
-        return True
     except BaseException:
         for name in reversed(written):
             path = paths[name]
