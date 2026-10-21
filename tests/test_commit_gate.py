@@ -48,6 +48,9 @@ class RepositoryFixture(unittest.TestCase):
             "GIT_CONFIG_NOSYSTEM": "1",
             "LEFTBLOCK_SECRET_PATH": str(self.secret),
             "PYTHONPATH": str(PROJECT_ROOT),
+            # Install writes runtime links under HOME; never the real ones.
+            "HOME": str(self.root / "home"),
+            "LEFTBLOCK_HOME": str(self.root / "lb-home"),
         })
         self.git("init", check=True)
         self.git("config", "user.name", "Synthetic Test", check=True)
@@ -241,11 +244,12 @@ class FailClosedGateTests(RepositoryFixture):
         proc = self.leftblock("check")
         self.assertTrue(sentinel not in proc.stdout + proc.stderr, "Invalid report contents were exposed")
 
-    def test_report_prints_only_file_and_rule_id(self):
+    def test_report_prints_location_and_rule_description_but_no_matched_material(self):
         sentinel = "synthetic-" + "matched-material"
         report = [{
-            "File": "fixture.txt", "RuleID": "synthetic-rule",
-            "Match": sentinel, "Secret": sentinel, "Description": sentinel,
+            "File": "fixture.txt", "RuleID": "synthetic-rule", "StartLine": 7, "EndLine": 7,
+            "Description": "Synthetic rule description",
+            "Match": sentinel, "Secret": sentinel, "Line": sentinel, "Fingerprint": sentinel,
         }]
         command = self.script(
             "from pathlib import Path\nimport json, sys\n"
@@ -255,11 +259,21 @@ class FailClosedGateTests(RepositoryFixture):
             "sys.exit(1)\n"
         ) + " {report_file}"
         self.policy(command)
+        self.stage("one\n" * 8)
         proc = self.leftblock("check")
         self.assertNotEqual(proc.returncode, 0)
-        self.assertIn("fixture.txt", proc.stderr)
-        self.assertIn("synthetic-rule", proc.stderr)
+        self.assertIn("fixture.txt:7: synthetic-rule", proc.stderr)
+        self.assertIn("(Synthetic rule description)", proc.stderr)
+        self.assertIn("synthetic-rule in fixture.txt:7", proc.stderr.splitlines()[-1])
         self.assertTrue(sentinel not in proc.stdout + proc.stderr, "Matched material was exposed")
+
+    def test_description_is_sanitized_and_truncated(self):
+        long_text = "x" * 200
+        finding = {"File": "f.txt", "RuleID": "r", "description": long_text}
+        self.assertEqual(cli.describe(finding), "x" * 80)
+        hostile = {"description": "bad\x1b[31m text"}
+        self.assertNotIn("\x1b", cli.describe(hostile))
+        self.assertEqual(cli.describe({}), "")
 
     def test_staged_tree_changed_by_checker_is_blocked(self):
         command = self.script(
@@ -290,7 +304,7 @@ class FailClosedGateTests(RepositoryFixture):
         with mock.patch.object(cli, "run_cmd") as git_cmd, \
                 mock.patch.object(cli, "get_secret", return_value="synthetic-secret"), \
                 mock.patch.object(cli, "get_tree_hash", return_value="same-tree"), \
-                mock.patch.object(cli, "configured_checks", return_value=({}, [failed])), \
+                mock.patch.object(cli, "run_checks", return_value=({}, [failed], [])), \
                 mock.patch.object(cli.sys.stdin, "isatty", return_value=True), \
                 mock.patch.object(cli.getpass, "getpass") as prompt:
             git_cmd.return_value.stdout = str(self.repo)

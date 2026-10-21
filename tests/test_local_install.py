@@ -55,6 +55,8 @@ class LocalInstallTests(unittest.TestCase):
             "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_TERMINAL_PROMPT": "0",
             "LEFTBLOCK_SECRET_PATH": str(Path(self.temp.name) / "must-not-be-created"),
+            "HOME": str(Path(self.temp.name) / "home"),
+            "LEFTBLOCK_HOME": str(Path(self.temp.name) / "lb-home"),
         })
         self.environment = patch.dict(os.environ, self.env, clear=True)
         self.environment.start()
@@ -72,7 +74,7 @@ class LocalInstallTests(unittest.TestCase):
         )
 
     def install(self, scanner=None):
-        with patch("sys.executable", str(self.python)):
+        with patch("sys.executable", str(self.python)), patch("sys.prefix", str(self.runtime)):
             return install_local_check_hook(self.repo, scanner or GITLEAKS or "/usr/bin/true")
 
     def cli(self, *args):
@@ -194,6 +196,90 @@ class LocalInstallTests(unittest.TestCase):
         self.assertNotIn(synthetic, blocked.stdout + blocked.stderr)
         self.assertIn("leftblock-openai-key", blocked.stderr)
         self.assertFalse(Path(self.env["LEFTBLOCK_SECRET_PATH"]).exists())
+
+    # --- stable runtime link -------------------------------------------------
+
+    @property
+    def lb_home(self):
+        return Path(self.env["LEFTBLOCK_HOME"])
+
+    @property
+    def user_bin(self):
+        return Path(self.env["HOME"]) / ".local" / "bin" / "leftblock"
+
+    def test_install_from_a_virtualenv_links_runtime_and_command(self):
+        notes = self.install()
+        current = self.lb_home / "current"
+        self.assertTrue(current.is_symlink())
+        self.assertEqual(os.readlink(current), os.path.realpath(self.runtime))
+        self.assertTrue(self.user_bin.is_symlink())
+        self.assertEqual(os.readlink(self.user_bin), str(current / "bin" / "leftblock"))
+        self.assertTrue(any("Linked" in note for _, note in notes))
+        hook = self.hook.read_text()
+        self.assertIn("PY=" + str(current / "bin" / "python"), hook)
+        self.assertIn('exec "$PY" -I -B -m leftblock.cli check --config', hook)
+        self.assertNotIn(str(self.python), hook)
+        # Re-running with nothing to change reports nothing.
+        self.assertEqual(self.install(), [])
+
+    def test_install_repoints_existing_links_but_never_a_regular_file(self):
+        self.user_bin.parent.mkdir(parents=True)
+        self.lb_home.mkdir(parents=True)
+        os.symlink("/nonexistent/old-runtime", self.lb_home / "current")
+        os.symlink("/nonexistent/old-command", self.user_bin)
+        self.install()
+        self.assertEqual(os.readlink(self.lb_home / "current"), os.path.realpath(self.runtime))
+        self.assertEqual(
+            os.readlink(self.user_bin), str(self.lb_home / "current" / "bin" / "leftblock"),
+        )
+        self.user_bin.unlink()
+        self.user_bin.write_text("#!/bin/sh\n# someone's own script\n")
+        os.symlink("/nonexistent/other-runtime", self.lb_home / "current.tmp")
+        os.replace(self.lb_home / "current.tmp", self.lb_home / "current")
+        notes = self.install()
+        self.assertFalse(self.user_bin.is_symlink())
+        self.assertEqual(self.user_bin.read_text(), "#!/bin/sh\n# someone's own script\n")
+        self.assertEqual(os.readlink(self.lb_home / "current"), os.path.realpath(self.runtime))
+        self.assertTrue(any(level == "warn" for level, _ in notes))
+
+    def test_install_refuses_a_current_that_is_not_a_symlink(self):
+        (self.lb_home / "current").mkdir(parents=True)
+        with self.assertRaisesRegex(ValueError, "not a symlink"):
+            self.install()
+        self.assertFalse(self.user_bin.exists())
+
+    def test_upgrade_by_reinstalling_in_one_repo_repoints_every_hook(self):
+        self.install()
+        before = self.hook.read_bytes()
+        newer = Path(self.temp.name) / "newer-runtime"
+        newer.mkdir()
+        with patch("sys.executable", str(self.python)), patch("sys.prefix", str(newer)):
+            install_local_check_hook(self.repo, GITLEAKS or "/usr/bin/true")
+        self.assertEqual(os.readlink(self.lb_home / "current"), os.path.realpath(newer))
+        self.assertEqual(before, self.hook.read_bytes())
+
+    def test_outside_a_virtualenv_the_hook_keeps_the_interpreter_and_makes_no_links(self):
+        with patch("sys.executable", str(self.python)), patch("sys.base_prefix", sys.prefix):
+            self.assertEqual(install_local_check_hook(self.repo, GITLEAKS or "/usr/bin/true"), [])
+        self.assertIn("exec " + str(self.python) + " -I -B -m leftblock.cli", self.hook.read_text())
+        self.assertNotIn("not installed", self.hook.read_text())
+        self.assertFalse(self.lb_home.exists())
+        self.assertFalse(self.user_bin.exists())
+
+    def test_hook_fails_closed_with_a_message_when_the_runtime_link_is_broken(self):
+        self.install()
+        (self.lb_home / "current").unlink()
+        os.symlink(Path(self.temp.name) / "gone", self.lb_home / "current")
+        proc = subprocess.run(
+            ["sh", str(self.hook)], cwd=self.repo, env=self.env, text=True, capture_output=True,
+        )
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(
+            proc.stderr.strip(),
+            f"LeftBlock is not installed at {self.lb_home / 'current' / 'bin' / 'python'}. "
+            "Reinstall: python -m pip install leftblock, then run "
+            "'leftblock install --local --check-only' in this repository.",
+        )
 
     def test_explicit_config_missing_fails_closed_without_root_fallback(self):
         (self.repo / ".leftblock.yml").write_text(

@@ -111,13 +111,16 @@ def run_command_checker(checker: Dict[str, Any], cwd: str = None, env: Dict[str,
                     report = json.load(f)
                 if not isinstance(report, list) or not report or any(not isinstance(item, dict) for item in report):
                     raise ValueError("Invalid report")
-                # Never carry matched values, source lines, descriptions or raw logs
-                # into the UI. Files/rule identifiers are the diagnostic boundary.
-                # Line numbers are kept only to derive an override id and are
-                # dropped before display (see leftblock.allow.attach_ids).
+                # Never carry matched values, source lines or raw logs into the UI.
+                # Files, rule identifiers, the rule's own description (ruleset text,
+                # not data) and line numbers are the diagnostic boundary. Line
+                # numbers become the override id and a displayed `line`
+                # (see leftblock.allow.attach_ids).
                 findings = []
                 for item in report:
                     finding = {key: item[key] for key in ("File", "RuleID") if isinstance(item.get(key), str)}
+                    if isinstance(item.get("Description"), str) and item["Description"].strip():
+                        finding["description"] = item["Description"]
                     for key in ("StartLine", "EndLine"):
                         if type(item.get(key)) is int:
                             finding[key] = item[key]

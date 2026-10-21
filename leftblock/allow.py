@@ -19,7 +19,8 @@ ALLOW_FILE = ".leftblock-allow.yml"
 MIN_REASON = 10
 ALLOW_HEADER = (
     "# LeftBlock overrides: each entry approves one finding (one rule on one exact\n"
-    "# line content in one file). Changing that line re-blocks it.\n"
+    "# line content in one file). Changing that line re-blocks it. `kind` is the\n"
+    "# rule's category, shown for reviewers; it is not part of matching.\n"
 )
 
 
@@ -52,12 +53,14 @@ def finding_id(repo_root, rule, file, start, end):
 
 
 def attach_ids(repo_root, results):
-    """Replace StartLine/EndLine on findings with an id (when computable)."""
+    """Replace StartLine/EndLine on findings with `line` and an id (when computable)."""
     for result in results:
         if result.error or not isinstance(result.findings, list):
             continue
         for finding in result.findings:
             start, end = finding.pop("StartLine", None), finding.pop("EndLine", None)
+            if type(start) is int and start >= 1:
+                finding["line"] = start
             if finding.get("File") == ALLOW_FILE:
                 continue  # the allow file can never approve itself
             ident = finding_id(
@@ -145,6 +148,8 @@ def _render(entries):
         out.append(f"  - id: {_quote(e['id'])}\n")
         out.append(f"    rule: {_quote(e['rule'])}\n")
         out.append(f"    file: {_quote(e['file'])}\n")
+        if e.get("kind"):
+            out.append(f"    kind: {_quote(e['kind'])}\n")
         out.append(f"    reason: {_quote(' '.join(e['reason'].split()))}\n")
         if added:
             plain = re.fullmatch(r"\d{4}-\d{2}-\d{2}", added)
@@ -153,7 +158,7 @@ def _render(entries):
 
 
 def record_overrides(repo_root, findings, reason):
-    """Append entries for findings (dicts with id/RuleID/File) to the allow file.
+    """Append entries for findings (dicts with id/RuleID/File, optional kind) to the allow file.
 
     Returns the findings newly recorded. The working-tree file must be valid.
     """
@@ -169,10 +174,13 @@ def record_overrides(repo_root, findings, reason):
         if finding["id"] in known:
             continue
         known.add(finding["id"])
-        entries.append({
+        entry = {
             "id": finding["id"], "rule": finding["RuleID"], "file": finding["File"],
             "reason": reason, "added": today,
-        })
+        }
+        if finding.get("kind"):
+            entry["kind"] = finding["kind"]  # informational, for reviewers only
+        entries.append(entry)
         added.append(finding)
     with open(path, "w", encoding="utf-8") as f:
         f.write(_render(entries))

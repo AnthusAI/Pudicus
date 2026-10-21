@@ -1,9 +1,11 @@
 import argparse
 import sys
 import os
+import re
 import json
 import subprocess
 import getpass
+import hashlib
 import shlex
 import shutil
 import yaml
@@ -12,6 +14,7 @@ from leftblock.merge import (
     MergeScopeError, build_scoped_index, checker_environment, index_entries, merge_state,
 )
 from leftblock import allow as allowlist
+from leftblock import bypass
 from leftblock.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
     load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT,
@@ -38,7 +41,7 @@ version: 1
 checkers:
   - name: gitleaks
     type: command
-    command: gitleaks protect --staged --config .leftblock/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
+    command: gitleaks protect --staged --ignore-gitleaks-allow --config .leftblock/gitleaks.toml --redact --no-banner --report-format json --report-path {report_file}
     success_codes: [0]
     finding_codes: [1]
 """
@@ -89,10 +92,12 @@ def cmd_install(args):
             sys.exit(1)
         from leftblock.hooks import install_local_check_hook
         try:
-            install_local_check_hook(repo_root, getattr(args, "gitleaks", None))
+            notes = install_local_check_hook(repo_root, getattr(args, "gitleaks", None))
         except (ValueError, OSError) as exc:
             print_err(str(exc))
             sys.exit(1)
+        for level, note in notes or []:
+            (print_warn if level == "warn" else print_info)(note)
         print_info("Installed local LeftBlock pre-commit gate; no signing secret is needed.")
         return
     if getattr(args, "gitleaks", None):
@@ -119,12 +124,27 @@ def cmd_install(args):
     else:
         print_info(f"Shared secret already exists at {SECRET_FILE_DEFAULT}")
 
-def configured_checks(repo_root, config_path=None, overrides=True):
-    """Run the checkers, attach override ids and apply staged overrides."""
+CONFIG_ERROR = "Missing or invalid checker configuration. Inspection blocked; review the selected policy."
+
+# Exit codes of `check`.
+EXIT_PASSED, EXIT_BLOCKED, EXIT_ERROR = 0, 1, 2
+
+
+class ConfigError(Exception):
+    pass
+
+
+def run_checks(repo_root, config_path=None, overrides=True):
+    """Run the checkers, attach override ids and apply staged overrides.
+
+    Returns (config, results, applied) where applied is [(finding, reason)] for
+    each override that took effect. Prints nothing.
+    """
     config, results = _run_configured_checks(repo_root, config_path)
     allowlist.attach_ids(repo_root, results)
+    applied = []
     if not overrides:
-        return config, results
+        return config, results, applied
     try:
         entries = allowlist.load_allowlist(repo_root)
     except allowlist.AllowError:
@@ -132,19 +152,44 @@ def configured_checks(repo_root, config_path=None, overrides=True):
             "leftblock-allow", False,
             "Invalid .leftblock-allow.yml; inspection blocked.", error=True,
         ))
-        return config, results
+        return config, results, applied
     shown = set()
     for finding, reason in allowlist.apply_allowlist(results, entries):
         # Several matches on one line share an id; report each override once.
         if finding["id"] in shown:
             continue
         shown.add(finding["id"])
+        applied.append((finding, reason))
+    return config, results, applied
+
+
+def print_applied(applied):
+    for finding, reason in applied:
         print_info(
             "Override applied: file " + json.dumps(finding["File"], ensure_ascii=True)
             + ", rule " + json.dumps(finding["RuleID"], ensure_ascii=True)
             + ", id " + finding["id"]
             + ", reason " + json.dumps(reason, ensure_ascii=True)
         )
+
+
+def warn_root_gitleaksignore(repo_root):
+    """Gitleaks always honours a root .gitleaksignore; say so on every run."""
+    if os.path.isfile(os.path.join(repo_root, ".gitleaksignore")):
+        print_warn(
+            "This repository has a root .gitleaksignore. Gitleaks skips its entries "
+            "with no recorded reason; prefer leftblock allow for new exceptions."
+        )
+
+
+def configured_checks(repo_root, config_path=None, overrides=True):
+    """run_checks, announcing each applied override on stderr."""
+    try:
+        config, results, applied = run_checks(repo_root, config_path, overrides)
+    except ConfigError:
+        print_err(CONFIG_ERROR)
+        sys.exit(1)
+    print_applied(applied)
     return config, results
 
 
@@ -153,8 +198,7 @@ def _run_configured_checks(repo_root, config_path=None):
         config = load_config(repo_root, config_path)
         checkers = validate_checkers(config)
     except (OSError, ValueError, yaml.YAMLError):
-        print_err("Missing or invalid checker configuration. Inspection blocked; review the selected policy.")
-        sys.exit(1)
+        raise ConfigError(CONFIG_ERROR)
     # Inherited whole files at the same path can be omitted during a merge.
     # Changed/resolved files and renamed paths keep their full staged diff.
     # Any failure to scope falls back to the full staged scan (stricter).
@@ -177,6 +221,16 @@ def _run_configured_checks(repo_root, config_path=None):
         scoped_index = None
     try:
         results = execute_checkers(checkers, cwd=repo_root, env=env if scoped_index else base_env)
+        # Gitleaks skips lines with its inline allow comment and .gitleaksignore entries with no
+        # recorded reason; report staged additions of either as findings.
+        try:
+            skips = bypass.bypass_findings(repo_root, env if scoped_index else base_env)
+            if skips:
+                results.append(CheckerResult("leftblock-bypass", False, skips))
+        except bypass.BypassScanError:
+            results.append(CheckerResult(
+                "leftblock-bypass", False, "Could not read the staged diff.", error=True,
+            ))
         if scoped_index:
             try:
                 stable = merge_state(repo_root) == state and index_entries(repo_root, scoped_index) == entries
@@ -202,6 +256,59 @@ def _plain(text):
     return json.dumps(text, ensure_ascii=True)
 
 
+DESCRIPTION_LIMIT = 80
+
+
+def describe(finding):
+    """The rule's own description (ruleset text, never matched data), safe to print."""
+    text = finding.get("description")
+    if not isinstance(text, str):
+        return ""
+    return _plain(" ".join(text.split())[:DESCRIPTION_LIMIT])
+
+
+def location(finding):
+    """`file` or `file:LINE`, safe to print."""
+    where = _plain(finding.get("File", "unknown file"))
+    if type(finding.get("line")) is int:
+        where += f":{finding['line']}"
+    return where
+
+
+def leftblock_version():
+    try:
+        from importlib.metadata import version
+        return version("leftblock")
+    except Exception:
+        return "unknown"
+
+
+def ruleset_id(config, repo_root):
+    """sha256[:12] of the gitleaks config file a checker names with --config, else "unknown"."""
+    checkers = config.get("checkers") if isinstance(config, dict) else None
+    for checker in checkers if isinstance(checkers, list) else []:
+        command = checker.get("command") if isinstance(checker, dict) else None
+        if not isinstance(command, str):
+            continue
+        try:
+            argv = shlex.split(command)
+        except ValueError:
+            continue
+        for i, arg in enumerate(argv):
+            if arg == "--config" and i + 1 < len(argv):
+                path = argv[i + 1]
+            elif arg.startswith("--config="):
+                path = arg[len("--config="):]
+            else:
+                continue
+            try:
+                with open(os.path.join(repo_root, path), "rb") as f:
+                    return hashlib.sha256(f.read()).hexdigest()[:12]
+            except OSError:
+                return "unknown"
+    return "unknown"
+
+
 def command_prefix():
     """How to invoke this LeftBlock in printed advice, without leaking a home path.
 
@@ -224,15 +331,53 @@ def shell_path(path):
     return shlex.quote(path)
 
 
+_REMOVE_AND_ROTATE = "Remove it AND rotate the key: it may already be exposed."
+_HOME_PATH = "Use a relative path, $HOME or ~ instead."
+_DESCRIBE_ID = "Drop the identifier or describe it instead."
+RULE_HINTS = {
+    "leftblock-personal-email": "Use a role or placeholder address, or describe it instead.",
+    "leftblock-home-path-posix": _HOME_PATH,
+    "leftblock-home-path-windows": _HOME_PATH,
+    "leftblock-session-uuid": _DESCRIBE_ID,
+    "leftblock-actor-id": _DESCRIBE_ID,
+    "leftblock-openai-key": _REMOVE_AND_ROTATE,
+    "leftblock-anthropic-key": _REMOVE_AND_ROTATE,
+    "leftblock-eth-private-key": _REMOVE_AND_ROTATE,
+    "leftblock-wif-key": _REMOVE_AND_ROTATE,
+    "leftblock-bip39-mnemonic": _REMOVE_AND_ROTATE,
+    bypass.MARKER_RULE: "Remove the marker and fix the content, or record a reasoned override.",
+    bypass.IGNORE_RULE: "Don't suppress findings silently; record a reasoned override per finding.",
+}
+KANBUS_HINT = (
+    "This file is written by Kanbus; fix the content through kbs "
+    "(e.g. kbs update or comment), don't hand-edit it."
+)
+KANBUS_DATA = re.compile(r"(^|/)project/(issues|events)/[^/]+\.json$")
+
+
 def print_failures(failures):
     for result in failures:
         print_warn(f"Checker {json.dumps(str(result.name))} did not pass.")
         if isinstance(result.findings, list):
+            by_rule = {}
             for finding in result.findings:
-                line = f"{_plain(finding.get('File', 'unknown file'))}: {_plain(finding.get('RuleID', 'finding'))}"
-                if finding.get("id"):
-                    line += f" [id {finding['id']}]"
-                print("      " + line, file=sys.stderr)
+                by_rule.setdefault(finding.get("RuleID", "finding"), []).append(finding)
+            kanbus_files = []
+            for rule, group in by_rule.items():
+                for finding in group:
+                    line = f"{location(finding)}: {_plain(rule)}"
+                    if finding.get("id"):
+                        line += f" [id {finding['id']}]"
+                    if describe(finding):
+                        line += f" ({describe(finding)})"
+                    print("      " + line, file=sys.stderr)
+                    name = finding.get("File")
+                    if isinstance(name, str) and KANBUS_DATA.search(name) and name not in kanbus_files:
+                        kanbus_files.append(name)
+                if rule in RULE_HINTS:
+                    print("      Hint: " + RULE_HINTS[rule], file=sys.stderr)
+            for name in kanbus_files:
+                print(f"      {_plain(name)}: {KANBUS_HINT}", file=sys.stderr)
         else:
             print_warn(str(result.findings))
 
@@ -253,12 +398,30 @@ def finding_summary(findings):
     """One-line list of rule, file and id, for callers that show only the last line."""
     parts = []
     for f in findings:
-        part = f"{f.get('RuleID', 'finding')} in {f.get('File', 'unknown file')}"
+        part = f"{_plain(f.get('RuleID', 'finding'))} in {location(f)}"
         if f.get("id"):
             part += f" [id {f['id']}]"
         if part not in parts:
             parts.append(part)
     return "; ".join(parts)
+
+
+def config_flag(repo_root, config_path):
+    """` --config PATH` when the policy differs from the one `check` picks by default."""
+    default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
+    if config_path and os.path.abspath(config_path) != os.path.abspath(default):
+        return f" --config {shell_path(config_path)}"
+    return ""
+
+
+def print_rerun(repo_root, config_path):
+    print_info(f"Re-run this check: {command_prefix()} check{config_flag(repo_root, config_path)}")
+
+
+def override_command(ids, repo_root, config_path):
+    command = f"{command_prefix()} allow {' '.join(dict.fromkeys(ids))}"
+    command += config_flag(repo_root, config_path)
+    return command + ' --reason "<why this is not sensitive>"'
 
 
 def print_override_instructions(failures, repo_root, config_path):
@@ -282,17 +445,14 @@ def print_override_instructions(failures, repo_root, config_path):
     if findings:
         steps.append("remove the flagged content")
     if ids:
-        command = f"{command_prefix()} allow {' '.join(dict.fromkeys(ids))}"
-        default = default_local_policy(repo_root) or os.path.join(repo_root, ".leftblock.yml")
-        if config_path and os.path.abspath(config_path) != os.path.abspath(default):
-            command += f" --config {shell_path(config_path)}"
-        command += ' --reason "<why this is not sensitive>"'
+        command = override_command(ids, repo_root, config_path)
         print_info(
             "An override adds the finding to .leftblock-allow.yml and stages it, so it "
             "appears in the commit and its review."
         )
         steps.append("if it is a false alarm, record a reviewed override: " + command)
     advice = "; or ".join(steps)
+    print_rerun(repo_root, config_path)
     print_err(f"Inspection blocked: {finding_summary(own + findings)}. {advice[:1].upper()}{advice[1:]}.")
 
 
@@ -321,10 +481,11 @@ def cmd_allow(args):
         print_err("Not a current finding id: " + ", ".join(json.dumps(i) for i in unknown))
         sys.exit(1)
     snapshot = allowlist.snapshot(repo_root)
+    chosen = [current[i] for i in dict.fromkeys(args.ids)]
+    for finding in chosen:
+        finding["kind"] = describe(finding)
     try:
-        added = allowlist.record_overrides(
-            repo_root, [current[i] for i in dict.fromkeys(args.ids)], reason,
-        )
+        added = allowlist.record_overrides(repo_root, chosen, reason)
     except (OSError, allowlist.AllowError):
         print_err(f"Existing {allowlist.ALLOW_FILE} is unreadable or invalid; fix it first.")
         sys.exit(1)
@@ -352,26 +513,77 @@ def cmd_allow(args):
     print_info(f"{allowlist.ALLOW_FILE} is staged; the commit must include it.")
 
 
+def json_report(result, findings, applied, errors, command):
+    return {
+        "version": leftblock_version(),
+        "result": result,
+        "findings": [{
+            "file": f.get("File"), "line": f.get("line"), "rule": f.get("RuleID"),
+            "id": f.get("id"), "description": f.get("description"),
+        } for f in findings],
+        "overrides_applied": [
+            {"file": f["File"], "rule": f["RuleID"], "id": f["id"], "reason": reason}
+            for f, reason in applied
+        ],
+        "errors": [{"checker": checker, "message": message} for checker, message in errors],
+        "override_command": command,
+    }
+
+
 def cmd_check(args):
-    """Noninteractive staged inspection for existing pre-commit hook managers."""
+    """Noninteractive staged inspection for existing pre-commit hook managers.
+
+    Also the dry run of a commit: it inspects the staged changes with the same
+    policy the hook uses and changes nothing. Exit status: 0 passed, 1 blocked
+    by findings, 2 a checker or the configuration could not complete.
+    """
+    as_json = getattr(args, "format", "text") == "json"
     repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"]).stdout.strip()
+    config_path = getattr(args, "config", None)
+    if config_path is None:
+        config_path = default_local_policy(repo_root)
+
+    def finish(code, result, findings=(), applied=(), errors=(), command=None):
+        if as_json:
+            print(json.dumps(json_report(result, findings, applied, errors, command), indent=2))
+        if code:
+            sys.exit(code)
+
     tree_hash = get_tree_hash()
-    _, results = configured_checks(repo_root, getattr(args, "config", None))
-    if get_tree_hash() != tree_hash:
-        print_err("Staged tree changed during inspection. Check blocked; run it again.")
-        sys.exit(1)
+    try:
+        warn_root_gitleaksignore(repo_root)
+        config, results, applied = run_checks(repo_root, config_path)
+    except ConfigError:
+        print_err(CONFIG_ERROR)
+        finish(EXIT_ERROR, "error", errors=[("configuration", CONFIG_ERROR)])
     failures = [result for result in results if not result.clean]
+    findings = [
+        f for result in failures if isinstance(result.findings, list) for f in result.findings
+    ]
+    errors = [(str(result.name), str(result.findings)) for result in failures if result.error]
+    if failures:
+        print_info(f"leftblock {leftblock_version()}, ruleset {ruleset_id(config, repo_root)}")
+    print_applied(applied)
+    if get_tree_hash() != tree_hash:
+        message = "Staged tree changed during inspection. Check blocked; run it again."
+        print_err(message)
+        finish(EXIT_ERROR, "error", findings, applied, errors + [("inspection", message)])
     if failures:
         print_failures(failures)
-        if any(result.error for result in failures) and not any(
-            isinstance(result.findings, list) for result in failures
-        ):
-            problems = "; ".join(f"{result.name}: {result.findings}" for result in failures if result.error)
+        ids = [f["id"] for f in findings if f.get("id") and f.get("File") != allowlist.ALLOW_FILE]
+        command = override_command(ids, repo_root, config_path) if ids else None
+        if errors and not findings:
+            problems = "; ".join(f"{name}: {message}" for name, message in errors)
+            print_rerun(repo_root, config_path)
             print_err(f"Inspection blocked: {problems} Fix this first; no override is available.")
         else:
-            print_override_instructions(failures, repo_root, getattr(args, "config", None))
-        sys.exit(1)
+            print_override_instructions(failures, repo_root, config_path)
+        finish(
+            EXIT_ERROR if errors else EXIT_BLOCKED, "error" if errors else "blocked",
+            findings, applied, errors, command,
+        )
     print_info("All configured checks passed for staged changes.")
+    finish(EXIT_PASSED, "passed", (), applied)
 
 
 def cmd_hook(args):
@@ -386,7 +598,9 @@ def cmd_hook(args):
     tree_hash = get_tree_hash()
     print_info(f"Scanning tree {tree_hash}...")
 
-    config, results = configured_checks(repo_root)
+    warn_root_gitleaksignore(repo_root)
+    config, results, applied = run_checks(repo_root)
+    print_applied(applied)
     if get_tree_hash() != tree_hash:
         print_err("Staged tree changed during inspection. Commit blocked; run the checks again.")
         sys.exit(1)
@@ -402,8 +616,9 @@ def cmd_hook(args):
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     if all_clean:
-        result_str = "clean"
-        print_info("✓ All checks passed.")
+        # Staged, reasoned overrides need no passphrase but are not a clean pass.
+        result_str = f"allowed:{len(applied)}" if applied else "clean"
+        print_info("✓ All checks passed." if not applied else f"✓ All checks passed with {len(applied)} recorded override(s).")
     else:
         print_warn(f"✗ Found issues in {len(failed_checkers)} checker(s):")
         print_failures(failed_checkers)
@@ -600,6 +815,7 @@ def cmd_verify(args):
 
 def main():
     parser = argparse.ArgumentParser(description="LeftBlock - A pluggable inspection gate for Git commits")
+    parser.add_argument("--version", action="version", version=f"leftblock {leftblock_version()}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     install_p = subparsers.add_parser("install", help="Install the commit-msg hook and setup secrets")
@@ -608,7 +824,11 @@ def main():
     install_p.add_argument("--gitleaks", help="Existing Gitleaks executable for a local check-only installation")
 
     check_p = subparsers.add_parser("check", help="Inspect staged changes without signing")
-    check_p.add_argument("--config", help="Explicit local checker policy; defaults to .leftblock.yml")
+    check_p.add_argument(
+        "--format", choices=["text", "json"], default="text",
+        help="With json, also print one JSON result object on stdout (stderr is unchanged)",
+    )
+    check_p.add_argument("--config", help="Checker policy; defaults to the local install policy when present, else .leftblock.yml")
 
     allow_p = subparsers.add_parser("allow", help="Record a reviewed override for current findings")
     allow_p.add_argument("ids", nargs="+", metavar="ID", help="Finding id(s) shown by the blocked check")
