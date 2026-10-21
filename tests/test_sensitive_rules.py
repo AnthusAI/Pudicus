@@ -343,172 +343,146 @@ def _uuid(rng):
 
 @unittest.skipUnless(GITLEAKS, "gitleaks not installed")
 class KanbusBoardAllowlistTests(unittest.TestCase):
-    """Kanbus board bookkeeping passes; the same shapes elsewhere still fail."""
+    """Kanbus board data identifiers are not sensitive; nothing else changes.
+
+    Policy (2026-10-20): in board data, actor ids, session UUIDs and UUIDs in
+    any field or prose pass. Emails, home paths and keys are still detected
+    there, and the same content outside board data is still flagged.
+    """
+
+    BOARD_PATHS = (
+        "project/issues/PPY-x.json",
+        "project/events/2026-10-20T00-00-00.000Z__x.json",
+        "project/.cache/index.json",
+        "sub/dir/project/issues/PPY-x.json",
+        "sub/dir/project/events/e.json",
+        "sub/dir/project/.cache/index.json",
+    )
+    NON_BOARD_PATHS = (
+        "notes.md",
+        "project/other.json",
+        "project/issues/sub/x.json",
+        "project/events/sub/x.json",
+        "project/events.json",
+        "project/issues/x.json.bak",
+        "src/project/issues-like/x.json",
+        "myproject/issues/x.json",
+        "project/.cache/other.json",
+        "project/.cache/sub/index.json",
+    )
 
     def setUp(self):
         self.rng = _rng()
 
-    def test_prefixed_issue_ids_in_board_issue_files_pass(self):
-        for prefix in ("PPY", "LIM", "blbs", "chatticus", "decision-flywheel"):
-            iid = f"{prefix}-{_uuid(self.rng)}"
-            doc = json.dumps({"id": iid, "parent": f"{prefix}-{_uuid(self.rng)}",
-                              "comments": [{"id": _uuid(self.rng), "text": "done"}]}, indent=2)
-            self.assertEqual(scan_and_rule_ids({f"project/issues/{iid}.json": doc}), [], prefix)
-
-    def test_event_actor_id_passes_only_in_board_events(self):
-        event = json.dumps({"event_id": _uuid(self.rng), "issue_id": f"LIM-{_uuid(self.rng)}",
-                            "event_type": "issue_created", "actor" + "_id": "local" + "user"}, indent=2)
-        self.assertEqual(scan_and_rule_ids({"project/events/2026-10-20T00-00-00.000Z__x.json": event}), [])
-        self.assertIn("leftblock-actor-id", scan_and_rule_ids({"src/telemetry.json": event}))
-        self.assertIn("leftblock-actor-id", scan_and_rule_ids({"project/issues/x.json": event}))
-
-    def test_prefixed_ids_outside_board_files_still_flagged(self):
-        doc = json.dumps({"id": f"LIM-{_uuid(self.rng)}"}, indent=2)
-        self.assertIn("leftblock-session-uuid", scan_and_rule_ids({"src/state.json": doc}))
-
-    def test_bare_uuid_in_board_free_text_still_flagged(self):
-        doc = json.dumps({"id": f"PPY-{_uuid(self.rng)}",
-                          "description": f"session {_uuid(self.rng)} reproduced it"}, indent=2)
-        self.assertIn("leftblock-session-uuid", scan_and_rule_ids({"project/issues/PPY-x.json": doc}))
-
-    def test_event_uuid_actor_is_structural_only_in_event_attribution(self):
-        actor = _uuid(self.rng)
-        event = json.dumps({
-            "schema_version": 1, "event_id": _uuid(self.rng),
-            "issue_id": f"PPY-{_uuid(self.rng)}", "event_type": "comment_added",
-            "occurred_at": "2026-10-20T00:00:00.000Z", "actor_id": actor,
-            "payload": {"comment_id": _uuid(self.rng), "text": "Reviewed."},
-        }, indent=2)
-        self.assertEqual(scan_and_rule_ids({"project/events/synthetic.json": event}), [])
-        for path in ("src/telemetry.json", "project/issues/synthetic.json"):
-            with self.subTest(path=path):
-                findings = scan_and_rule_ids({path: event})
-                self.assertIn("leftblock-session-uuid", findings)
-                self.assertIn("leftblock-actor-id", findings)
-
-    def test_structural_id_does_not_hide_session_on_same_line(self):
-        for prefix in ("PPY-", "BOTSPY-", "kanbus-", ""):
-            with self.subTest(prefix=prefix):
-                doc = json.dumps({
-                    "id": prefix + _uuid(self.rng),
-                    "session_id": _uuid(self.rng),
-                })
-                self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                    "project/issues/synthetic.json": doc,
-                }))
-
-    def test_session_uuid_fields_and_prose_remain_blocked_in_board_files(self):
-        for field in ("session_id", "provider_session_id", "resumed_session", "description", "text"):
-            for prefix in ("", "PPY-", "BOTSPY-", "kanbus-"):
-                with self.subTest(field=field, prefix=prefix):
-                    doc = json.dumps({field: prefix + _uuid(self.rng)}, indent=2)
-                    self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                        "project/events/synthetic.json": doc,
-                    }))
-
-    def test_structural_values_must_fill_the_field(self):
-        value = _uuid(self.rng)
-        for doc in (
-            json.dumps({"id": "PPY-" + value + " extra"}, indent=2),
-            json.dumps({"description": ['PPY-' + value]}, indent=2),
-            json.dumps({"actor_id": value, "session_id": _uuid(self.rng)}),
-        ):
-            with self.subTest(doc_shape=len(doc)):
-                self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                    "project/events/synthetic.json": doc,
-                }))
-
-    def test_all_structural_prefixes_still_flagged_outside_board_files(self):
-        for prefix in ("", "PPY-", "BOTSPY-", "kanbus-"):
-            with self.subTest(prefix=prefix):
-                doc = json.dumps({"id": prefix + _uuid(self.rng)}, indent=2)
-                self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                    "src/state.json": doc,
-                }))
-
-    def test_actor_attribution_does_not_allow_other_sensitive_rules(self):
-        actor = "sk-proj-" + rand_openai_like(self.rng, 56)
-        doc = json.dumps({"actor_id": actor}, indent=2)
-        self.assertIn("leftblock-openai-key", scan_and_rule_ids({
-            "project/events/synthetic.json": doc,
-        }))
-
-    def test_nested_actor_and_split_line_actor_remain_detected(self):
-        nested = json.dumps({"payload": {"actor_id": _uuid(self.rng)}}, indent=2)
-        findings = scan_and_rule_ids({"project/events/synthetic.json": nested})
-        self.assertIn("leftblock-actor-id", findings)
-        self.assertIn("leftblock-session-uuid", findings)
-        split = '"actor_id"\n:\n"local' + 'user"'
-        self.assertIn("leftblock-actor-id", scan_and_rule_ids({"src/state.json": split}))
-
-    def test_example_or_cache_key_does_not_hide_another_uuid(self):
-        example = "-".join(("00000000", "0000", "4000", "8000", "0123456789ab"))
-        for first in (example, f"PPY-{_uuid(self.rng)}.json"):
-            line = first + " session=" + _uuid(self.rng)
-            self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                "project/events/synthetic.json": line,
-            }))
-
-    def test_canonical_crlf_event_passes(self):
-        event = json.dumps({
-            "event_id": _uuid(self.rng), "actor_id": _uuid(self.rng),
-            "issue_id": f"PPY-{_uuid(self.rng)}",
-        }, indent=2).replace("\n", "\r\n")
-        self.assertEqual(scan_and_rule_ids({"project/events/synthetic.json": event}), [])
-
-    def test_coordination_claim_reference_passes_only_in_event_payload(self):
-        claim = "claim-" + _uuid(self.rng)
-        event = json.dumps({"event_type": "coordination.claim",
-                            "payload": {"claim_id": claim}}, indent=2)
-        self.assertEqual(scan_and_rule_ids({"project/events/synthetic.json": event}), [])
-        for path in ("project/issues/synthetic.json", "src/state.json"):
-            with self.subTest(path=path):
-                self.assertIn("leftblock-session-uuid", scan_and_rule_ids({path: event}))
-        for doc in (
-            json.dumps({"claim_id": claim}, indent=2),
-            json.dumps({"payload": {"nested": {"claim_id": claim}}}, indent=2),
-            json.dumps({"payload": {"claim_id": claim + " copied"}}, indent=2),
-            json.dumps({"payload": {"session_id": claim}}, indent=2),
-            json.dumps({"payload": {"claim_id": claim, "session_id": _uuid(self.rng)}}),
-            json.dumps({"payload": {"claim_id": _uuid(self.rng)}}, indent=2),
-        ):
-            self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                "project/events/synthetic.json": doc,
-            }))
-
-    def test_cache_bookkeeping_passes_without_exempting_cached_content(self):
-        iid = "PPY-" + _uuid(self.rng)
-        cache = {
-            "file_mtimes": {iid + ".json": 1792500000.25},
-            "issues": [{"id": iid, "parent": "PPY-" + _uuid(self.rng)}],
+    def _content(self):
+        """Identifier-bearing content in many shapes (indented and minified)."""
+        u = lambda: _uuid(self.rng)  # noqa: E731
+        actor_key = "actor" + "_id"
+        return {
+            "session_fields": json.dumps({
+                "session_id": u(), "provider_session_id": u(),
+                "resumed_session": u()}, indent=2),
+            "prose": json.dumps({
+                "description": "session " + u() + " reproduced it",
+                "text": "see PPY-" + u() + " and BOTSPY-" + u()}, indent=2),
+            "nested_actor": json.dumps(
+                {"payload": {actor_key: u()}}, indent=2),
+            "split_actor": '"%s"\n:\n"%s"' % (actor_key, u()),
+            "minified_event": json.dumps({
+                "event_id": u(), actor_key: u(), "session_id": u(),
+                "payload": {"comment_id": u(), "text": "x " + u()}}),
         }
-        doc = json.dumps(cache, indent=2)
-        path = "project/.cache/index.json"
-        self.assertEqual(scan_and_rule_ids({path: doc}), [])
-        self.assertIn("leftblock-session-uuid", scan_and_rule_ids({"src/index.json": doc}))
-        for field in ("id", "parent"):
-            self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                path: json.dumps({field: iid}, indent=2),
-            }))
-        for field in ("description", "session_id"):
-            cache["issues"][0][field] = _uuid(self.rng)
-            self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                path: json.dumps(cache, indent=2),
-            }))
-            del cache["issues"][0][field]
-        cache["issues"][0]["actor_id"] = "sk-proj-" + rand_openai_like(self.rng, 56)
-        self.assertIn("leftblock-openai-key", scan_and_rule_ids({
-            path: json.dumps(cache, indent=2),
-        }))
 
-    def test_cache_key_allowance_cannot_hide_another_uuid(self):
-        key = "PPY-" + _uuid(self.rng) + ".json"
-        value = _uuid(self.rng)
-        for line in (
-            f'    "{key}": 123.5, "session_id": "{value}"',
-            f'    "{key}": "{value}"',
-            f'    "{key}": {{"session_id": "{value}"}}',
-        ):
-            self.assertIn("leftblock-session-uuid", scan_and_rule_ids({
-                "project/.cache/index.json": line,
-            }))
+    def test_identifiers_pass_in_every_board_path(self):
+        for path in self.BOARD_PATHS:
+            for shape, doc in self._content().items():
+                with self.subTest(path=path, shape=shape):
+                    self.assertEqual(scan_and_rule_ids({path: doc}), [])
+
+    def test_session_style_fields_pass_with_any_prefix_in_board_files(self):
+        for path in self.BOARD_PATHS:
+            for field in ("session_id", "provider_session_id", "resumed_session"):
+                for prefix in ("", "PPY-", "BOTSPY-", "kanbus-"):
+                    with self.subTest(path=path, field=field, prefix=prefix):
+                        doc = json.dumps({field: prefix + _uuid(self.rng)}, indent=2)
+                        self.assertEqual(scan_and_rule_ids({path: doc}), [])
+
+    def test_bare_and_prefixed_uuids_in_prose_pass_in_board_files(self):
+        for path in self.BOARD_PATHS:
+            for field in ("description", "text"):
+                for prefix in ("", "PPY-", "kanbus-"):
+                    with self.subTest(path=path, field=field, prefix=prefix):
+                        doc = json.dumps({
+                            "id": "PPY-" + _uuid(self.rng),
+                            field: "seen in %s%s today" % (prefix, _uuid(self.rng)),
+                        }, indent=2)
+                        self.assertEqual(scan_and_rule_ids({path: doc}), [])
+
+    def test_actor_ids_pass_nested_split_and_minified_in_board_files(self):
+        key = "actor" + "_id"
+        for value in (_uuid(self.rng), "local" + "user"):
+            shapes = {
+                "root": json.dumps({key: value}, indent=2),
+                "nested": json.dumps({"payload": {key: value}}, indent=2),
+                "split": '"%s"\n:\n"%s"' % (key, value),
+                "minified": json.dumps({"event_type": "x", key: value}),
+                "same_line_session": json.dumps(
+                    {key: value, "session_id": _uuid(self.rng)}),
+            }
+            for path in self.BOARD_PATHS:
+                for shape, doc in shapes.items():
+                    with self.subTest(path=path, shape=shape):
+                        self.assertEqual(scan_and_rule_ids({path: doc}), [])
+
+    def test_canonical_crlf_event_and_cache_pass(self):
+        iid = "PPY-" + _uuid(self.rng)
+        event = json.dumps({
+            "event_id": _uuid(self.rng), "actor" + "_id": _uuid(self.rng),
+            "issue_id": iid}, indent=2).replace("\n", "\r\n")
+        self.assertEqual(scan_and_rule_ids({"project/events/e.json": event}), [])
+        cache = json.dumps({
+            "file_mtimes": {iid + ".json": 1792500000.25},
+            "issues": [{"id": iid, "description": "s " + _uuid(self.rng),
+                        "session_id": _uuid(self.rng)}]}, indent=2)
+        self.assertEqual(scan_and_rule_ids({"project/.cache/index.json": cache}), [])
+
+    def test_same_identifiers_still_flagged_outside_board_paths(self):
+        for path in self.NON_BOARD_PATHS:
+            for shape, doc in self._content().items():
+                with self.subTest(path=path, shape=shape):
+                    findings = scan_and_rule_ids({path: doc})
+                    self.assertIn("leftblock-session-uuid", findings)
+
+    def test_actor_ids_still_flagged_outside_board_paths(self):
+        key = "actor" + "_id"
+        doc = json.dumps({key: "local" + "user"}, indent=2)
+        split = '"%s"\n:\n"%s"' % (key, "local" + "user")
+        for path in self.NON_BOARD_PATHS:
+            for shape, content in (("root", doc), ("split", split)):
+                with self.subTest(path=path, shape=shape):
+                    self.assertIn("leftblock-actor-id",
+                                  scan_and_rule_ids({path: content}))
+
+    def test_personal_email_home_path_and_key_still_flagged_in_board_files(self):
+        email = "jane." + "doe@" + "example-corp." + "t" + "est"
+        user = "jd" + "oe"
+        cases = {
+            "leftblock-personal-email": json.dumps(
+                {"assignee": email}, indent=2),
+            "leftblock-home-path-posix": json.dumps(
+                {"description": "see /Users/%s/work" % user}, indent=2),
+            "leftblock-openai-key": json.dumps(
+                {"text": "key sk-proj-" + rand_openai_like(self.rng, 56)},
+                indent=2),
+        }
+        for path in self.BOARD_PATHS:
+            for rule, doc in cases.items():
+                with self.subTest(path=path, rule=rule):
+                    self.assertIn(rule, scan_and_rule_ids({path: doc}))
+
+    def test_key_in_actor_field_still_flagged_in_board_files(self):
+        doc = json.dumps({"actor" + "_id": "sk-proj-" + rand_openai_like(self.rng, 56)},
+                         indent=2)
+        for path in self.BOARD_PATHS:
+            with self.subTest(path=path):
+                self.assertIn("leftblock-openai-key", scan_and_rule_ids({path: doc}))
