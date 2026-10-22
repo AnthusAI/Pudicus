@@ -199,6 +199,15 @@ def shell_display(path):
     return path
 
 
+def check_runtime_link():
+    """Refuse, before anything is written, a runtime location that is not a symlink."""
+    if not in_virtualenv():
+        return
+    current = leftblock_home() / "current"
+    if os.path.lexists(current) and not current.is_symlink():
+        raise ValueError(f"{shell_display(current)} exists and is not a symlink; no runtime link changed.")
+
+
 def link_runtime():
     """Point the stable runtime link and the user's command at this virtualenv.
 
@@ -350,6 +359,7 @@ def install_local_check_hook(repo_root, gitleaks=None):
     print are returned as [(level, message)].
     """
     paths = validate_local_check_install(repo_root)
+    check_runtime_link()
     previous = _local_owned_contents(paths)
     desired = _local_bundle(paths, gitleaks)
     if previous != desired:

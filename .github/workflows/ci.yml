@@ -31,7 +31,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .
-        pip install behave
+        pip install behave setuptools wheel
 
     - name: Run unit tests (installer, default config, shipped ruleset)
       run: |
@@ -39,7 +39,13 @@ jobs:
 
     - name: Run Gherkin Behavior Specs
       run: |
-        behave
+        behave --tags=-wip --format progress | tee behave.log
+        # Specs must never skip silently (missing gitleaks, setuptools or wheel).
+        # Scenarios tagged @wip are deselected by the tag filter above.
+        if ! grep -Eq '^[0-9]+ scenarios? passed, 0 failed, 0 skipped' behave.log; then
+          echo "::error::behave skipped or failed scenarios"
+          exit 1
+        fi
 
   self-scan:
     runs-on: ubuntu-latest

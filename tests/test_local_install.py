@@ -248,6 +248,13 @@ class LocalInstallTests(unittest.TestCase):
             self.install()
         self.assertFalse(self.user_bin.exists())
 
+    def test_refused_runtime_link_writes_nothing(self):
+        (self.lb_home / "current").mkdir(parents=True)
+        with self.assertRaisesRegex(ValueError, "not a symlink"):
+            self.install()
+        self.assertFalse(self.hook.exists())
+        self.assertFalse((self.repo / ".git" / "leftblock").exists())
+
     def test_upgrade_by_reinstalling_in_one_repo_repoints_every_hook(self):
         self.install()
         before = self.hook.read_bytes()
