@@ -8,6 +8,52 @@ remain unchanged; commit links retain their original hashes.
 
 <!-- version list -->
 
+## v0.5.1 (2026-10-22)
+
+### Bug Fixes
+
+- A broken or missing policy is explained in plain words by the commit hook instead of a stack trace
+  ([`2457ae2`](https://github.com/DataParade-io/LeftBlock/commit/2457ae2d8c7a4827fcc8e8b8a1056e176ffbf61c))
+
+leftblock hook now prints the same configuration error as check and blocks the commit.
+
+- A merge with unresolved conflicts is reported plainly instead of crashing
+  ([`58c75c0`](https://github.com/DataParade-io/LeftBlock/commit/58c75c09384da8434dda53521b399769bf9837d5))
+
+leftblock check and the hook now say the index has unresolved conflicts and to resolve them first;
+  check exits 2.
+
+- A refused install no longer leaves a hook behind when the runtime location is not a symlink
+  ([`9170e55`](https://github.com/DataParade-io/LeftBlock/commit/9170e5536359d45acc2864286f8342be2b8d8de1))
+
+The runtime link is now validated before anything is written, so a refused install changes nothing.
+
+### Continuous Integration
+
+- Run specs without @wip, install setuptools and wheel, fail on any skipped scenario
+  ([`c864665`](https://github.com/DataParade-io/LeftBlock/commit/c86466594df25cf091e9edf20b98641d114393d8))
+
+### Testing
+
+- Gherkin spec foundation and narrative index
+  ([`c55d41a`](https://github.com/DataParade-io/LeftBlock/commit/c55d41a20b2c9943ebf7ddb46d6b80a1120f8466))
+
+- Spec canonical Kanbus event and cache files with Windows line endings
+  ([`944c1b9`](https://github.com/DataParade-io/LeftBlock/commit/944c1b951cf94e788743cdd6a76c800b027935ea))
+
+- Specs for detection rules, Kanbus board data and reading a block
+  ([`28814fc`](https://github.com/DataParade-io/LeftBlock/commit/28814fcde09897cdb76c81ad247f399276a15ce1))
+
+- Specs for dry runs, machine output, recorded overrides and silent bypasses
+  ([`0be5db1`](https://github.com/DataParade-io/LeftBlock/commit/0be5db1beb75ea0ea1b723afaffe06d197b19de9))
+
+- Specs for failing closed, merge commits, receipts and custom checkers
+  ([`21fc6eb`](https://github.com/DataParade-io/LeftBlock/commit/21fc6ebe4bb1cc3f02f08823e276c55b479b0cde))
+
+- Specs for installation, runtime upgrades and the command line
+  ([`43424f8`](https://github.com/DataParade-io/LeftBlock/commit/43424f82c9e01c79c87db80ad32496c6966379c3))
+
+
 ## v0.5.0 (2026-10-22)
 
 ### Features
