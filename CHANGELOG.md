@@ -8,6 +8,20 @@ remain unchanged; commit links retain their original hashes.
 
 <!-- version list -->
 
+## v0.5.0 (2026-10-22)
+
+### Features
+
+- Detect API keys from common AI providers (Groq, xAI, Together, OpenRouter, Mistral, Cohere, Azure
+  OpenAI and more)
+  ([`dd80b1e`](https://github.com/DataParade-io/LeftBlock/commit/dd80b1e251c20aceeeb530dd13ba290c84203a62))
+
+### Testing
+
+- Gherkin specs for AI provider key detection
+  ([`29de696`](https://github.com/DataParade-io/LeftBlock/commit/29de696b0e76b03e4c8fd08ecaa3c86304befb8a))
+
+
 ## v0.4.3 (2026-10-21)
 
 ### Bug Fixes
