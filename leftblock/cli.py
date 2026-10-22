@@ -619,7 +619,11 @@ def cmd_hook(args):
     print_info(f"Scanning tree {tree_hash}...")
 
     warn_root_gitleaksignore(repo_root)
-    config, results, applied = run_checks(repo_root)
+    try:
+        config, results, applied = run_checks(repo_root)
+    except ConfigError:
+        print_err(CONFIG_ERROR)
+        sys.exit(1)
     print_applied(applied)
     if get_tree_hash() != tree_hash:
         print_err("Staged tree changed during inspection. Commit blocked; run the checks again.")

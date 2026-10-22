@@ -77,6 +77,7 @@ Feature: Retroactive approval
     When I run "leftblock approve HEAD"
     Then the exit code is 1
     And stderr contains "Approval blocked"
+    And stderr does not contain "Traceback"
     And HEAD has not moved
 
   Scenario: Approval is refused when a checker breaks, even for a person with the passphrase

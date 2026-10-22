@@ -47,7 +47,6 @@ Feature: Failing closed
       | []                                             |
       | {checkers: [{type: command, command: 'true'}, 5]} |
 
-  @wip
   Scenario: A broken policy is explained to the person committing, without a stack trace
     Given there is no checker policy
     When I commit the staged files
