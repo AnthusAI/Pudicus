@@ -6,6 +6,7 @@ All identifiers are random version-4 UUIDs built at run time.
 """
 
 import json
+import os
 import random
 
 from behave import given, then
@@ -171,6 +172,30 @@ def _stage_board(context, description):
     }
     for name, content in files.items():
         world.write_file(context, name, content)
+        world.git(context, "add", name)
+
+
+@given("a staged Kanbus event and cache index saved with Windows line endings")
+def step_board_with_windows_endings(context):
+    """Canonical event JSON and cache index content, every line ending CRLF."""
+    rng = random.Random("kanbus crlf")
+    issue_id = "kanbus-" + uuid4(rng)
+    event = {"event_id": uuid4(rng), ACTOR: uuid4(rng), "issue_id": issue_id}
+    cache = {
+        "file_mtimes": {issue_id + ".json": 1792500000.25},
+        "issues": [{"id": issue_id, "description": "s " + uuid4(rng),
+                    "session_id": uuid4(rng)}],
+    }
+    files = {
+        "project/events/crlf-event.json": _doc(event),
+        "project/.cache/index.json": _doc(cache),
+    }
+    for name, content in files.items():
+        path = os.path.join(context.repo, name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as handle:
+            handle.write(content.replace("\n", "\r\n").encode())
+        assert b"\r\n" in open(path, "rb").read()
         world.git(context, "add", name)
 
 

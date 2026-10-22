@@ -155,6 +155,12 @@ Feature: Kanbus board data
     When I commit the staged files
     Then the commit succeeds
 
+  Scenario: Board files saved with Windows line endings commit through the hook
+    Given a repository with LeftBlock installed as a local check-only gate
+    And a staged Kanbus event and cache index saved with Windows line endings
+    When I commit the staged files
+    Then the commit succeeds
+
   Scenario: A home path inside an issue still blocks the commit and points at kbs
     Given a repository with LeftBlock installed as a local check-only gate
     And a staged Kanbus board whose issue description mentions a synthetic home path
