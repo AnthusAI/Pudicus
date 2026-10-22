@@ -505,3 +505,147 @@ class KanbusBoardAllowlistTests(unittest.TestCase):
         for path in self.BOARD_PATHS:
             with self.subTest(path=path):
                 self.assertIn("leftblock-openai-key", scan_and_rule_ids({path: doc}))
+
+
+ALNUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+LOWER_ALNUM = "abcdefghijklmnopqrstuvwxyz0123456789"
+URLSAFE = ALNUM + "_-"
+
+
+def rand_from(rng, alphabet, n):
+    return "".join(rng.choice(alphabet) for _ in range(n))
+
+
+def prefixed_provider_keys(rng):
+    """(rule id, key) pairs for every provider with a fixed key prefix."""
+    return [
+        ("leftblock-openai-key", "sk-admin-" + rand_from(rng, URLSAFE, 156)),
+        ("leftblock-groq-key", "gsk_" + rand_from(rng, ALNUM, 52)),
+        ("leftblock-xai-key", "xai-" + rand_from(rng, ALNUM, 80)),
+        ("leftblock-replicate-key", "r8_" + rand_from(rng, ALNUM, 37)),
+        ("leftblock-together-key", "tgp_v1_" + rand_from(rng, URLSAFE, 43)),
+        ("leftblock-openrouter-key", "sk-or-v1-" + rand_hex(rng, 64)),
+        ("leftblock-fireworks-key", "fw_" + rand_from(rng, ALNUM, 24)),
+        ("leftblock-cerebras-key", "csk-" + rand_from(rng, LOWER_ALNUM, 48)),
+        ("leftblock-langsmith-key", "lsv2_pt_" + rand_hex(rng, 32) + "_" + rand_hex(rng, 10)),
+        ("leftblock-langsmith-key", "lsv2_sk_" + rand_hex(rng, 32) + "_" + rand_hex(rng, 10)),
+        ("leftblock-elevenlabs-key", "sk_" + rand_hex(rng, 48)),
+        ("leftblock-voyage-key", "pa-" + rand_from(rng, URLSAFE, 43)),
+        ("leftblock-pinecone-key", "pcsk_" + rand_from(rng, ALNUM, 6) + "_" + rand_from(rng, ALNUM, 60)),
+        ("leftblock-pinecone-key", "pcsk_" + rand_from(rng, ALNUM, 5) + "_" + rand_from(rng, ALNUM, 50)),
+    ]
+
+
+@unittest.skipIf(GITLEAKS is None, "gitleaks binary not installed")
+class AiProviderKeyTests(unittest.TestCase):
+    """AI provider keys are detected bare (prefixed) or by named assignment."""
+
+    def test_prefixed_keys_detected_bare(self):
+        rng = _rng()
+        for rule_id, key in prefixed_provider_keys(rng):
+            with self.subTest(rule=rule_id, prefix=key[:6]):
+                self.assertIn(rule_id, scan_and_rule_ids({"a.py": 'x = "%s"\n' % key}))
+                self.assertIn(rule_id, scan_and_rule_ids({"a.txt": key + "\n"}))
+
+    def test_prefix_less_keys_detected_in_named_assignment(self):
+        rng = _rng()
+        rule = "leftblock-ai-provider-key-assignment"
+        cases = [
+            ("MISTRAL_API_KEY", rand_from(rng, ALNUM, 32)),
+            ("COHERE_API_KEY", rand_from(rng, ALNUM, 40)),
+            ("AZURE_OPENAI_API_KEY", rand_hex(rng, 32)),
+            ("AZURE_OPENAI_KEY", rand_hex(rng, 32)),
+            ("azureopenai_key", rand_hex(rng, 32)),
+            ("DEEPGRAM_API_KEY", rand_hex(rng, 40)),
+            ("TOGETHER_API_KEY", rand_hex(rng, 64)),
+        ]
+        styles = [
+            "%s=%s\n",
+            "%s: %s\n",
+            '%s: "%s"\n',
+            "export %s='%s'\n",
+            'x = {"%s": "%s"}\n',
+            '%s = "%s"\n',
+            "'%s' => '%s',\n",
+            'os.environ["%s"] = "%s"\n',
+        ]
+        for name, value in cases:
+            for style in styles:
+                with self.subTest(name=name, style=style):
+                    self.assertIn(rule, scan_and_rule_ids({"f.txt": style % (name, value)}))
+
+    def test_assignment_secret_is_only_the_value(self):
+        rng = _rng()
+        value = rand_from(rng, ALNUM, 32)
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "repo"
+            target.mkdir()
+            (target / "f.env").write_text("MISTRAL_API_KEY=%s\n" % value)
+            report = Path(tmp) / "r.json"
+            run_gitleaks(target, report)
+            data = json.loads(report.read_text())
+        mine = [f for f in data if f["RuleID"] == "leftblock-ai-provider-key-assignment"]
+        self.assertEqual(len(mine), 1)
+        self.assertEqual(mine[0]["Match"], "MISTRAL_API_KEY=REDACTED")
+
+    def test_bare_prefix_less_keys_not_detected(self):
+        rng = _rng()
+        self.assertEqual(scan_and_rule_ids({"f.txt": 'x = "%s"\n' % rand_from(rng, ALNUM, 32)}), [])
+
+
+@unittest.skipIf(GITLEAKS is None, "gitleaks binary not installed")
+class AiProviderKeyNegativeTests(unittest.TestCase):
+    """Hashes, identifiers, references and placeholders must not be flagged."""
+
+    def assert_clean(self, text):
+        self.assertEqual(scan_and_rule_ids({"f.txt": text}), [], text)
+
+    def test_hashes_and_uuids(self):
+        rng = _rng()
+        sha1, sha256 = rand_hex(rng, 40), rand_hex(rng, 64)
+        uuid = "-".join(rand_hex(rng, n) for n in (8, 4, 4, 4, 12))
+        for text in [sha1, sha256, 'sha = "%s"' % sha1, 'sha = "%s"' % sha256,
+                     'digest: "%s"' % sha256, "commit %s" % sha1]:
+            with self.subTest(text=text[:12]):
+                self.assert_clean(text + "\n")
+        # UUIDs are the session-uuid rule's business, never an AI key rule.
+        found = scan_and_rule_ids({"f.txt": 'id = "%s"\n' % uuid})
+        self.assertEqual([r for r in found if r != "leftblock-session-uuid"], [])
+
+    def test_prefix_lookalikes_in_ordinary_text(self):
+        rng = _rng()
+        texts = [
+            "pip install sk-learn scikit-learn",
+            "book the spa-resort and npa-123 today",
+            "fw_" + rand_from(rng, ALNUM, 10),
+            "csk-" + rand_from(rng, LOWER_ALNUM, 10),
+            "gsk_" + rand_from(rng, ALNUM, 10),
+            "pa-" + rand_from(rng, URLSAFE, 12),
+            "sk_" + rand_hex(rng, 12),
+            "my_fw_" + rand_from(rng, ALNUM, 24),
+            "spa-" + rand_from(rng, URLSAFE, 43),
+            "pa-" + rand_from(rng, URLSAFE, 60),
+            "fw_" + rand_from(rng, ALNUM, 40),
+            "sk_" + rand_hex(rng, 64),
+        ]
+        for text in texts:
+            with self.subTest(text=text[:20]):
+                self.assert_clean(text + "\n")
+
+    def test_references_and_placeholders(self):
+        texts = [
+            "OPENAI_API_KEY=${OPENAI_API_KEY}",
+            'os.environ["OPENAI_API_KEY"]',
+            'key = os.environ.get("OPENAI_API_KEY")',
+            "MISTRAL_API_KEY=your-key-here",
+            "MISTRAL_API_KEY=<your-api-key>",
+            'COHERE_API_KEY: "<your-api-key>"',
+            "AZURE_OPENAI_API_KEY=changeme",
+            "DEEPGRAM_API_KEY=$DEEPGRAM_API_KEY",
+            "TOGETHER_API_KEY=your_together_api_key_goes_here",
+            "GROQ_API_KEY=YOUR_GROQ_API_KEY_HERE_PLEASE",
+            "api_key_name = some-long-descriptive-variable-name",
+        ]
+        for text in texts:
+            with self.subTest(text=text):
+                self.assert_clean(text + "\n")

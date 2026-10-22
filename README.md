@@ -369,8 +369,20 @@ PEM private keys, and other standard secret formats.
 | `leftblock-home-path-windows` | `C:\Users\<name>` and `\Users\<name>` |
 | `leftblock-session-uuid` | Potential session UUIDs (not flagged in Kanbus board data; example values and the `.kanbus.yml` `project_id` line are also allowed) |
 | `leftblock-actor-id` | `actor_id` / `user_id` / `author_id` JSON values (not flagged in Kanbus board data) |
-| `leftblock-openai-key` | `sk-`, `sk-proj-`, `sk-svcacct-` OpenAI keys |
+| `leftblock-openai-key` | `sk-`, `sk-proj-`, `sk-svcacct-`, `sk-admin-` OpenAI keys |
 | `leftblock-anthropic-key` | `sk-ant-` Anthropic keys |
+| `leftblock-groq-key` | Groq `gsk_` API keys, detected without any surrounding keyword |
+| `leftblock-xai-key` | xAI `xai-` API keys, detected without any surrounding keyword |
+| `leftblock-replicate-key` | Replicate `r8_` API keys, detected without any surrounding keyword |
+| `leftblock-together-key` | Together AI `tgp_v1_` API keys, detected without any surrounding keyword |
+| `leftblock-openrouter-key` | OpenRouter `sk-or-v1-` API keys, detected without any surrounding keyword |
+| `leftblock-fireworks-key` | Fireworks AI `fw_` API keys, detected without any surrounding keyword |
+| `leftblock-cerebras-key` | Cerebras `csk-` API keys, detected without any surrounding keyword |
+| `leftblock-langsmith-key` | LangSmith `lsv2_pt_` / `lsv2_sk_` API keys, detected without any surrounding keyword |
+| `leftblock-elevenlabs-key` | ElevenLabs `sk_` API keys, detected without any surrounding keyword |
+| `leftblock-voyage-key` | Voyage AI `pa-` API keys, detected without any surrounding keyword |
+| `leftblock-pinecone-key` | Pinecone `pcsk_` API keys, detected without any surrounding keyword |
+| `leftblock-ai-provider-key-assignment` | Prefix-less AI provider keys (Mistral, Cohere, Azure OpenAI, Deepgram, legacy Together AI hex) assigned to a variable, key or field named after the provider and ending in key/token/secret (env, YAML, JSON, TOML and code styles). Bare prefix-less keys cannot be told apart from hashes and identifiers, so they are not detected without that naming context |
 | `leftblock-eth-private-key` | Ethereum-style private keys (`0x` + 64 hex) |
 | `leftblock-wif-key` | Bitcoin WIF private keys (compressed `K/L/M…`, uncompressed `5…`) |
 | `leftblock-bip39-mnemonic` | BIP-39 seed phrases (12–24 words) in seed/mnemonic/recovery context |
