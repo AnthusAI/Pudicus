@@ -287,7 +287,7 @@ Feature: Merge commits
     And stderr contains "merge-scope"
     And "resolution.txt" is still staged
 
-  @wip @gitleaks
+  @gitleaks
   Scenario: A merge with unresolved conflicts is reported plainly, not with a stack trace
     Given the current branch gains a commit adding "shared.txt" containing:
       """
@@ -309,4 +309,6 @@ Feature: Merge commits
     And a merge of "feature" is in progress, not yet committed
     When I run "leftblock check"
     Then the exit code is 2
+    And stderr contains "unresolved conflicts"
+    And stderr contains "Resolve the conflicts"
     And stderr does not contain "Traceback"

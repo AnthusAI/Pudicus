@@ -26,8 +26,23 @@ def compute_hmac(tree_hash: str, validator: str, result: str, timestamp: str, se
 def run_cmd(cmd: List[str], check: bool = True, capture_output: bool = True, **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, check=check, capture_output=capture_output, text=True, **kwargs)
 
+class UnmergedIndexError(Exception):
+    """The index holds unresolved merge conflicts, so it has no tree."""
+
+
+UNMERGED_MESSAGE = (
+    "The index has unresolved conflicts, so there is nothing to inspect yet. "
+    "Resolve the conflicts and stage the result first."
+)
+
+
 def get_tree_hash() -> str:
-    return run_cmd(["git", "write-tree"]).stdout.strip()
+    try:
+        return run_cmd(["git", "write-tree"]).stdout.strip()
+    except subprocess.CalledProcessError as error:
+        if "unmerged" in (error.stderr or "").lower():
+            raise UnmergedIndexError(UNMERGED_MESSAGE) from error
+        raise
 
 def get_commit_tree_hash(commit_sha: str) -> str:
     output = run_cmd(["git", "cat-file", "-p", commit_sha]).stdout

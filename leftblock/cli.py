@@ -18,7 +18,7 @@ from leftblock import bypass
 from leftblock.core import (
     get_secret, compute_hmac, get_tree_hash, get_commit_tree_hash,
     load_config, validate_checkers, execute_checkers, get_trailer, run_cmd, SECRET_FILE_DEFAULT,
-    CheckerResult,
+    CheckerResult, UnmergedIndexError, UNMERGED_MESSAGE,
 )
 
 def _label(text, color):
@@ -569,7 +569,11 @@ def cmd_check(args):
         if code:
             sys.exit(code)
 
-    tree_hash = get_tree_hash()
+    try:
+        tree_hash = get_tree_hash()
+    except UnmergedIndexError:
+        print_err(UNMERGED_MESSAGE)
+        finish(EXIT_ERROR, "error", errors=[("index", UNMERGED_MESSAGE)])
     try:
         warn_root_gitleaksignore(repo_root)
         config, results, applied = run_checks(repo_root, config_path)
@@ -615,7 +619,11 @@ def cmd_hook(args):
         print_err("Shared secret not found. Run 'leftblock install' first.")
         sys.exit(1)
 
-    tree_hash = get_tree_hash()
+    try:
+        tree_hash = get_tree_hash()
+    except UnmergedIndexError:
+        print_err(UNMERGED_MESSAGE)
+        sys.exit(1)
     print_info(f"Scanning tree {tree_hash}...")
 
     warn_root_gitleaksignore(repo_root)
