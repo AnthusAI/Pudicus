@@ -230,6 +230,16 @@ def step_no_command_link(context):
     assert not os.path.lexists(_command_link(context))
 
 
+@then("no hook, policy, rules or state were written")
+def step_nothing_written(context):
+    """A refused install leaves the hook slot and the policy directory untouched."""
+    assert not os.path.lexists(_hook_path(context)), "a hook was written"
+    common = world.run(
+        context, ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+    ).stdout.strip()
+    assert not os.path.lexists(os.path.join(common, "leftblock")), "policy, rules or state were written"
+
+
 @then("the hooks of every repository are exactly as they were installed")
 def step_hooks_unchanged(context):
     """No hook was rewritten: each still holds the bytes first installed."""

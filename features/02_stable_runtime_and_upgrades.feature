@@ -70,6 +70,7 @@ Feature: Stable runtime and upgrades
     Then the exit code is 1
     And stderr contains "not a symlink"
     And no command link exists
+    And no hook, policy, rules or state were written
 
   Scenario: Upgrading in one repository repoints every repository
     Given a repository without LeftBlock
