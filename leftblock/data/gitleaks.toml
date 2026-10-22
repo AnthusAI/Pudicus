@@ -9,7 +9,8 @@
 #   - home-folder paths: /Users/<name>/, /home/<name>/, C:\Users\<name>
 #   - session UUIDs (bare UUIDs outside structural id fields)
 #   - actor/user IDs
-#   - OpenAI (sk-, sk-proj-, sk-svcacct-) and Anthropic (sk-ant-) keys
+#   - OpenAI (sk-, sk-proj-, sk-svcacct-, sk-admin-), Anthropic (sk-ant-) and
+#     other AI provider keys (Groq, xAI, Together, OpenRouter, Mistral, ...)
 #     (Gemini/Google AI keys AIza... are covered by gitleaks' default
 #     gcp-api-key rule)
 #   - crypto wallet material: 0x-prefixed 64-hex private keys, keyword-
@@ -177,8 +178,8 @@ paths = [
 
 [[rules]]
 id = "leftblock-openai-key"
-description = "OpenAI API key (sk-, sk-proj-, sk-svcacct-)"
-regex = '''\bsk-(?:proj|svcacct)-[A-Za-z0-9_\-]{40,}|\bsk-[A-Za-z0-9]{20,}'''
+description = "OpenAI API key (sk-, sk-proj-, sk-svcacct-, sk-admin-)"
+regex = '''\bsk-(?:proj|svcacct|admin)-[A-Za-z0-9_\-]{40,}|\bsk-[A-Za-z0-9]{20,}'''
 keywords = ["sk-"]
 
 [[rules]]
@@ -186,6 +187,111 @@ id = "leftblock-anthropic-key"
 description = "Anthropic API key (sk-ant-)"
 regex = '''\bsk-ant-[A-Za-z0-9_\-]{20,}'''
 keywords = ["sk-ant-"]
+
+# --------------------------------------------------------------------
+# Prefixed AI provider API keys, detected without any keyword context.
+# Each regex is bounded by non-identifier characters (or start/end of
+# text) so a longer identifier or a different token shape does not
+# fire, and the capture group is the secret.
+# --------------------------------------------------------------------
+
+[[rules]]
+id = "leftblock-groq-key"
+description = "Groq API key (gsk_)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(gsk_[A-Za-z0-9]{52})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["gsk_"]
+
+[[rules]]
+id = "leftblock-xai-key"
+description = "xAI API key (xai-)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(xai-[A-Za-z0-9]{80})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["xai-"]
+
+[[rules]]
+id = "leftblock-replicate-key"
+description = "Replicate API token (r8_)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(r8_[A-Za-z0-9]{37})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["r8_"]
+
+[[rules]]
+id = "leftblock-together-key"
+description = "Together AI API key (tgp_v1_)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(tgp_v1_[A-Za-z0-9_\-]{43})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["tgp_v1_"]
+
+[[rules]]
+id = "leftblock-openrouter-key"
+description = "OpenRouter API key (sk-or-v1-)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(sk-or-v1-[a-f0-9]{64})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["sk-or-v1-"]
+
+[[rules]]
+id = "leftblock-fireworks-key"
+description = "Fireworks AI API key (fw_)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(fw_[A-Za-z0-9]{24})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["fw_"]
+
+[[rules]]
+id = "leftblock-cerebras-key"
+description = "Cerebras API key (csk-)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(csk-[a-z0-9]{48})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["csk-"]
+
+[[rules]]
+id = "leftblock-langsmith-key"
+description = "LangSmith API key (lsv2_pt_/lsv2_sk_)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(lsv2_(?:pt|sk)_[a-f0-9]{32}_[a-f0-9]{10})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["lsv2_"]
+
+[[rules]]
+id = "leftblock-elevenlabs-key"
+description = "ElevenLabs API key (sk_ + 48 hex)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(sk_[a-f0-9]{48})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["sk_"]
+
+[[rules]]
+id = "leftblock-voyage-key"
+description = "Voyage AI API key (pa-)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(pa-[A-Za-z0-9_\-]{43})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["pa-"]
+
+[[rules]]
+id = "leftblock-pinecone-key"
+description = "Pinecone API key (pcsk_)"
+regex = '''(?:^|[^A-Za-z0-9_\-])(pcsk_[A-Za-z0-9]{5,6}_[A-Za-z0-9]{50,})(?:[^A-Za-z0-9_\-]|$)'''
+secretGroup = 1
+keywords = ["pcsk_"]
+
+# --------------------------------------------------------------------
+# Prefix-less AI provider keys (Mistral, Cohere, Azure OpenAI, Deepgram,
+# legacy Together AI hex): shape alone is indistinguishable from hashes
+# and identifiers, so these are reported only when assigned to a name
+# containing the provider and key/token/secret. Azure OpenAI is covered
+# by the "openai" alternative (azure_openai, azureopenai, azure-openai).
+# --------------------------------------------------------------------
+
+[[rules]]
+id = "leftblock-ai-provider-key-assignment"
+description = "AI provider API key assigned to a provider-named key/token/secret variable"
+regex = '''(?i)(?:mistral|cohere|openai|deepgram|together|groq|anthropic|gemini|perplexity|fireworks|replicate|voyage|cerebras|openrouter|elevenlabs|langsmith|langchain|pinecone|huggingface|(?:^|[^a-z])(?:xai|hf))[a-z0-9_.\-]*(?:key|token|secret)[a-z0-9_.\-]*["']?\]?\s*(?:=>|=|:)\s*["'\x60]?([A-Za-z0-9_\-]{20,})'''
+secretGroup = 1
+entropy = 3.0
+keywords = ["mistral", "cohere", "openai", "deepgram", "together", "groq", "xai", "anthropic", "gemini", "perplexity", "fireworks", "replicate", "voyage", "cerebras", "openrouter", "elevenlabs", "langsmith", "langchain", "pinecone", "huggingface", "hf"]
+
+[[rules.allowlists]]
+description = "identifier-like values without digits (references, not keys)"
+regexTarget = "secret"
+regexes = ['''^[A-Za-z_\-]+$''']
 
 # --------------------------------------------------------------------
 # Crypto wallet material
